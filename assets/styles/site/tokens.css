@@ -33,8 +33,10 @@
     --space-8: 4.5rem;
     --space-9: 7rem;
 
-    --font-body: "Kalam", "Comic Neue", cursive;
-    --font-display: "Gaegu", "Kalam", cursive;
+    --font-body: "Kalam", cursive;
+    --font-body-weight: 300;
+    --font-display: "Gaegu", cursive;
+    --font-display-weight: 700;
     --font-size: 1.1875rem;
     --font-size-sm: 1.0625rem;
     --font-size-xs: 0.9375rem;

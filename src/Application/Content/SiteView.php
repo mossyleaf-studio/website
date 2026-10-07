@@ -6,6 +6,7 @@ namespace App\Application\Content;
 
 use App\Domain\Content\Artwork;
 use App\Domain\Content\Link;
+use App\Domain\Content\SiteFont;
 use App\Domain\Content\SiteText;
 
 final readonly class SiteView
@@ -15,6 +16,7 @@ final readonly class SiteView
      * @param array{title: string, paragraphs: list<string>}    $about
      * @param array{title: string, artworks: list<ArtworkView>} $gallery
      * @param list<LinkView>                                    $links
+     * @param array{heading: SiteFont, body: SiteFont}          $fonts
      */
     private function __construct(
         public string $studioName,
@@ -27,6 +29,7 @@ final readonly class SiteView
         public ?ArtworkView $featured,
         public array $gallery,
         public array $links,
+        public array $fonts,
     ) {
     }
 
@@ -50,6 +53,7 @@ final readonly class SiteView
             null === $featured ? null : ArtworkView::of($featured),
             ['title' => $text->galleryTitle(), 'artworks' => ArtworkView::list($gallery)],
             LinkView::list($links),
+            ['heading' => $text->headingFont(), 'body' => $text->bodyFont()],
         );
     }
 }

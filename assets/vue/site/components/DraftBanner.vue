@@ -36,6 +36,7 @@ defineProps({
 .draft-banner__text strong {
     margin-right: var(--space-2);
     font-family: var(--font-display);
+    font-weight: var(--font-display-weight);
     font-size: var(--font-size-sm);
 }
 

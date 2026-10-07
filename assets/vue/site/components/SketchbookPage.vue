@@ -68,7 +68,7 @@ const year = new Date().getFullYear();
     width: 2.5rem;
     height: 2.5rem;
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: var(--font-display-weight);
     font-size: var(--font-size-lg);
     line-height: 1;
     color: var(--color-bark);

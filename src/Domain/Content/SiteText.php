@@ -62,6 +62,12 @@ class SiteText
     #[ORM\Column(nullable: true)]
     private ?int $logoHeight = null;
 
+    #[ORM\Column(length: 32, enumType: SiteFont::class, options: ['default' => 'gaegu'])]
+    private SiteFont $headingFont = SiteFont::Gaegu;
+
+    #[ORM\Column(length: 32, enumType: SiteFont::class, options: ['default' => 'kalam'])]
+    private SiteFont $bodyFont = SiteFont::Kalam;
+
     private function __construct()
     {
         $this->studioName = 'mossyleaf.studio';
@@ -145,6 +151,22 @@ class SiteText
     public function editGallery(string $title): void
     {
         $this->galleryTitle = self::text('gallery_title', $title, self::MAX_TITLE);
+    }
+
+    public function chooseFonts(SiteFont $heading, SiteFont $body): void
+    {
+        $this->headingFont = $heading;
+        $this->bodyFont = $body;
+    }
+
+    public function headingFont(): SiteFont
+    {
+        return $this->headingFont;
+    }
+
+    public function bodyFont(): SiteFont
+    {
+        return $this->bodyFont;
     }
 
     public function studioName(): string

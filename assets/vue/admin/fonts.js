@@ -1,0 +1,16 @@
+export const FONTS = [
+    { value: 'gaegu', label: 'Gaegu' },
+    { value: 'kalam', label: 'Kalam' },
+    { value: 'caveat', label: 'Caveat' },
+    { value: 'patrick-hand', label: 'Patrick Hand' },
+    { value: 'amatic-sc', label: 'Amatic SC' },
+    { value: 'indie-flower', label: 'Indie Flower' },
+    { value: 'architects-daughter', label: 'Architects Daughter' },
+    { value: 'shadows-into-light', label: 'Shadows Into Light' },
+    { value: 'gloria-hallelujah', label: 'Gloria Hallelujah' },
+    { value: 'coming-soon', label: 'Coming Soon' },
+    { value: 'chewy', label: 'Chewy' },
+    { value: 'fredoka', label: 'Fredoka' },
+    { value: 'quicksand', label: 'Quicksand' },
+    { value: 'nunito', label: 'Nunito' },
+];

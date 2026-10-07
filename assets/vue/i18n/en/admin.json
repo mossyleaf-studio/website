@@ -45,6 +45,12 @@
             "current": "Current logo",
             "none": "No logo yet"
         },
+        "fonts": {
+            "title": "Fonts",
+            "heading": "Titles",
+            "body": "Text",
+            "sample": "Preview of the chosen fonts"
+        },
         "identity": {
             "title": "Name and introduction",
             "studioName": "Studio name",

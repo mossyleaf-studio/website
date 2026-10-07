@@ -86,4 +86,22 @@ final class SitePagesTest extends WebTestCase
         self::assertSame('Ferns </script><b>and</b> frogs', Json::string(Json::decode($crawler->filter('#site-content')->text()), 'intro'));
         self::assertSame('Drawings', $crawler->filter('meta[name="description"]')->attr('content'));
     }
+
+    public function testTheChosenFontsReachVisitorsOnceThePageIsPublished(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/admin/publication', ['page' => 'full']);
+        $client->jsonRequest('PUT', '/api/admin/texts/fonts', ['heading' => 'amatic-sc', 'body' => 'quicksand']);
+        self::assertResponseIsSuccessful();
+
+        $crawler = $client->request('GET', '/beta/');
+        self::assertSame(['amatic-sc', 'quicksand'], [$crawler->filter('html')->attr('data-heading-font'), $crawler->filter('html')->attr('data-body-font')]);
+
+        $crawler = $client->request('GET', '/');
+        self::assertSame(['gaegu', 'kalam'], [$crawler->filter('html')->attr('data-heading-font'), $crawler->filter('html')->attr('data-body-font')]);
+
+        $client->jsonRequest('POST', '/api/admin/publication', ['page' => 'full']);
+        $crawler = $client->request('GET', '/');
+        self::assertSame(['amatic-sc', 'quicksand'], [$crawler->filter('html')->attr('data-heading-font'), $crawler->filter('html')->attr('data-body-font')]);
+    }
 }

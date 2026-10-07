@@ -36,6 +36,7 @@ Contexts: `Identity` (accounts) and `Content` (`SiteText` single row, `Link`, `A
 - Admin API under `/api/admin/…` (texts per section, links, artworks), `MapRequestPayload` DTOs, domain exceptions → 422 `problem+json`.
 - Inline links in texts are written `[label](https://…)` and rendered by `assets/vue/site/richText.js` (never `v-html`).
 - Text limits live on the entities (`SiteText::MAX_*`, `Link::MAX_*`, `Artwork::MAX_ALT`) and are mirrored in `assets/vue/admin/limits.js`.
+- Fonts: the admin picks the heading and body fonts among the self-hosted `SiteFont` cases (stored on `SiteText`, published with the snapshot). A new font needs its `@fontsource` package, its rules in `assets/styles/site/typefaces.css` and its entry in `assets/vue/admin/fonts.js`; `site.html.twig` applies the choice as `data-heading-font` / `data-body-font` on `<html>`, which set `--font-display(-weight)` and `--font-body(-weight)`.
 
 ## Accounts & security
 

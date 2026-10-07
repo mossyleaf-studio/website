@@ -2,6 +2,8 @@
 
 {% block lang %}en{% endblock %}
 
+{% block html_attributes %}{% if site.fonts is defined %} data-heading-font="{{ site.fonts.heading }}" data-body-font="{{ site.fonts.body }}"{% endif %}{% endblock %}
+
 {% block head %}
     {% set home = url('home') %}
     {% set title = site.pageTitle ?? site.studioName %}

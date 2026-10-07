@@ -67,6 +67,30 @@ final class TextsApiTest extends WebTestCase
         self::assertSame([['title', 'This field cannot be empty.']], array_map(static fn (mixed $violation): array => [Json::string($violation, 'propertyPath'), Json::string($violation, 'title')], $violations));
     }
 
+    public function testTheFontsStartAsGaeguAndKalamAndCanBeChosen(): void
+    {
+        $client = self::signedInClient();
+
+        $client->jsonRequest('GET', '/api/admin/texts');
+        $texts = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame(['gaegu', 'kalam'], [Json::string($texts, 'headingFont'), Json::string($texts, 'bodyFont')]);
+
+        $client->jsonRequest('PUT', '/api/admin/texts/fonts', ['heading' => 'caveat', 'body' => 'nunito']);
+
+        self::assertResponseIsSuccessful();
+        $texts = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame(['caveat', 'nunito'], [Json::string($texts, 'headingFont'), Json::string($texts, 'bodyFont')]);
+    }
+
+    public function testAnUnknownFontIsRefused(): void
+    {
+        $client = self::signedInClient();
+
+        $client->jsonRequest('PUT', '/api/admin/texts/fonts', ['heading' => 'comic-sans', 'body' => 'kalam']);
+
+        self::assertResponseStatusCodeSame(422);
+    }
+
     public function testWritesFromAnotherOriginAreRefused(): void
     {
         $client = self::signedInClient();

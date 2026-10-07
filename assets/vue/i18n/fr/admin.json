@@ -45,6 +45,12 @@
             "current": "Logo actuel",
             "none": "Pas encore de logo"
         },
+        "fonts": {
+            "title": "Polices",
+            "heading": "Titres",
+            "body": "Texte",
+            "sample": "Aperçu des polices choisies"
+        },
         "identity": {
             "title": "Nom et présentation",
             "studioName": "Nom du studio",
