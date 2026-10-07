@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
-import '@fontsource/patua-one/latin-400.css';
-import '@fontsource/alegreya-sans/latin-400.css';
-import '@fontsource/alegreya-sans/latin-500.css';
+import '@fontsource/gaegu/latin-700.css';
+import '@fontsource/kalam/latin-300.css';
+import '@fontsource/kalam/latin-400.css';
 import './styles/site/tokens.css';
 import './styles/site/base.css';
 import BetaPage from './vue/site/pages/BetaPage.vue';

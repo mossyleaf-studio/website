@@ -26,7 +26,7 @@ const parts = computed(() => props.name.split(/(?=\.)/));
 
 .studio-header__wordmark {
     font-family: var(--font-display);
-    font-weight: 400;
+    font-weight: 700;
     font-size: clamp(3rem, 15vw, 6rem);
     line-height: 0.92;
     letter-spacing: -0.015em;
@@ -35,7 +35,7 @@ const parts = computed(() => props.name.split(/(?=\.)/));
 }
 
 .studio-header__intro {
-    max-width: 26ch;
+    max-width: 30ch;
     font-size: var(--font-size-lg);
     line-height: 1.4;
     color: var(--color-muted);

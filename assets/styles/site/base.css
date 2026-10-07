@@ -15,10 +15,20 @@ body {
     min-height: 100vh;
     font-family: var(--font-body);
     font-size: var(--font-size);
+    font-weight: 300;
     line-height: var(--line-height);
     color: var(--color-text);
-    background: var(--paper-grain), linear-gradient(180deg, var(--color-paper) 35%, var(--color-meadow));
+    background:
+        url("./paper/tooth.svg") 0 0 / 20rem 20rem,
+        url("./paper/mottle.svg") 0 0 / 56rem 56rem,
+        linear-gradient(180deg, var(--color-paper) 35%, var(--color-meadow));
+    background-blend-mode: multiply, multiply, normal;
     -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2 {
+    filter: url(#graphite);
 }
 
 h1,

@@ -36,6 +36,12 @@ const CLUSTERS = {
                 <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" seed="3" result="noise" />
                 <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="R" yChannelSelector="G" />
             </filter>
+            <filter id="graphite" x="-5%" y="-5%" width="110%" height="110%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="5" result="grain" />
+                <feDisplacementMap in="SourceGraphic" in2="grain" scale="1.2" xChannelSelector="R" yChannelSelector="G" result="rough" />
+                <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.9 1.45" result="speckles" />
+                <feComposite in="rough" in2="speckles" operator="in" />
+            </filter>
         </svg>
 
         <div v-for="(leaves, name) in CLUSTERS" :key="name" :class="['leaves__cluster', `leaves__cluster--${name}`]">

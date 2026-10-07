@@ -53,6 +53,7 @@ const year = new Date().getFullYear();
     gap: var(--space-4);
     padding-block: var(--space-6) var(--space-7);
     font-size: var(--font-size-xs);
+    font-weight: 400;
     color: var(--color-muted);
 }
 
@@ -67,6 +68,7 @@ const year = new Date().getFullYear();
     width: 2.5rem;
     height: 2.5rem;
     font-family: var(--font-display);
+    font-weight: 700;
     font-size: var(--font-size-lg);
     line-height: 1;
     color: var(--color-bark);

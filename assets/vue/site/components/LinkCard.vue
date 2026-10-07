@@ -47,13 +47,16 @@ defineProps({
 
 .card__title {
     font-family: var(--font-display);
-    font-size: var(--font-size-lg);
-    line-height: 1.2;
+    font-weight: 700;
+    font-size: var(--font-size-xl);
+    line-height: 1.1;
     color: var(--color-ink);
+    filter: url(#graphite);
 }
 
 .card__description {
     font-size: var(--font-size-sm);
+    font-weight: 400;
     line-height: 1.45;
     color: var(--color-muted);
 }
