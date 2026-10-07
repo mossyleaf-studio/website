@@ -20,6 +20,7 @@ final readonly class EditGalleryHeadingHandler
     {
         $text = $this->texts->current();
         $text->editGallery($command->title);
+        $this->texts->save($text);
         $this->transaction->commit();
 
         return SiteTextView::of($text);

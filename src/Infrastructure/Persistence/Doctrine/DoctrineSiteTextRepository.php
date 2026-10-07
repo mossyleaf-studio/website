@@ -16,14 +16,11 @@ final readonly class DoctrineSiteTextRepository implements SiteTextRepository
 
     public function current(): SiteText
     {
-        $text = $this->entityManager->getRepository(SiteText::class)->findOneBy([]);
-        if (null !== $text) {
-            return $text;
-        }
+        return $this->entityManager->getRepository(SiteText::class)->findOneBy([]) ?? SiteText::initial();
+    }
 
-        $text = SiteText::initial();
+    public function save(SiteText $text): void
+    {
         $this->entityManager->persist($text);
-
-        return $text;
     }
 }

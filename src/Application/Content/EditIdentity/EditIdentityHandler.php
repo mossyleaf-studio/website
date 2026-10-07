@@ -20,6 +20,7 @@ final readonly class EditIdentityHandler
     {
         $text = $this->texts->current();
         $text->editIdentity($command->studioName, $command->intro, $command->metaDescription);
+        $this->texts->save($text);
         $this->transaction->commit();
 
         return SiteTextView::of($text);

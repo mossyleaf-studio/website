@@ -7,4 +7,6 @@ namespace App\Domain\Content;
 interface SiteTextRepository
 {
     public function current(): SiteText;
+
+    public function save(SiteText $text): void;
 }

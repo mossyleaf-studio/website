@@ -20,6 +20,7 @@ final readonly class EditAboutHandler
     {
         $text = $this->texts->current();
         $text->editAbout($command->title, $command->text);
+        $this->texts->save($text);
         $this->transaction->commit();
 
         return SiteTextView::of($text);

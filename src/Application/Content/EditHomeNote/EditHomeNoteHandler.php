@@ -20,6 +20,7 @@ final readonly class EditHomeNoteHandler
     {
         $text = $this->texts->current();
         $text->editHomeNote($command->title, $command->text);
+        $this->texts->save($text);
         $this->transaction->commit();
 
         return SiteTextView::of($text);

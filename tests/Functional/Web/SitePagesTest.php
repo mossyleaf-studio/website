@@ -40,6 +40,17 @@ final class SitePagesTest extends WebTestCase
         self::assertSame('beta', $crawler->filter('#site')->attr('data-page'));
     }
 
+    public function testPagesStayUpWhenTheSameKernelServesSeveralRequests(): void
+    {
+        $client = self::createClient();
+        $client->disableReboot();
+
+        foreach (['/', '/beta/', '/', '/beta/'] as $url) {
+            $client->request('GET', $url);
+            self::assertResponseIsSuccessful();
+        }
+    }
+
     public function testTheFullPageAddressWithoutSlashRedirects(): void
     {
         $client = self::createClient();
