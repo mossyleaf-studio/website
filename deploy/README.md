@@ -35,7 +35,7 @@ Sign-in goes through mossyleaf accounts (`accounts.mossyleaf.studio`). An accoun
 
 ## Updating
 
-From a dev machine, on a committed tree: `make push` (full test suite, then build and push the image tagged with the commit), then `make deploy`.
+From a dev machine, on a committed tree: `make ship` (full test suite, then build the image tagged with the commit and load it on the server over ssh, no registry), then `make deploy`.
 
 ## Backups
 

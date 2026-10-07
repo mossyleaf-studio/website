@@ -24,7 +24,7 @@ make fixtures        # reset the content to the starting texts and links
 make test / test-js / phpstan / deptrac / cs / cs-fix   # keep all at 0
 make e2e             # Playwright against php-e2e (APP_ENV=test)
 make shots           # screenshots of the site and the admin in e2e/shots/
-make push / deploy   # build + push the image (after make qa), run it on the server
+make ship / deploy   # build the image (after make qa) and load it on the server over ssh, then run it
 ```
 
 ## Backend (Onion) — `src/`

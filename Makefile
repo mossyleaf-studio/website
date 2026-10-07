@@ -6,7 +6,7 @@ PHP = $(EXEC) php
 CONSOLE = $(PHP) php bin/console
 PLAYWRIGHT_ARGS ?=
 
-IMAGE ?= docker.io/injust/mossyleaf-studio
+IMAGE ?= mossyleaf-studio
 TAG ?= $(shell git rev-parse --short=7 HEAD)
 PLATFORM ?= linux/amd64
 DEPLOY_HOST ?= user@server
@@ -16,7 +16,7 @@ E2E_ASSETS_DIR ?= build-e2e
 export E2E_ASSETS_DIR
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
-.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional test-js deptrac phpstan cs cs-fix e2e e2e-run shots qa image push deploy deploy-files
+.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional test-js deptrac phpstan cs cs-fix e2e e2e-run shots qa image ship deploy deploy-files
 
 up: ## Start the stack (site on http://localhost:8094, admin on /admin, Vite on :5175, mock mossyleaf accounts on :8093)
 	$(DC) up -d --wait php database node oidc
@@ -95,18 +95,18 @@ qa: cs phpstan deptrac test test-js e2e
 image: ## Build the production image locally (IMAGE, TAG, PLATFORM)
 	$(BUILD) --load .
 
-push: qa ## Run the full suite, then build and push the production image (run docker login first)
+ship: qa ## Run the full suite, build the production image and load it on DEPLOY_HOST over ssh (no registry)
 	@git diff --quiet HEAD || { echo "Commit your changes first: the image is tagged with the commit."; exit 1; }
-	$(BUILD) --push .
+	$(BUILD) --load .
+	docker save $(IMAGE):$(TAG) | gzip | ssh $(DEPLOY_HOST) 'gunzip | $(REMOTE_DOCKER) load'
 
 deploy-files: ## Copy deploy/ (compose files, env template, README) to DEPLOY_HOST:DEPLOY_DIR
 	ssh $(DEPLOY_HOST) 'mkdir -p $(DEPLOY_DIR)'
 	scp deploy/compose.yaml deploy/compose.override.yaml deploy/.env.dist deploy/README.md $(DEPLOY_HOST):$(DEPLOY_DIR)/
 
-deploy: ## Run IMAGE:TAG (pushed with make push) on DEPLOY_HOST: set TAG in its .env, pull, restart
-	@docker manifest inspect $(IMAGE):$(TAG) >/dev/null 2>&1 || { echo "$(IMAGE):$(TAG) is not pushed yet: run make push first."; exit 1; }
+deploy: ## Run IMAGE:TAG (loaded with make ship) on DEPLOY_HOST: set TAG in its .env, restart
+	@ssh $(DEPLOY_HOST) '$(REMOTE_DOCKER) image inspect $(IMAGE):$(TAG) >/dev/null 2>&1' || { echo "$(IMAGE):$(TAG) is not on $(DEPLOY_HOST) yet: run make ship first."; exit 1; }
 	scp deploy/compose.yaml $(DEPLOY_HOST):$(DEPLOY_DIR)/
 	ssh $(DEPLOY_HOST) 'set -e; cd $(DEPLOY_DIR); \
 		sed -i "s|^IMAGE=.*|IMAGE=$(IMAGE)|; s|^TAG=.*|TAG=$(TAG)|" .env; \
-		$(REMOTE_DOCKER) compose pull app; \
 		$(REMOTE_DOCKER) compose up -d --remove-orphans'

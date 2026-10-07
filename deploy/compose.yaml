@@ -1,6 +1,6 @@
 services:
   app:
-    image: ${IMAGE:-docker.io/injust/mossyleaf-studio}:${TAG:-latest}
+    image: ${IMAGE:-mossyleaf-studio}:${TAG:-latest}
     restart: unless-stopped
     depends_on:
       database:
