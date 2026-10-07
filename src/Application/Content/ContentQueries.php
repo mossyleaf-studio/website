@@ -35,7 +35,7 @@ final readonly class ContentQueries
     {
         $site = $this->published->current();
 
-        return null === $site ? $this->draft(PublicPage::Note) : new PublicSnapshot($site->page(), $site->content());
+        return null === $site ? $this->draft(PublicPage::Note) : new PublicSnapshot($site->page(), $site->content(), $site->publishedAt());
     }
 
     public function publication(): PublicationView

@@ -20,8 +20,8 @@ final class SitePagesTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextSame('title', 'mossyleaf.studio');
-        self::assertSame('Illustrations of little critters among leaves and moss, drawn by hand.', $crawler->filter('meta[property="og:description"]')->attr('content'));
-        self::assertCount(0, $crawler->filter('meta[name="robots"]'));
+        self::assertSame('Illustrations of little critters among leaves and moss, drawn by hand.', $crawler->filter('#site header p')->text());
+        self::assertSame('index, follow, max-image-preview:large', $crawler->filter('meta[name="robots"]')->attr('content'));
         self::assertSame('note', $crawler->filter('#site')->attr('data-page'));
         self::assertNull($crawler->filter('#site')->attr('data-draft'));
         $content = Json::decode($crawler->filter('#site-content')->text());

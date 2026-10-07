@@ -15,6 +15,7 @@ class SiteText
     public const int MAX_STUDIO_NAME = 60;
     public const int MAX_INTRO = 200;
     public const int MAX_META_DESCRIPTION = 300;
+    public const int MAX_SEARCH_TITLE = 70;
     public const int MAX_TITLE = 80;
     public const int MAX_HOME_NOTE = 600;
     public const int MAX_ABOUT = 2000;
@@ -33,6 +34,9 @@ class SiteText
 
     #[ORM\Column(length: self::MAX_META_DESCRIPTION)]
     private string $metaDescription;
+
+    #[ORM\Column(length: self::MAX_SEARCH_TITLE, options: ['default' => ''])]
+    private string $searchTitle = '';
 
     #[ORM\Column(length: self::MAX_TITLE)]
     private string $homeNoteTitle;
@@ -75,11 +79,26 @@ class SiteText
         return new self();
     }
 
-    public function editIdentity(string $studioName, string $intro, string $metaDescription): void
+    public function editIdentity(string $studioName, string $intro, string $metaDescription, string $searchTitle = ''): void
     {
         $this->studioName = self::text('studio_name', $studioName, self::MAX_STUDIO_NAME);
         $this->intro = self::text('intro', $intro, self::MAX_INTRO);
         $this->metaDescription = self::text('meta_description', $metaDescription, self::MAX_META_DESCRIPTION);
+        $searchTitle = trim($searchTitle);
+        if (mb_strlen($searchTitle) > self::MAX_SEARCH_TITLE) {
+            throw new TextTooLong('search_title', self::MAX_SEARCH_TITLE);
+        }
+        $this->searchTitle = $searchTitle;
+    }
+
+    public function searchTitle(): string
+    {
+        return $this->searchTitle;
+    }
+
+    public function pageTitle(): string
+    {
+        return '' === $this->searchTitle ? $this->studioName : $this->searchTitle;
     }
 
     public function useLogo(Logo $logo): ?Logo

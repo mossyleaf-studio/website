@@ -26,8 +26,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-h1,
-h2 {
+[data-v-app] :is(h1, h2) {
     filter: url(#graphite);
 }
 
@@ -62,4 +61,33 @@ a {
 ::selection {
     background: var(--color-star);
     color: var(--color-ink);
+}
+
+.prerender {
+    display: grid;
+    gap: var(--space-6);
+    max-width: calc(var(--column) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding: var(--space-8) var(--gutter);
+}
+
+.prerender img {
+    max-width: min(100%, 36rem);
+    height: auto;
+}
+
+.prerender h1 {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 15vw, 6rem);
+    line-height: 0.92;
+}
+
+.prerender h2 {
+    font-family: var(--font-display);
+    font-size: var(--font-size-xl);
+}
+
+.prerender__header img {
+    width: auto;
+    max-height: 7rem;
 }

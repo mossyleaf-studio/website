@@ -16,6 +16,6 @@ final class EditIdentityController extends AbstractController
 {
     public function __invoke(#[MapRequestPayload] IdentityPayload $payload, EditIdentityHandler $editIdentity): JsonResponse
     {
-        return $this->json($editIdentity(new EditIdentity($payload->studioName, $payload->intro, $payload->metaDescription)));
+        return $this->json($editIdentity(new EditIdentity($payload->studioName, $payload->intro, $payload->metaDescription, $payload->searchTitle)));
     }
 }

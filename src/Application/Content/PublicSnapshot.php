@@ -11,6 +11,7 @@ final readonly class PublicSnapshot
     public function __construct(
         public PublicPage $page,
         public string $content,
+        public ?\DateTimeImmutable $publishedAt = null,
     ) {
     }
 }

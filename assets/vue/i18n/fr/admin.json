@@ -49,6 +49,8 @@
             "title": "Nom et présentation",
             "studioName": "Nom du studio",
             "intro": "Présentation",
+            "searchTitle": "Titre dans les résultats de recherche",
+            "searchTitleHint": "Environ 60 caractères, par exemple « mossyleaf.studio – illustrations de petites bêtes ». Vide : le nom du studio.",
             "metaDescription": "Description pour les moteurs de recherche et les aperçus de liens"
         },
         "homeNote": {

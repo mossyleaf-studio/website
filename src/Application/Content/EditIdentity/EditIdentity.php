@@ -10,6 +10,7 @@ final readonly class EditIdentity
         public string $studioName,
         public string $intro,
         public string $metaDescription,
+        public string $searchTitle = '',
     ) {
     }
 }

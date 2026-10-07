@@ -19,6 +19,7 @@ const sections = computed(() => [
         fields: [
             { name: 'studioName', source: 'studioName', label: t('admin.texts.identity.studioName'), max: LIMITS.studioName },
             { name: 'intro', source: 'intro', label: t('admin.texts.identity.intro'), max: LIMITS.intro, rows: 2 },
+            { name: 'searchTitle', source: 'searchTitle', label: t('admin.texts.identity.searchTitle'), max: LIMITS.searchTitle, hint: t('admin.texts.identity.searchTitleHint') },
             { name: 'metaDescription', source: 'metaDescription', label: t('admin.texts.identity.metaDescription'), max: LIMITS.metaDescription, rows: 3 },
         ],
     },

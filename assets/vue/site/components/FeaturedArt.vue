@@ -10,7 +10,7 @@ defineProps({
     <figure class="featured">
         <WashiTape class="featured__tape featured__tape--left" tone="leaf" />
         <WashiTape class="featured__tape featured__tape--right" tone="blossom" />
-        <img class="featured__art" :src="artwork.url" :alt="artwork.alt" :width="artwork.width" :height="artwork.height" />
+        <img class="featured__art" :src="artwork.url" :alt="artwork.alt" :width="artwork.width" :height="artwork.height" fetchpriority="high" />
     </figure>
 </template>
 

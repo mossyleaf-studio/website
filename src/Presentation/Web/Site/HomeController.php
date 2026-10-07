@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Site;
 
 use App\Application\Content\ContentQueries;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,8 +20,8 @@ final readonly class HomeController
     ) {
     }
 
-    public function __invoke(): Response
+    public function __invoke(Request $request): Response
     {
-        return $this->page->render($this->queries->public(), false);
+        return $this->page->render($request, $this->queries->public(), false);
     }
 }

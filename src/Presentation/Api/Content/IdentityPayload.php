@@ -19,6 +19,8 @@ final readonly class IdentityPayload
         #[Assert\NotBlank(message: 'text.required', normalizer: 'trim')]
         #[Assert\Length(max: SiteText::MAX_META_DESCRIPTION, maxMessage: 'text.too_long')]
         public string $metaDescription = '',
+        #[Assert\Length(max: SiteText::MAX_SEARCH_TITLE, maxMessage: 'text.too_long')]
+        public string $searchTitle = '',
     ) {
     }
 }

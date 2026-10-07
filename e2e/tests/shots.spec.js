@@ -24,6 +24,10 @@ test('screenshots of the site and the admin', async ({ page }) => {
         }
     }
 
+    const crawler = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.desktop })).newPage();
+    await crawler.goto('/');
+    await crawler.screenshot({ path: 'shots/home-without-javascript.png', fullPage: true });
+
     await page.goto('/admin/images');
     for (let count = 3; count > 0; count -= 1) {
         await page.getByTestId('artwork-card').first().getByRole('button', { name: 'Delete' }).click();

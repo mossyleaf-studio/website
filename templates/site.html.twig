@@ -3,16 +3,61 @@
 {% block lang %}en{% endblock %}
 
 {% block head %}
-    <title>{{ site.studioName }}</title>
+    {% set home = url('home') %}
+    {% set title = site.pageTitle ?? site.studioName %}
+    {% set preview = site.featured ?? site.logo %}
+    <title>{{ title }}</title>
     <meta name="description" content="{{ site.metaDescription }}">
     <meta name="theme-color" content="#fef9e7">
-    {% if draft %}<meta name="robots" content="noindex, nofollow">{% endif %}
+    {% if draft %}
+        <meta name="robots" content="noindex, nofollow">
+    {% else %}
+        <meta name="robots" content="index, follow, max-image-preview:large">
+        <link rel="canonical" href="{{ home }}">
+    {% endif %}
     <meta property="og:type" content="website">
-    <meta property="og:title" content="{{ site.studioName }}">
-    <meta property="og:description" content="{{ site.intro }}">
-    <meta property="og:url" content="{{ app.request.uri }}">
-    {% set preview = site.featured ?? site.logo %}
-    {% if preview %}<meta property="og:image" content="{{ app.request.schemeAndHttpHost ~ preview.url }}">{% endif %}
+    <meta property="og:site_name" content="{{ site.studioName }}">
+    <meta property="og:locale" content="en_GB">
+    <meta property="og:title" content="{{ title }}">
+    <meta property="og:description" content="{{ site.metaDescription }}">
+    <meta property="og:url" content="{{ draft ? app.request.uri : home }}">
+    <meta name="twitter:card" content="{{ preview ? 'summary_large_image' : 'summary' }}">
+    <meta name="twitter:title" content="{{ title }}">
+    <meta name="twitter:description" content="{{ site.metaDescription }}">
+    {% if preview %}
+        <meta property="og:image" content="{{ absolute_url(preview.url) }}">
+        <meta property="og:image:type" content="image/webp">
+        <meta property="og:image:width" content="{{ preview.width }}">
+        <meta property="og:image:height" content="{{ preview.height }}">
+        <meta property="og:image:alt" content="{{ preview.alt ?? site.studioName }}">
+        <meta name="twitter:image" content="{{ absolute_url(preview.url) }}">
+    {% endif %}
+    {% if site.featured %}
+        <link rel="preload" as="image" href="{{ site.featured.url }}" fetchpriority="high">
+    {% endif %}
+    {% if not draft %}
+        {% set studio = {
+            '@type': 'Organization',
+            '@id': home ~ '#studio',
+            name: site.studioName,
+            url: home,
+            description: site.metaDescription,
+            sameAs: site.links|map(link => link.url),
+        } %}
+        {% if site.logo %}
+            {% set studio = studio|merge({logo: absolute_url(site.logo.url)}) %}
+        {% endif %}
+        {% if preview %}
+            {% set studio = studio|merge({image: absolute_url(preview.url)}) %}
+        {% endif %}
+        <script type="application/ld+json">{{ {
+            '@context': 'https://schema.org',
+            '@graph': [
+                studio,
+                {'@type': 'WebSite', '@id': home ~ '#website', url: home, name: site.studioName, description: site.metaDescription, inLanguage: 'en', publisher: {'@id': home ~ '#studio'}},
+            ],
+        }|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
+    {% endif %}
 {% endblock %}
 
 {% block stylesheets %}{{ vite_entry_link_tags('site') }}{% endblock %}
@@ -20,5 +65,7 @@
 
 {% block body %}
     <script type="application/json" id="site-content">{{ content|raw }}</script>
-    <div id="site" data-page="{{ page }}"{% if draft %} data-draft{% endif %}></div>
+    <div id="site" data-page="{{ page }}"{% if draft %} data-draft{% endif %}>
+        {% include 'site/_prerender.html.twig' %}
+    </div>
 {% endblock %}
