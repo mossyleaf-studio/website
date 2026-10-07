@@ -1,41 +1,112 @@
 DC = docker compose
-RUN = $(DC) run --rm
+NO_TTY = $(if $(CI),-T)
+EXEC = $(DC) exec $(NO_TTY)
+RUN = $(DC) run $(NO_TTY) --rm
+PHP = $(EXEC) php
+CONSOLE = $(PHP) php bin/console
+PLAYWRIGHT_ARGS ?=
+
+IMAGE ?= docker.io/injust/mossyleaf-studio
+TAG ?= $(shell git rev-parse --short=7 HEAD)
+PLATFORM ?= linux/amd64
 DEPLOY_HOST ?= user@server
 DEPLOY_DIR ?= /path/to/mossyleaf-studio
 REMOTE_DOCKER ?= docker
+E2E_ASSETS_DIR ?= build-e2e
+export E2E_ASSETS_DIR
+BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
-SHOT = $(RUN) playwright npx -y playwright@1.63.0 screenshot --wait-for-timeout=3500 --full-page
+.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional test-js deptrac phpstan cs cs-fix e2e e2e-run shots qa image push deploy deploy-files
 
-.PHONY: up down install build shots deploy
-
-up: ## Start the Vite dev server on http://localhost:5175
-	$(DC) up -d node
+up: ## Start the stack (site on http://localhost:8094, admin on /admin, Vite on :5175, mock mossyleaf accounts on :8093)
+	$(DC) up -d --wait php database node oidc
 
 down:
 	$(DC) down
 
+build:
+	$(DC) build
+
 install:
+	$(PHP) composer install
 	$(RUN) --no-deps node npm install
 
-build:
+assets:
 	$(RUN) --no-deps node npm run build
 
-shots: ## Screenshot the page at phone and desktop widths into shots/
-	mkdir -p shots
-	$(SHOT) --viewport-size=390,844 http://node:5175/ shots/home-phone.png
-	$(SHOT) --viewport-size=1440,900 http://node:5175/ shots/home-desktop.png
-	$(SHOT) --viewport-size=390,844 http://node:5175/beta/ shots/beta-phone.png
-	$(SHOT) --viewport-size=1440,900 http://node:5175/beta/ shots/beta-desktop.png
+assets-e2e:
+	$(RUN) --no-deps -e ASSETS_DIR=$(E2E_ASSETS_DIR) node npm run build
 
-deploy: build ## Build and publish dist/ plus deploy/ config to the server, then (re)start the web container
-	rsync -a deploy/compose.yaml deploy/nginx.conf $(DEPLOY_HOST):$(DEPLOY_DIR)/
-	rsync -a --delete dist/ $(DEPLOY_HOST):$(DEPLOY_DIR)/html/
-	ssh $(DEPLOY_HOST) 'cd $(DEPLOY_DIR) && $(REMOTE_DOCKER) compose up -d && $(REMOTE_DOCKER) compose exec -T web nginx -s reload'
+db: ## Create and migrate the dev database
+	$(CONSOLE) doctrine:database:create --if-not-exists
+	$(CONSOLE) doctrine:migrations:migrate --no-interaction --allow-no-migration
 
-DEPLOY_HOST ?= user@server
-DEPLOY_DIR ?= /path/to/mossyleaf-studio
+fixtures: db ## Reset the dev database with demo content
+	$(CONSOLE) doctrine:fixtures:load --no-interaction --purge-with-truncate
 
-.PHONY: deploy
+db-test: ## Create and migrate the test database
+	$(CONSOLE) doctrine:database:create --if-not-exists --env=test
+	$(CONSOLE) doctrine:migrations:migrate --no-interaction --allow-no-migration --env=test
 
-deploy: build ## Build and copy dist/ to DEPLOY_HOST:DEPLOY_DIR/html (served by nginx)
-	rsync -az --delete dist/ $(DEPLOY_HOST):$(DEPLOY_DIR)/html/
+migration: ## Generate a migration from mapping changes
+	$(CONSOLE) doctrine:migrations:diff --no-interaction
+
+test: db-test ## PHPUnit (unit + functional)
+	$(PHP) php bin/phpunit
+
+test-unit:
+	$(PHP) php bin/phpunit --testsuite unit
+
+test-functional: db-test
+	$(PHP) php bin/phpunit --testsuite functional
+
+test-js: ## Vitest (pure JS modules)
+	$(RUN) --no-deps node npx vitest run
+
+deptrac: ## Check onion layer dependencies
+	$(PHP) vendor/bin/deptrac analyse --no-progress
+
+cs: ## Coding standard check
+	$(EXEC) -e PHP_CS_FIXER_IGNORE_ENV=1 php vendor/bin/php-cs-fixer fix --dry-run --diff
+
+cs-fix:
+	$(EXEC) -e PHP_CS_FIXER_IGNORE_ENV=1 php vendor/bin/php-cs-fixer fix
+
+phpstan: ## Static analysis (level 10)
+	$(PHP) vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+e2e: assets-e2e e2e-run ## Playwright against a dedicated APP_ENV=test container
+
+e2e-run: ## Playwright against already built assets (E2E_ASSETS_DIR, default build-e2e)
+	$(DC) --profile e2e up -d --wait php-e2e
+	$(EXEC) php-e2e php bin/console cache:clear --env=test
+	$(EXEC) php-e2e php bin/console doctrine:database:drop --force --if-exists --env=test
+	$(EXEC) php-e2e php bin/console doctrine:database:create --env=test
+	$(EXEC) php-e2e php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=test
+	$(EXEC) php-e2e php bin/console doctrine:fixtures:load --no-interaction --env=test
+	$(EXEC) php-e2e rm -rf var/share/e2e
+	$(DC) --profile e2e run $(NO_TTY) --rm playwright sh -c "npm ci --no-audit --no-fund && ./node_modules/.bin/playwright test $(PLAYWRIGHT_ARGS)"
+
+shots: ## Screenshot the public pages and the admin at phone and desktop widths into e2e/shots/
+	$(MAKE) e2e-run PLAYWRIGHT_ARGS="shots.spec.js --project=desktop"
+
+qa: cs phpstan deptrac test test-js e2e
+
+image: ## Build the production image locally (IMAGE, TAG, PLATFORM)
+	$(BUILD) --load .
+
+push: qa ## Run the full suite, then build and push the production image (run docker login first)
+	@git diff --quiet HEAD || { echo "Commit your changes first: the image is tagged with the commit."; exit 1; }
+	$(BUILD) --push .
+
+deploy-files: ## Copy deploy/ (compose files, env template, README) to DEPLOY_HOST:DEPLOY_DIR
+	ssh $(DEPLOY_HOST) 'mkdir -p $(DEPLOY_DIR)'
+	scp deploy/compose.yaml deploy/compose.override.yaml deploy/.env.dist deploy/README.md $(DEPLOY_HOST):$(DEPLOY_DIR)/
+
+deploy: ## Run IMAGE:TAG (pushed with make push) on DEPLOY_HOST: set TAG in its .env, pull, restart
+	@docker manifest inspect $(IMAGE):$(TAG) >/dev/null 2>&1 || { echo "$(IMAGE):$(TAG) is not pushed yet: run make push first."; exit 1; }
+	scp deploy/compose.yaml $(DEPLOY_HOST):$(DEPLOY_DIR)/
+	ssh $(DEPLOY_HOST) 'set -e; cd $(DEPLOY_DIR); \
+		sed -i "s|^IMAGE=.*|IMAGE=$(IMAGE)|; s|^TAG=.*|TAG=$(TAG)|" .env; \
+		$(REMOTE_DOCKER) compose pull app; \
+		$(REMOTE_DOCKER) compose up -d --remove-orphans'

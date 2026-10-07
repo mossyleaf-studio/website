@@ -1,0 +1,5 @@
+text.required: 'This field cannot be empty.'
+text.too_long: 'This text is too long.'
+url.required: 'Enter an address.'
+url.invalid: 'Enter a full https address, such as https://www.etsy.com/shop/…'
+id.invalid: 'Invalid identifier.'

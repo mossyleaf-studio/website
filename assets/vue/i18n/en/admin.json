@@ -1,0 +1,87 @@
+{
+    "nav": {
+        "label": "Admin sections",
+        "texts": "Texts",
+        "links": "Links",
+        "images": "Images",
+        "site": "View the site",
+        "signOut": "Sign out"
+    },
+    "count": "{count} / {max}",
+    "saved": "Saved.",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "texts": {
+        "title": "Texts",
+        "subtitle": "Everything written on the site, section by section.",
+        "linksHint": "Write [Etsy](https://www.etsy.com/…) to turn a word into a link.",
+        "paragraphsHint": "Leave an empty line between two paragraphs.",
+        "seeHome": "See on the home page",
+        "seeBeta": "See on the full page",
+        "identity": {
+            "title": "Name and introduction",
+            "studioName": "Studio name",
+            "intro": "Introduction",
+            "metaDescription": "Description for search engines and link previews"
+        },
+        "homeNote": {
+            "title": "Home page note",
+            "noteTitle": "Title",
+            "text": "Text"
+        },
+        "about": {
+            "title": "About",
+            "aboutTitle": "Title",
+            "text": "Text"
+        },
+        "gallery": {
+            "title": "Gallery",
+            "galleryTitle": "Title above the drawings"
+        }
+    },
+    "links": {
+        "title": "Links",
+        "subtitle": "The cards shown under the introduction. Drag them to change the order.",
+        "add": "Add a link",
+        "edit": "Edit",
+        "editTitle": "Edit the link",
+        "newTitle": "New link",
+        "delete": "Delete",
+        "deleteMessage": "“{title}” will disappear from the site.",
+        "deleted": "Link deleted.",
+        "move": "Move “{title}”",
+        "fields": {
+            "title": "Title",
+            "description": "Description",
+            "url": "Address",
+            "tape": "Tape"
+        },
+        "tapes": {
+            "leaf": "Green stripes",
+            "blossom": "Pink dots"
+        },
+        "empty": "No link yet",
+        "emptyHint": "Add the shop and Instagram so visitors can find them."
+    },
+    "images": {
+        "title": "Images",
+        "subtitle": "The featured drawing sits under the introduction, the others in the gallery. Drag them to change the order.",
+        "upload": "Add images",
+        "uploading": "Sending {count} image… | Sending {count} images…",
+        "uploaded": "Image added. | {count} images added.",
+        "uploadFailed": "{file}: {error}",
+        "formats": "JPEG, PNG, WebP or AVIF, up to 20 MB. Large images are resized to 1600 pixels.",
+        "alt": "Description for people who can’t see the image",
+        "altHint": "What the drawing shows, in a short sentence.",
+        "saveAlt": "Save the description",
+        "feature": "Feature",
+        "featured": "Featured",
+        "unfeature": "Stop featuring",
+        "delete": "Delete",
+        "deleteMessage": "The image will disappear from the site.",
+        "deleted": "Image deleted.",
+        "move": "Move the image",
+        "empty": "No image yet",
+        "emptyHint": "Add a few drawings: the first one you feature appears at the top of the site."
+    }
+}

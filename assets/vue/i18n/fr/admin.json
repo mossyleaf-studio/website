@@ -1,0 +1,87 @@
+{
+    "nav": {
+        "label": "Sections de l’admin",
+        "texts": "Textes",
+        "links": "Liens",
+        "images": "Images",
+        "site": "Voir le site",
+        "signOut": "Se déconnecter"
+    },
+    "count": "{count} / {max}",
+    "saved": "Enregistré.",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "texts": {
+        "title": "Textes",
+        "subtitle": "Tout ce qui est écrit sur le site, section par section.",
+        "linksHint": "Écrivez [Etsy](https://www.etsy.com/…) pour transformer un mot en lien.",
+        "paragraphsHint": "Laissez une ligne vide entre deux paragraphes.",
+        "seeHome": "Voir sur l’accueil",
+        "seeBeta": "Voir sur la page complète",
+        "identity": {
+            "title": "Nom et présentation",
+            "studioName": "Nom du studio",
+            "intro": "Présentation",
+            "metaDescription": "Description pour les moteurs de recherche et les aperçus de liens"
+        },
+        "homeNote": {
+            "title": "Note de l’accueil",
+            "noteTitle": "Titre",
+            "text": "Texte"
+        },
+        "about": {
+            "title": "À propos",
+            "aboutTitle": "Titre",
+            "text": "Texte"
+        },
+        "gallery": {
+            "title": "Galerie",
+            "galleryTitle": "Titre au-dessus des dessins"
+        }
+    },
+    "links": {
+        "title": "Liens",
+        "subtitle": "Les cartes affichées sous la présentation. Faites-les glisser pour changer l’ordre.",
+        "add": "Ajouter un lien",
+        "edit": "Modifier",
+        "editTitle": "Modifier le lien",
+        "newTitle": "Nouveau lien",
+        "delete": "Supprimer",
+        "deleteMessage": "« {title} » disparaîtra du site.",
+        "deleted": "Lien supprimé.",
+        "move": "Déplacer « {title} »",
+        "fields": {
+            "title": "Titre",
+            "description": "Description",
+            "url": "Adresse",
+            "tape": "Scotch"
+        },
+        "tapes": {
+            "leaf": "Rayures vertes",
+            "blossom": "Pois roses"
+        },
+        "empty": "Aucun lien pour l’instant",
+        "emptyHint": "Ajoutez la boutique et Instagram pour que les visiteurs les trouvent."
+    },
+    "images": {
+        "title": "Images",
+        "subtitle": "Le dessin mis en avant s’affiche sous la présentation, les autres dans la galerie. Faites-les glisser pour changer l’ordre.",
+        "upload": "Ajouter des images",
+        "uploading": "Envoi de {count} image… | Envoi de {count} images…",
+        "uploaded": "Image ajoutée. | {count} images ajoutées.",
+        "uploadFailed": "{file} : {error}",
+        "formats": "JPEG, PNG, WebP ou AVIF, jusqu’à 20 Mo. Les grandes images sont réduites à 1600 pixels.",
+        "alt": "Description pour les personnes qui ne voient pas l’image",
+        "altHint": "Ce que montre le dessin, en une phrase courte.",
+        "saveAlt": "Enregistrer la description",
+        "feature": "Mettre en avant",
+        "featured": "En avant",
+        "unfeature": "Ne plus mettre en avant",
+        "delete": "Supprimer",
+        "deleteMessage": "L’image disparaîtra du site.",
+        "deleted": "Image supprimée.",
+        "move": "Déplacer l’image",
+        "empty": "Aucune image pour l’instant",
+        "emptyHint": "Ajoutez quelques dessins : celui que vous mettez en avant s’affiche en haut du site."
+    }
+}

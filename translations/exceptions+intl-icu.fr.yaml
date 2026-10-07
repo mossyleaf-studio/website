@@ -1,0 +1,14 @@
+shared:
+    not_found: '{subject, select, link {Ce lien n’existe} artwork {Cette image n’existe} user {Ce compte n’existe} other {Cet élément n’existe}} plus.'
+user:
+    invalid_email: '« {email} » n’est pas une adresse email valide.'
+    email_taken: 'Un compte utilise déjà {email}.'
+identity:
+    access_denied: 'Votre compte mossyleaf n’a pas accès à l’admin de mossyleaf.studio.'
+content:
+    empty_text: 'Ce champ ne peut pas être vide.'
+    text_too_long: 'Ce texte est trop long : {max} caractères au maximum.'
+    invalid_link_url: '« {url} » n’est pas une adresse https valide.'
+    order_mismatch: 'La liste a changé entre-temps, rechargez la page et réessayez.'
+    unsupported_image: 'Ce fichier n’est pas une image que le site peut afficher : utilisez du JPEG, PNG, WebP ou AVIF.'
+    image_too_large: 'Cette image est trop lourde : {max} Mo au maximum.'

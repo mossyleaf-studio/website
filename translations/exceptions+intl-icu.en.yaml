@@ -1,0 +1,14 @@
+shared:
+    not_found: 'This {subject, select, link {link} artwork {image} user {account} other {item}} no longer exists.'
+user:
+    invalid_email: '“{email}” is not a valid email address.'
+    email_taken: 'An account already uses {email}.'
+identity:
+    access_denied: 'Your mossyleaf account does not have access to the mossyleaf.studio admin.'
+content:
+    empty_text: 'This field cannot be empty.'
+    text_too_long: 'This text is too long: {max} characters at most.'
+    invalid_link_url: '“{url}” is not a valid https address.'
+    order_mismatch: 'The list changed in the meantime, reload the page and try again.'
+    unsupported_image: 'This file is not an image the site can show: use JPEG, PNG, WebP or AVIF.'
+    image_too_large: 'This image is too large: {max} MB at most.'

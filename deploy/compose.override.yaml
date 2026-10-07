@@ -1,0 +1,12 @@
+services:
+  app:
+    networks:
+      default:
+      proxy:
+        aliases:
+          - mossyleaf-studio
+
+networks:
+  proxy:
+    name: proxy-network
+    external: true

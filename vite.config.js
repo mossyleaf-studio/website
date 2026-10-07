@@ -1,42 +1,33 @@
-import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import symfonyPlugin from 'vite-plugin-symfony';
 
-function redirectToSlash(req, res, next) {
-    if (req.url === '/beta') {
-        res.writeHead(301, { Location: '/beta/' });
-        res.end();
-
-        return;
-    }
-
-    next();
-}
-
-const betaTrailingSlash = {
-    name: 'beta-trailing-slash',
-    configureServer(server) {
-        server.middlewares.use(redirectToSlash);
-    },
-    configurePreviewServer(server) {
-        server.middlewares.use(redirectToSlash);
-    },
-};
+const assetsDir = process.env.ASSETS_DIR ?? 'build';
+const devPort = Number(process.env.VITE_DEV_PORT ?? 5175);
 
 export default defineConfig({
-    plugins: [vue(), betaTrailingSlash],
+    plugins: [vue(), symfonyPlugin()],
+    base: `/${assetsDir}/`,
+    server: {
+        host: '0.0.0.0',
+        port: 5175,
+        strictPort: true,
+        origin: `http://localhost:${devPort}`,
+        cors: true,
+    },
     build: {
+        outDir: `public/${assetsDir}`,
+        emptyOutDir: true,
         rollupOptions: {
             input: {
-                home: fileURLToPath(new URL('./index.html', import.meta.url)),
-                beta: fileURLToPath(new URL('./beta/index.html', import.meta.url)),
+                site: './assets/site.js',
+                admin: './assets/admin.js',
+                auth: './assets/auth.js',
             },
         },
     },
-    server: {
-        allowedHosts: ['node'],
-    },
-    preview: {
-        allowedHosts: ['node'],
+    test: {
+        include: ['assets/**/*.test.js'],
+        environment: 'node',
     },
 });

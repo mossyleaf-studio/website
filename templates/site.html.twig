@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block lang %}en{% endblock %}
+
+{% block head %}
+    <title>{{ site.studioName }}</title>
+    <meta name="description" content="{{ site.metaDescription }}">
+    <meta name="theme-color" content="#f3f5ea">
+    {% if not indexable %}<meta name="robots" content="noindex">{% endif %}
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ site.studioName }}">
+    <meta property="og:description" content="{{ site.intro }}">
+    <meta property="og:url" content="{{ app.request.uri }}">
+    {% if site.featured %}<meta property="og:image" content="{{ app.request.schemeAndHttpHost ~ site.featured.url }}">{% endif %}
+{% endblock %}
+
+{% block stylesheets %}{{ vite_entry_link_tags('site') }}{% endblock %}
+{% block javascripts %}{{ vite_entry_script_tags('site') }}{% endblock %}
+
+{% block body %}
+    <script type="application/json" id="site-content">{{ content|raw }}</script>
+    <div id="site" data-page="{{ page }}"></div>
+{% endblock %}
