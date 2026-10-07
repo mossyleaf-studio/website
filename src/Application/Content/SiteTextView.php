@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Content;
 
-use App\Domain\Content\SiteFont;
+use App\Domain\Content\FontRole;
 use App\Domain\Content\SiteText;
 
 final readonly class SiteTextView
@@ -20,8 +20,8 @@ final readonly class SiteTextView
         public string $aboutText,
         public string $galleryTitle,
         public ?ImageView $logo,
-        public SiteFont $headingFont,
-        public SiteFont $bodyFont,
+        public ?TypefaceView $headingFont,
+        public ?TypefaceView $bodyFont,
     ) {
     }
 
@@ -38,8 +38,8 @@ final readonly class SiteTextView
             $text->aboutText(),
             $text->galleryTitle(),
             ImageView::ofLogo($text->logo()),
-            $text->headingFont(),
-            $text->bodyFont(),
+            TypefaceView::of($text->font(FontRole::Heading)),
+            TypefaceView::of($text->font(FontRole::Body)),
         );
     }
 }

@@ -6,10 +6,12 @@ const LINKS = '/api/admin/links';
 const ARTWORKS = '/api/admin/artworks';
 const LOGO = '/api/admin/logo';
 const PUBLICATION = '/api/admin/publication';
+const FONTS = '/api/admin/fonts';
 
 const api = useApi();
 
 const texts = ref(null);
+const fontFamilies = ref([]);
 const links = ref([]);
 const artworks = ref([]);
 
@@ -33,6 +35,13 @@ export function useTexts() {
         },
         removeLogo: async () => {
             texts.value = await api.del(LOGO);
+        },
+        chooseFont: async (role, family) => {
+            texts.value = await api.put(`${TEXTS}/fonts/${role}`, { family });
+        },
+        fontFamilies,
+        loadFontFamilies: async () => {
+            if (fontFamilies.value.length === 0) fontFamilies.value = (await api.get(FONTS)).families;
         },
     };
 }

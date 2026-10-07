@@ -32,27 +32,32 @@ test('an empty title is refused next to the field', async ({ page }) => {
     await expect(about.getByRole('alert')).toBeVisible();
 });
 
-test('the fonts are chosen from the texts page and used by the draft', async ({ page }) => {
+test('any Google font is typed on the texts page and used by the draft', async ({ page }) => {
     const fonts = page.getByTestId('section-fonts');
-    const choose = async (field, font) => {
-        await fonts.getByRole('group', { name: field }).getByRole('combobox').click();
-        await page.getByRole('option', { name: font, exact: true }).click();
-    };
-
-    await choose('Titles', 'Caveat');
-    await choose('Text', 'Nunito');
-    await expect(fonts.getByRole('figure').getByText(/./).first()).toHaveCSS('font-family', /Caveat/);
-    await saved(page, 'fonts', fonts.getByRole('button', { name: 'Save' }).click());
+    await fonts.getByLabel('Titles').fill('Caveat');
+    await fonts.getByLabel('Text').fill('Patrick Hand');
+    await expect(fonts.getByRole('figure').locator('p').first()).toHaveCSS('font-family', /Caveat/);
+    await Promise.all([
+        page.waitForResponse((response) => response.url().endsWith('/api/admin/texts/fonts/body') && response.ok()),
+        fonts.getByRole('button', { name: 'Save' }).click(),
+    ]);
+    await expect(page.getByTestId('toast').first()).toContainText('Saved.');
 
     await page.goto('/beta/');
-    await expect(page.locator('html')).toHaveAttribute('data-heading-font', 'caveat');
     await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('font-family', /Caveat/);
-    await expect(page.locator('body')).toHaveCSS('font-family', /Nunito/);
+    await expect(page.locator('body')).toHaveCSS('font-family', /Patrick Hand/);
 
     await page.goto('/admin/texts');
-    await choose('Titles', 'Gaegu');
-    await choose('Text', 'Kalam');
-    await saved(page, 'fonts', fonts.getByRole('button', { name: 'Save' }).click());
+    await fonts.getByLabel('Titles').fill('Nope Sans');
+    await fonts.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByTestId('toast').first()).toContainText('Google Fonts has no font called “Nope Sans”');
+
+    await fonts.getByLabel('Titles').fill('');
+    await fonts.getByLabel('Text').fill('');
+    await Promise.all([
+        page.waitForResponse((response) => response.url().endsWith('/api/admin/texts/fonts/body') && response.ok()),
+        fonts.getByRole('button', { name: 'Save' }).click(),
+    ]);
 });
 
 test('a link is added, moved to the top and shown on the full page', async ({ page }) => {

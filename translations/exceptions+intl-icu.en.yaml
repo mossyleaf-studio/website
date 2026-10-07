@@ -12,3 +12,6 @@ content:
     order_mismatch: 'The list changed in the meantime, reload the page and try again.'
     unsupported_image: 'This file is not an image the site can show: use JPEG, PNG, WebP or AVIF.'
     image_too_large: 'This image is too large: {max} MB at most.'
+    unknown_font: 'Google Fonts has no font called “{family}”: copy its name from fonts.google.com.'
+    font_without_latin: '“{family}” has no Latin letters, so it cannot write the site’s texts.'
+    fonts_unreachable: 'Google Fonts could not be reached, try again in a moment.'

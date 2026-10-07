@@ -12,3 +12,6 @@ content:
     order_mismatch: 'La liste a changé entre-temps, rechargez la page et réessayez.'
     unsupported_image: 'Ce fichier n’est pas une image que le site peut afficher : utilisez du JPEG, PNG, WebP ou AVIF.'
     image_too_large: 'Cette image est trop lourde : {max} Mo au maximum.'
+    unknown_font: 'Google Fonts n’a pas de police nommée « {family} » : copiez son nom depuis fonts.google.com.'
+    font_without_latin: '« {family} » n’a pas de lettres latines, elle ne peut pas écrire les textes du site.'
+    fonts_unreachable: 'Google Fonts ne répond pas, réessayez dans un instant.'

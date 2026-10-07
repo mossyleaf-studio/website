@@ -47,8 +47,11 @@
         },
         "fonts": {
             "title": "Fonts",
+            "hint": "Type the name of any font from Google Fonts. The site downloads it and serves it itself: visitors never contact Google.",
+            "browse": "Browse Google Fonts",
             "heading": "Titles",
             "body": "Text",
+            "empty": "Empty: {font}, the site’s own font.",
             "sample": "Preview of the chosen fonts"
         },
         "identity": {

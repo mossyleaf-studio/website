@@ -47,8 +47,11 @@
         },
         "fonts": {
             "title": "Polices",
+            "hint": "Tapez le nom de n’importe quelle police de Google Fonts. Le site la télécharge et la sert lui-même : les visiteurs ne contactent jamais Google.",
+            "browse": "Parcourir Google Fonts",
             "heading": "Titres",
             "body": "Texte",
+            "empty": "Vide : {font}, la police du site.",
             "sample": "Aperçu des polices choisies"
         },
         "identity": {

@@ -6,6 +6,7 @@ namespace App\Application\Content;
 
 use App\Domain\Content\Artwork;
 use App\Domain\Content\ArtworkRepository;
+use App\Domain\Content\FontRole;
 use App\Domain\Content\PublishedSiteRepository;
 use App\Domain\Content\SiteTextRepository;
 
@@ -16,16 +17,20 @@ final readonly class MediaSweeper
         private SiteTextRepository $texts,
         private PublishedSiteRepository $published,
         private ArtworkStorage $storage,
+        private FontStorage $fonts,
     ) {
     }
 
     /** @return list<string> */
     public function draftFiles(): array
     {
-        $files = array_map(static fn (Artwork $artwork): string => $artwork->file(), $this->artworks->all());
-        $logo = $this->texts->current()->logo();
+        $text = $this->texts->current();
 
-        return null === $logo ? $files : [...$files, $logo->file];
+        return array_values(array_filter([
+            ...array_map(static fn (Artwork $artwork): string => $artwork->file(), $this->artworks->all()),
+            $text->logo()?->file,
+            ...array_map(static fn (FontRole $role): ?string => $text->font($role)?->file, FontRole::cases()),
+        ], static fn (?string $file): bool => null !== $file));
     }
 
     public function sweep(): void
@@ -34,6 +39,9 @@ final readonly class MediaSweeper
 
         foreach (array_diff($this->storage->files(), $kept) as $file) {
             $this->storage->delete($file);
+        }
+        foreach (array_diff($this->fonts->files(), $kept) as $file) {
+            $this->fonts->delete($file);
         }
     }
 }

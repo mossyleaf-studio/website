@@ -2,7 +2,14 @@
 
 {% block lang %}en{% endblock %}
 
-{% block html_attributes %}{% if site.fonts is defined %} data-heading-font="{{ site.fonts.heading }}" data-body-font="{{ site.fonts.body }}"{% endif %}{% endblock %}
+{% block html_attributes %}
+    {%- set heading = site.fonts.heading.family is defined ? site.fonts.heading : null -%}
+    {%- set body = site.fonts.body.family is defined ? site.fonts.body : null -%}
+    {%- if heading or body %} style="
+        {{- heading ? "--font-display: '" ~ heading.family ~ "', cursive; --font-display-weight: " ~ heading.weight ~ ';' -}}
+        {{- body ? "--font-body: '" ~ body.family ~ "', cursive; --font-body-weight: " ~ body.weight ~ ';' -}}
+    "{% endif -%}
+{% endblock %}
 
 {% block head %}
     {% set home = url('home') %}
@@ -34,6 +41,11 @@
         <meta property="og:image:alt" content="{{ preview.alt ?? site.studioName }}">
         <meta name="twitter:image" content="{{ absolute_url(preview.url) }}">
     {% endif %}
+    {% for font in [site.fonts.heading ?? null, site.fonts.body ?? null] %}
+        {% if font.stylesheet is defined %}
+            <link rel="stylesheet" href="{{ font.stylesheet }}">
+        {% endif %}
+    {% endfor %}
     {% if site.featured %}
         <link rel="preload" as="image" href="{{ site.featured.url }}" fetchpriority="high">
     {% endif %}

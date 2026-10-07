@@ -91,17 +91,21 @@ final class SitePagesTest extends WebTestCase
     {
         $client = self::signedInClient();
         $client->jsonRequest('POST', '/api/admin/publication', ['page' => 'full']);
-        $client->jsonRequest('PUT', '/api/admin/texts/fonts', ['heading' => 'amatic-sc', 'body' => 'quicksand']);
+        $client->jsonRequest('PUT', '/api/admin/texts/fonts/heading', ['family' => 'Caveat']);
+        $client->jsonRequest('PUT', '/api/admin/texts/fonts/body', ['family' => 'Patrick Hand']);
         self::assertResponseIsSuccessful();
+        $style = "--font-display: 'Caveat', cursive; --font-display-weight: 700;--font-body: 'Patrick Hand', cursive; --font-body-weight: 400;";
 
         $crawler = $client->request('GET', '/beta/');
-        self::assertSame(['amatic-sc', 'quicksand'], [$crawler->filter('html')->attr('data-heading-font'), $crawler->filter('html')->attr('data-body-font')]);
+        self::assertSame($style, $crawler->filter('html')->attr('style'));
+        self::assertCount(2, $crawler->filter('link[rel="stylesheet"][href^="/media/fonts/"]'));
 
         $crawler = $client->request('GET', '/');
-        self::assertSame(['gaegu', 'kalam'], [$crawler->filter('html')->attr('data-heading-font'), $crawler->filter('html')->attr('data-body-font')]);
+        self::assertNull($crawler->filter('html')->attr('style'));
+        self::assertCount(0, $crawler->filter('link[href^="/media/fonts/"]'));
 
         $client->jsonRequest('POST', '/api/admin/publication', ['page' => 'full']);
         $crawler = $client->request('GET', '/');
-        self::assertSame(['amatic-sc', 'quicksand'], [$crawler->filter('html')->attr('data-heading-font'), $crawler->filter('html')->attr('data-body-font')]);
+        self::assertSame($style, $crawler->filter('html')->attr('style'));
     }
 }

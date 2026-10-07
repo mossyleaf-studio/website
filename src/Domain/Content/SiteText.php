@@ -62,11 +62,23 @@ class SiteText
     #[ORM\Column(nullable: true)]
     private ?int $logoHeight = null;
 
-    #[ORM\Column(length: 32, enumType: SiteFont::class, options: ['default' => 'gaegu'])]
-    private SiteFont $headingFont = SiteFont::Gaegu;
+    #[ORM\Column(length: Typeface::MAX_FAMILY, nullable: true)]
+    private ?string $headingFontFamily = null;
 
-    #[ORM\Column(length: 32, enumType: SiteFont::class, options: ['default' => 'kalam'])]
-    private SiteFont $bodyFont = SiteFont::Kalam;
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $headingFontFile = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $headingFontWeight = null;
+
+    #[ORM\Column(length: Typeface::MAX_FAMILY, nullable: true)]
+    private ?string $bodyFontFamily = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $bodyFontFile = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $bodyFontWeight = null;
 
     private function __construct()
     {
@@ -153,20 +165,29 @@ class SiteText
         $this->galleryTitle = self::text('gallery_title', $title, self::MAX_TITLE);
     }
 
-    public function chooseFonts(SiteFont $heading, SiteFont $body): void
+    public function useFont(FontRole $role, ?Typeface $typeface): void
     {
-        $this->headingFont = $heading;
-        $this->bodyFont = $body;
+        if (FontRole::Heading === $role) {
+            $this->headingFontFamily = $typeface?->family;
+            $this->headingFontFile = $typeface?->file;
+            $this->headingFontWeight = $typeface?->weight;
+
+            return;
+        }
+
+        $this->bodyFontFamily = $typeface?->family;
+        $this->bodyFontFile = $typeface?->file;
+        $this->bodyFontWeight = $typeface?->weight;
     }
 
-    public function headingFont(): SiteFont
+    public function font(FontRole $role): ?Typeface
     {
-        return $this->headingFont;
-    }
+        [$family, $file, $weight] = match ($role) {
+            FontRole::Heading => [$this->headingFontFamily, $this->headingFontFile, $this->headingFontWeight],
+            FontRole::Body => [$this->bodyFontFamily, $this->bodyFontFile, $this->bodyFontWeight],
+        };
 
-    public function bodyFont(): SiteFont
-    {
-        return $this->bodyFont;
+        return null === $family || null === $file || null === $weight ? null : new Typeface($family, $file, $weight);
     }
 
     public function studioName(): string
