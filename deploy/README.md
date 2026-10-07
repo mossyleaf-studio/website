@@ -36,7 +36,7 @@ Sign-in goes through mossyleaf accounts (`accounts.mossyleaf.studio`). An accoun
 
 ## Updating
 
-From a dev machine, with `DEPLOY_HOST` (`user@server`), `DEPLOY_DIR` and optionally `REMOTE_DOCKER` (default `docker`) set in a gitignored `.deploy.env` at the repository root, on a committed tree: `make ship` (full test suite, then build the image tagged with the commit and load it on the server over ssh, no registry), then `make deploy`.
+From a dev machine, with `DEPLOY_HOST` (`user@server`), `DEPLOY_DIR` and optionally `REMOTE_DOCKER` (default `docker`) set in a gitignored `.deploy.env` at the repository root, push to `main`: GitHub Actions runs the full test suite, then publishes `docker.io/injust/mossyleaf-studio` tagged with the short commit and `latest`. Once it is green, `make deploy` points the server `.env` at that tag, pulls it and restarts. `make push` builds and pushes by hand (after `make qa` and `docker login`).
 
 ## Backups
 

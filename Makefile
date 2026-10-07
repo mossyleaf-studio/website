@@ -6,7 +6,7 @@ PHP = $(EXEC) php
 CONSOLE = $(PHP) php bin/console
 PLAYWRIGHT_ARGS ?=
 
-IMAGE ?= mossyleaf-studio
+IMAGE ?= docker.io/injust/mossyleaf-studio
 TAG ?= $(shell git rev-parse --short=7 HEAD)
 PLATFORM ?= linux/amd64
 -include .deploy.env
@@ -15,10 +15,12 @@ DEPLOY_DIR ?=
 REMOTE_DOCKER ?= docker
 NEEDS_DEPLOY_TARGET = @test -n "$(DEPLOY_HOST)" -a -n "$(DEPLOY_DIR)" || { echo "Set DEPLOY_HOST and DEPLOY_DIR (e.g. in .deploy.env)"; exit 1; }
 E2E_ASSETS_DIR ?= build-e2e
+CI_BUNDLE ?= ci-build.tgz
 export E2E_ASSETS_DIR
+OUTPUT_SYNC = $(if $(filter output-sync,$(.FEATURES)),--output-sync=target)
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
-.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional test-js deptrac phpstan cs cs-fix e2e e2e-run shots qa image ship deploy deploy-files
+.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional test-js deptrac phpstan cs cs-fix e2e e2e-run shots qa ci ci-up ci-build ci-bundle ci-unbundle ci-warmup ci-checks ci-e2e image push deploy deploy-files
 
 up: ## Start the stack (site on http://localhost:8094, admin on /admin, Vite on :5175, mock mossyleaf accounts on :8093)
 	$(DC) up -d --wait php database node oidc
@@ -94,23 +96,48 @@ shots: ## Screenshot the public pages and the admin at phone and desktop widths 
 
 qa: cs phpstan deptrac test test-js e2e
 
+ci: ci-build ## Full suite from a fresh checkout (GitHub Actions runs ci-build once, then ci-checks and ci-e2e shards in parallel jobs)
+	$(MAKE) -j4 $(OUTPUT_SYNC) ci-checks
+	$(MAKE) ci-e2e
+
+ci-up:
+	$(DC) up -d --wait php database oidc
+
+ci-build: ci-up ## Install PHP and JS dependencies and build the production assets
+	$(PHP) composer install --no-interaction --no-progress
+	$(RUN) --no-deps node npm ci --no-audit --no-fund
+	$(MAKE) assets
+
+ci-bundle: ## Pack what ci-build produced for the CI test jobs (CI_BUNDLE)
+	tar -czf $(CI_BUNDLE) vendor node_modules public/build $(wildcard public/bundles)
+
+ci-unbundle: ## Unpack the ci-build output (CI_BUNDLE)
+	tar -xzf $(CI_BUNDLE)
+
+ci-warmup: ci-up ## Start the dev stack and warm its cache (PHPStan reads the dev container)
+	$(CONSOLE) cache:warmup
+
+ci-e2e: ## Playwright on the production build (PLAYWRIGHT_ARGS to pick a shard)
+	$(MAKE) e2e-run E2E_ASSETS_DIR=build
+
+ci-checks: cs phpstan deptrac test test-js
+
 image: ## Build the production image locally (IMAGE, TAG, PLATFORM)
 	$(BUILD) --load .
 
-ship: qa ## Run the full suite, build the production image and load it on DEPLOY_HOST over ssh (no registry)
-	@git diff --quiet HEAD || { echo "Commit your changes first: the image is tagged with the commit."; exit 1; }
-	$(BUILD) --load .
-	docker save $(IMAGE):$(TAG) | gzip | ssh $(DEPLOY_HOST) 'gunzip | $(REMOTE_DOCKER) load'
+push: qa ## Run the full suite, then build and push the production image by hand (CI does it on every push to main; run docker login first)
+	$(BUILD) --push .
 
 deploy-files: ## Copy deploy/ (compose files, env template, README) to DEPLOY_HOST:DEPLOY_DIR
 	$(NEEDS_DEPLOY_TARGET)
 	ssh $(DEPLOY_HOST) 'mkdir -p $(DEPLOY_DIR)'
 	scp deploy/compose.yaml deploy/compose.override.yaml deploy/.env.dist deploy/README.md $(DEPLOY_HOST):$(DEPLOY_DIR)/
 
-deploy: ## Run IMAGE:TAG (loaded with make ship) on DEPLOY_HOST: set TAG in its .env, restart
+deploy: ## Run IMAGE:TAG (published by CI) on DEPLOY_HOST: set TAG in its .env, pull, restart
 	$(NEEDS_DEPLOY_TARGET)
-	@ssh $(DEPLOY_HOST) '$(REMOTE_DOCKER) image inspect $(IMAGE):$(TAG) >/dev/null 2>&1' || { echo "$(IMAGE):$(TAG) is not on $(DEPLOY_HOST) yet: run make ship first."; exit 1; }
+	@curl -sf -o /dev/null https://hub.docker.com/v2/repositories/$(patsubst docker.io/%,%,$(IMAGE))/tags/$(TAG) || { echo "$(IMAGE):$(TAG) is not published: CI only publishes it once the full test suite passes (still running, or failed?)"; exit 1; }
 	scp deploy/compose.yaml $(DEPLOY_HOST):$(DEPLOY_DIR)/
 	ssh $(DEPLOY_HOST) 'set -e; cd $(DEPLOY_DIR); \
 		sed -i "s|^IMAGE=.*|IMAGE=$(IMAGE)|; s|^TAG=.*|TAG=$(TAG)|" .env; \
+		$(REMOTE_DOCKER) compose pull app; \
 		$(REMOTE_DOCKER) compose up -d --remove-orphans'
