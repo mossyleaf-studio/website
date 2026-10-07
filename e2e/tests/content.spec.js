@@ -71,6 +71,23 @@ test('an http address is refused for a link', async ({ page }) => {
     await expect(editor.getByRole('alert')).toContainText('https');
 });
 
+test('a logo is added to the header, then removed', async ({ page }) => {
+    const logo = page.getByTestId('section-logo');
+    await logo.locator('input[type="file"]').setInputFiles(PNG);
+    await expect(logo.getByRole('img', { name: 'Current logo' })).toBeVisible();
+
+    await page.goto('/');
+    await expect(page.locator('.studio-header__logo')).toBeVisible();
+
+    await page.goto('/admin/texts');
+    await logo.getByRole('button', { name: 'Remove the logo' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click();
+    await expect(logo.getByText('No logo yet')).toBeVisible();
+
+    await page.goto('/');
+    await expect(page.locator('.studio-header__logo')).toHaveCount(0);
+});
+
 test('an image is uploaded, described, featured, then deleted', async ({ page }) => {
     await page.goto('/admin/images');
     await page.locator('input[type="file"]').setInputFiles(PNG);

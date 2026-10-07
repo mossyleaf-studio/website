@@ -8,5 +8,5 @@ interface ImageResizer
 {
     public const int MAX_SIDE = 1600;
 
-    public function resize(string $path): ResizedImage;
+    public function resize(string $path, int $maxSide = self::MAX_SIDE): ResizedImage;
 }

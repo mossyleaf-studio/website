@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import PageHeader from '../../components/ui/PageHeader.vue';
+import LogoSection from '../components/LogoSection.vue';
 import TextSection from '../components/TextSection.vue';
 import { LIMITS } from '../limits.js';
 import { useTexts } from '../useContent.js';
@@ -54,6 +55,7 @@ const sections = computed(() => [
     <div class="texts-page">
         <PageHeader :title="t('admin.texts.title')" :subtitle="t('admin.texts.subtitle')" />
         <template v-if="texts">
+            <LogoSection :logo="texts.logo" />
             <TextSection v-for="section in sections" :key="section.section" v-bind="section" :values="texts" />
         </template>
     </div>

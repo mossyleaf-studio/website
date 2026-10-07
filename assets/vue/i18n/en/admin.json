@@ -18,6 +18,17 @@
         "paragraphsHint": "Leave an empty line between two paragraphs.",
         "seeHome": "See on the home page",
         "seeBeta": "See on the full page",
+        "logo": {
+            "title": "Logo",
+            "hint": "Shown next to the studio name at the top of the site. A PNG with a transparent background works best; it is resized to 800 pixels.",
+            "upload": "Add a logo",
+            "replace": "Replace the logo",
+            "remove": "Remove the logo",
+            "removeMessage": "The site will show the studio name only.",
+            "removed": "Logo removed.",
+            "current": "Current logo",
+            "none": "No logo yet"
+        },
         "identity": {
             "title": "Name and introduction",
             "studioName": "Studio name",

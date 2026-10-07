@@ -23,3 +23,5 @@ export async function signIn(page, account = EDITOR) {
 export const unique = (label) => `${label} ${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 
 export const PNG = new URL('../fixtures/fern.png', import.meta.url).pathname;
+
+export const LOGO = new URL('../fixtures/logo.png', import.meta.url).pathname;

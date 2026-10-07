@@ -12,12 +12,12 @@ final readonly class GdImageResizer implements ImageResizer
 {
     private const int QUALITY = 86;
 
-    public function resize(string $path): ResizedImage
+    public function resize(string $path, int $maxSide = self::MAX_SIDE): ResizedImage
     {
         $source = $this->open($path);
         $width = imagesx($source);
         $height = imagesy($source);
-        $scale = min(1, self::MAX_SIDE / max($width, $height));
+        $scale = min(1, $maxSide / max($width, $height));
         $targetWidth = max(1, (int) round($width * $scale));
         $targetHeight = max(1, (int) round($height * $scale));
 

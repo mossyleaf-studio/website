@@ -11,7 +11,8 @@
     <meta property="og:title" content="{{ site.studioName }}">
     <meta property="og:description" content="{{ site.intro }}">
     <meta property="og:url" content="{{ app.request.uri }}">
-    {% if site.featured %}<meta property="og:image" content="{{ app.request.schemeAndHttpHost ~ site.featured.url }}">{% endif %}
+    {% set preview = site.featured ?? site.logo %}
+    {% if preview %}<meta property="og:image" content="{{ app.request.schemeAndHttpHost ~ preview.url }}">{% endif %}
 {% endblock %}
 
 {% block stylesheets %}{{ vite_entry_link_tags('site') }}{% endblock %}

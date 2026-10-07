@@ -49,6 +49,15 @@ class SiteText
     #[ORM\Column(length: self::MAX_TITLE)]
     private string $galleryTitle;
 
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $logoFile = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $logoWidth = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $logoHeight = null;
+
     private function __construct()
     {
         $this->studioName = 'mossyleaf.studio';
@@ -71,6 +80,35 @@ class SiteText
         $this->studioName = self::text('studio_name', $studioName, self::MAX_STUDIO_NAME);
         $this->intro = self::text('intro', $intro, self::MAX_INTRO);
         $this->metaDescription = self::text('meta_description', $metaDescription, self::MAX_META_DESCRIPTION);
+    }
+
+    public function useLogo(Logo $logo): ?Logo
+    {
+        $previous = $this->logo();
+        $this->logoFile = $logo->file;
+        $this->logoWidth = $logo->width;
+        $this->logoHeight = $logo->height;
+
+        return $previous;
+    }
+
+    public function removeLogo(): ?Logo
+    {
+        $previous = $this->logo();
+        $this->logoFile = null;
+        $this->logoWidth = null;
+        $this->logoHeight = null;
+
+        return $previous;
+    }
+
+    public function logo(): ?Logo
+    {
+        if (null === $this->logoFile || null === $this->logoWidth || null === $this->logoHeight) {
+            return null;
+        }
+
+        return new Logo($this->logoFile, $this->logoWidth, $this->logoHeight);
     }
 
     public function editHomeNote(string $title, string $text): void

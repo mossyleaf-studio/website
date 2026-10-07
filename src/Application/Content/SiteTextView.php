@@ -17,6 +17,7 @@ final readonly class SiteTextView
         public string $aboutTitle,
         public string $aboutText,
         public string $galleryTitle,
+        public ?ImageView $logo,
     ) {
     }
 
@@ -31,6 +32,7 @@ final readonly class SiteTextView
             $text->aboutTitle(),
             $text->aboutText(),
             $text->galleryTitle(),
+            ImageView::ofLogo($text->logo()),
         );
     }
 }

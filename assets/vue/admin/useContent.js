@@ -4,6 +4,7 @@ import { useApi } from '../composables/useApi.js';
 const TEXTS = '/api/admin/texts';
 const LINKS = '/api/admin/links';
 const ARTWORKS = '/api/admin/artworks';
+const LOGO = '/api/admin/logo';
 
 const api = useApi();
 
@@ -23,6 +24,14 @@ export function useTexts() {
         save: async (section, body) => {
             texts.value = await api.put(`${TEXTS}/${section}`, body);
             return texts.value;
+        },
+        uploadLogo: async (file) => {
+            const body = new FormData();
+            body.append('image', file);
+            texts.value = await api.post(LOGO, body);
+        },
+        removeLogo: async () => {
+            texts.value = await api.del(LOGO);
         },
     };
 }

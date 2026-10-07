@@ -18,6 +18,17 @@
         "paragraphsHint": "Laissez une ligne vide entre deux paragraphes.",
         "seeHome": "Voir sur l’accueil",
         "seeBeta": "Voir sur la page complète",
+        "logo": {
+            "title": "Logo",
+            "hint": "Affiché à côté du nom du studio en haut du site. Un PNG à fond transparent rend le mieux ; il est réduit à 800 pixels.",
+            "upload": "Ajouter un logo",
+            "replace": "Remplacer le logo",
+            "remove": "Retirer le logo",
+            "removeMessage": "Le site n’affichera plus que le nom du studio.",
+            "removed": "Logo retiré.",
+            "current": "Logo actuel",
+            "none": "Pas encore de logo"
+        },
         "identity": {
             "title": "Nom et présentation",
             "studioName": "Nom du studio",

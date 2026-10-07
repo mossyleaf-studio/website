@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { PNG, signIn } from './support/session.js';
+import { LOGO, PNG, signIn } from './support/session.js';
 
 const VIEWPORTS = { phone: { width: 390, height: 844 }, desktop: { width: 1440, height: 900 } };
 const PUBLIC = { home: '/', beta: '/beta/' };
@@ -7,6 +7,8 @@ const ADMIN = { texts: '/admin/texts', links: '/admin/links', images: '/admin/im
 
 test('screenshots of the site and the admin', async ({ page }) => {
     await signIn(page);
+    await page.getByTestId('section-logo').locator('input[type="file"]').setInputFiles(LOGO);
+    await expect(page.getByTestId('section-logo').getByRole('img')).toBeVisible();
     await page.goto('/admin/images');
     await page.locator('input[type="file"]').setInputFiles([PNG, PNG, PNG]);
     await expect(page.getByTestId('artwork-card')).toHaveCount(3);

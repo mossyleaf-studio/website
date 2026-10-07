@@ -27,7 +27,7 @@ function reset() {
     props.fields.forEach((field) => { form[field.name] = props.values[field.source] ?? ''; });
 }
 
-watch(() => props.values, reset, { immediate: true });
+watch(() => JSON.stringify(props.fields.map((field) => props.values[field.source] ?? '')), reset, { immediate: true });
 
 const changed = computed(() => props.fields.some((field) => form[field.name] !== (props.values[field.source] ?? '')));
 

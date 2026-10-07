@@ -12,7 +12,7 @@ defineProps({
 
 <template>
     <SketchbookPage>
-        <StudioHeader :name="site.studioName" :intro="site.intro" />
+        <StudioHeader :name="site.studioName" :intro="site.intro" :logo="site.logo" />
 
         <FeaturedArt v-if="site.featured" :artwork="site.featured" />
 
