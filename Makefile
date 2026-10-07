@@ -9,9 +9,11 @@ PLAYWRIGHT_ARGS ?=
 IMAGE ?= mossyleaf-studio
 TAG ?= $(shell git rev-parse --short=7 HEAD)
 PLATFORM ?= linux/amd64
-DEPLOY_HOST ?= user@server
-DEPLOY_DIR ?= /path/to/mossyleaf-studio
+-include .deploy.env
+DEPLOY_HOST ?=
+DEPLOY_DIR ?=
 REMOTE_DOCKER ?= docker
+NEEDS_DEPLOY_TARGET = @test -n "$(DEPLOY_HOST)" -a -n "$(DEPLOY_DIR)" || { echo "Set DEPLOY_HOST and DEPLOY_DIR (e.g. in .deploy.env)"; exit 1; }
 E2E_ASSETS_DIR ?= build-e2e
 export E2E_ASSETS_DIR
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
@@ -101,10 +103,12 @@ ship: qa ## Run the full suite, build the production image and load it on DEPLOY
 	docker save $(IMAGE):$(TAG) | gzip | ssh $(DEPLOY_HOST) 'gunzip | $(REMOTE_DOCKER) load'
 
 deploy-files: ## Copy deploy/ (compose files, env template, README) to DEPLOY_HOST:DEPLOY_DIR
+	$(NEEDS_DEPLOY_TARGET)
 	ssh $(DEPLOY_HOST) 'mkdir -p $(DEPLOY_DIR)'
 	scp deploy/compose.yaml deploy/compose.override.yaml deploy/.env.dist deploy/README.md $(DEPLOY_HOST):$(DEPLOY_DIR)/
 
 deploy: ## Run IMAGE:TAG (loaded with make ship) on DEPLOY_HOST: set TAG in its .env, restart
+	$(NEEDS_DEPLOY_TARGET)
 	@ssh $(DEPLOY_HOST) '$(REMOTE_DOCKER) image inspect $(IMAGE):$(TAG) >/dev/null 2>&1' || { echo "$(IMAGE):$(TAG) is not on $(DEPLOY_HOST) yet: run make ship first."; exit 1; }
 	scp deploy/compose.yaml $(DEPLOY_HOST):$(DEPLOY_DIR)/
 	ssh $(DEPLOY_HOST) 'set -e; cd $(DEPLOY_DIR); \

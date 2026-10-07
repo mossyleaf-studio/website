@@ -8,5 +8,5 @@ services:
 
 networks:
   proxy:
-    name: proxy-network
+    name: ${PROXY_NETWORK:?PROXY_NETWORK is required}
     external: true

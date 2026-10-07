@@ -42,3 +42,5 @@ phpstan.neon
 /ci-build.tgz
 
 /.claude/
+
+/.deploy.env
