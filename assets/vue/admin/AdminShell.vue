@@ -3,6 +3,7 @@ import { ExternalLink, Image, Link2, LogOut, Type } from '@lucide/vue';
 import { ConfigProvider, TooltipProvider } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import ToastHost from '../components/ui/ToastHost.vue';
+import PublishBar from './components/PublishBar.vue';
 import { useSession } from '../composables/useSession.js';
 import { intlLocale } from '../i18n/locale.js';
 
@@ -29,7 +30,7 @@ const SECTIONS = [
                     </RouterLink>
                 </nav>
                 <div class="admin__account">
-                    <a class="admin__site" href="/beta/" target="_blank" rel="noopener">
+                    <a class="admin__site" href="/" target="_blank" rel="noopener">
                         <ExternalLink size="0.9rem" aria-hidden="true" />{{ t('admin.nav.site') }}
                     </a>
                     <form method="post" action="/logout">
@@ -40,6 +41,7 @@ const SECTIONS = [
                     </form>
                 </div>
             </header>
+            <PublishBar />
             <main id="main" class="admin__main">
                 <RouterView />
             </main>

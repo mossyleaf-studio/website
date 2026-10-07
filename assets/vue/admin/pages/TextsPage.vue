@@ -15,7 +15,7 @@ const sections = computed(() => [
     {
         section: 'identity',
         title: t('admin.texts.identity.title'),
-        preview: { href: '/', label: t('admin.texts.seeHome') },
+        preview: { href: '/beta/', label: t('admin.texts.seeBeta') },
         fields: [
             { name: 'studioName', source: 'studioName', label: t('admin.texts.identity.studioName'), max: LIMITS.studioName },
             { name: 'intro', source: 'intro', label: t('admin.texts.identity.intro'), max: LIMITS.intro, rows: 2 },
@@ -25,7 +25,7 @@ const sections = computed(() => [
     {
         section: 'home-note',
         title: t('admin.texts.homeNote.title'),
-        preview: { href: '/', label: t('admin.texts.seeHome') },
+        preview: { href: '/beta/note/', label: t('admin.texts.seeHome') },
         fields: [
             { name: 'title', source: 'homeNoteTitle', label: t('admin.texts.homeNote.noteTitle'), max: LIMITS.title },
             { name: 'text', source: 'homeNoteText', label: t('admin.texts.homeNote.text'), max: LIMITS.homeNote, rows: 5, hint: t('admin.texts.linksHint') },

@@ -35,7 +35,7 @@ function remove() {
     <section class="logo-section" data-test="section-logo">
         <header class="logo-section__header">
             <h2 class="logo-section__title">{{ t('admin.texts.logo.title') }}</h2>
-            <a class="logo-section__preview" href="/" target="_blank" rel="noopener">{{ t('admin.texts.seeHome') }}</a>
+            <a class="logo-section__preview" href="/beta/" target="_blank" rel="noopener">{{ t('admin.texts.seeBeta') }}</a>
         </header>
         <div class="logo-section__body">
             <div class="logo-section__frame">

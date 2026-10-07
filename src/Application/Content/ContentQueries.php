@@ -6,6 +6,8 @@ namespace App\Application\Content;
 
 use App\Domain\Content\ArtworkRepository;
 use App\Domain\Content\LinkRepository;
+use App\Domain\Content\PublicPage;
+use App\Domain\Content\PublishedSiteRepository;
 use App\Domain\Content\SiteTextRepository;
 
 final readonly class ContentQueries
@@ -14,12 +16,31 @@ final readonly class ContentQueries
         private SiteTextRepository $texts,
         private LinkRepository $links,
         private ArtworkRepository $artworks,
+        private PublishedSiteRepository $published,
+        private SiteSnapshots $snapshots,
     ) {
     }
 
     public function site(): SiteView
     {
         return SiteView::of($this->texts->current(), $this->links->all(), $this->artworks->all());
+    }
+
+    public function draft(PublicPage $page): PublicSnapshot
+    {
+        return new PublicSnapshot($page, $this->snapshots->encode($this->site()));
+    }
+
+    public function public(): PublicSnapshot
+    {
+        $site = $this->published->current();
+
+        return null === $site ? $this->draft(PublicPage::Note) : new PublicSnapshot($site->page(), $site->content());
+    }
+
+    public function publication(): PublicationView
+    {
+        return PublicationView::of($this->published->current(), $this->snapshots->encode($this->site()));
     }
 
     public function texts(): SiteTextView

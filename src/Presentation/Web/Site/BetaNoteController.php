@@ -11,8 +11,8 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[Route('/beta/', name: 'beta', methods: ['GET'])]
-final readonly class BetaController
+#[Route('/beta/note/', name: 'beta_note', methods: ['GET'])]
+final readonly class BetaNoteController
 {
     public function __construct(
         private ContentQueries $queries,
@@ -22,6 +22,6 @@ final readonly class BetaController
 
     public function __invoke(): Response
     {
-        return $this->page->render($this->queries->draft(PublicPage::Full), true);
+        return $this->page->render($this->queries->draft(PublicPage::Note), true);
     }
 }

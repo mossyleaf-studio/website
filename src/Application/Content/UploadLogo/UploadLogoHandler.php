@@ -6,6 +6,7 @@ namespace App\Application\Content\UploadLogo;
 
 use App\Application\Content\ArtworkStorage;
 use App\Application\Content\ImageResizer;
+use App\Application\Content\MediaSweeper;
 use App\Application\Content\SiteTextView;
 use App\Application\Transaction;
 use App\Domain\Content\Logo;
@@ -20,6 +21,7 @@ final readonly class UploadLogoHandler
         private SiteTextRepository $texts,
         private ImageResizer $resizer,
         private ArtworkStorage $storage,
+        private MediaSweeper $media,
         private Transaction $transaction,
     ) {
     }
@@ -30,13 +32,10 @@ final readonly class UploadLogoHandler
         $file = $this->storage->store(new Ulid(), $image);
 
         $text = $this->texts->current();
-        $previous = $text->useLogo(new Logo($file, $image->width, $image->height));
+        $text->useLogo(new Logo($file, $image->width, $image->height));
         $this->texts->save($text);
         $this->transaction->commit();
-
-        if (null !== $previous) {
-            $this->storage->delete($previous->file);
-        }
+        $this->media->sweep();
 
         return SiteTextView::of($text);
     }

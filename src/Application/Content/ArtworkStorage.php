@@ -13,4 +13,7 @@ interface ArtworkStorage
     public function delete(string $file): void;
 
     public function path(string $file): ?string;
+
+    /** @return list<string> */
+    public function files(): array;
 }

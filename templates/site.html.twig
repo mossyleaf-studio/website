@@ -6,7 +6,7 @@
     <title>{{ site.studioName }}</title>
     <meta name="description" content="{{ site.metaDescription }}">
     <meta name="theme-color" content="#fef9e7">
-    {% if not indexable %}<meta name="robots" content="noindex">{% endif %}
+    {% if draft %}<meta name="robots" content="noindex, nofollow">{% endif %}
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ site.studioName }}">
     <meta property="og:description" content="{{ site.intro }}">
@@ -20,5 +20,5 @@
 
 {% block body %}
     <script type="application/json" id="site-content">{{ content|raw }}</script>
-    <div id="site" data-page="{{ page }}"></div>
+    <div id="site" data-page="{{ page }}"{% if draft %} data-draft{% endif %}></div>
 {% endblock %}

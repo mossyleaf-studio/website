@@ -37,6 +37,13 @@ final readonly class LocalArtworkStorage implements ArtworkStorage
         }
     }
 
+    public function files(): array
+    {
+        $files = array_map(basename(...), glob($this->directory.'/*.'.ResizedImage::EXTENSION) ?: []);
+
+        return array_values(array_filter($files, static fn (string $file): bool => 1 === preg_match(self::FILE_PATTERN, $file)));
+    }
+
     public function path(string $file): ?string
     {
         if (1 !== preg_match(self::FILE_PATTERN, $file)) {

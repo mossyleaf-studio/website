@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Site;
 
+use App\Application\Content\ContentQueries;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
@@ -12,12 +13,14 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/', name: 'home', methods: ['GET'])]
 final readonly class HomeController
 {
-    public function __construct(private SitePage $page)
-    {
+    public function __construct(
+        private ContentQueries $queries,
+        private SitePage $page,
+    ) {
     }
 
     public function __invoke(): Response
     {
-        return $this->page->render('home', true);
+        return $this->page->render($this->queries->public(), false);
     }
 }

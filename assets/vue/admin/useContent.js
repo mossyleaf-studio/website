@@ -5,6 +5,7 @@ const TEXTS = '/api/admin/texts';
 const LINKS = '/api/admin/links';
 const ARTWORKS = '/api/admin/artworks';
 const LOGO = '/api/admin/logo';
+const PUBLICATION = '/api/admin/publication';
 
 const api = useApi();
 
@@ -66,6 +67,18 @@ export function useArtworks() {
         remove: (id) => api.del(`${ARTWORKS}/${id}`),
         reorder: async (ids) => {
             artworks.value = await api.put(`${ARTWORKS}/order`, { ids });
+        },
+    };
+}
+
+const publication = ref(null);
+
+export function usePublication() {
+    return {
+        publication,
+        load: () => api.load(PUBLICATION, publication),
+        publish: async (page) => {
+            publication.value = await api.post(PUBLICATION, { page });
         },
     };
 }
