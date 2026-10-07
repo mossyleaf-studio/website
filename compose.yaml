@@ -1,0 +1,18 @@
+services:
+  node:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5175 --strictPort"
+    volumes:
+      - ./:/app
+    ports:
+      - "${VITE_DEV_PORT:-5175}:5175"
+
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.63.0-noble
+    profiles: [tools]
+    working_dir: /app
+    volumes:
+      - ./:/app
+    depends_on:
+      - node

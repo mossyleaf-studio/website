@@ -1,0 +1,50 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+    background: var(--color-paper);
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-body);
+    font-size: var(--font-size);
+    line-height: var(--line-height);
+    color: var(--color-text);
+    background: var(--paper-grain), var(--color-paper);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p,
+figure,
+ul {
+    margin: 0;
+}
+
+ul {
+    padding: 0;
+    list-style: none;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+a {
+    color: inherit;
+}
+
+:focus-visible {
+    outline: 0.1875rem solid var(--color-accent);
+    outline-offset: 0.25rem;
+}

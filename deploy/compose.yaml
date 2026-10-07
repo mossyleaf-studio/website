@@ -1,0 +1,16 @@
+services:
+  web:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      proxy:
+        aliases:
+          - mossyleaf-studio
+
+networks:
+  proxy:
+    name: proxy-network
+    external: true
