@@ -5,7 +5,6 @@
     --color-bark: #a58361;
     --color-ink: #583e2f;
     --color-leaf: #c2da5a;
-    --color-blush: #edb7a8;
     --color-star: #b2e0ff;
 
     --color-card: color-mix(in oklch, var(--color-paper) 55%, white);
@@ -17,7 +16,7 @@
     --color-moss: color-mix(in oklch, var(--color-leaf) 78%, var(--color-ink));
 
     --color-tape-leaf: var(--color-leaf);
-    --color-tape-blossom: var(--color-blush);
+    --color-tape-blossom: var(--color-star);
 
 
     --radius: 0.5rem;

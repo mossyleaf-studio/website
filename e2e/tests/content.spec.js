@@ -41,7 +41,7 @@ test('a link is added, moved to the top and shown on the full page', async ({ pa
     await editor.getByLabel('Title').fill(title);
     await editor.getByLabel('Description').fill('Buy the studio a coffee');
     await editor.getByLabel('Address').fill('https://ko-fi.com/mossyleaf');
-    await editor.getByRole('radio', { name: 'Pink dots' }).click();
+    await editor.getByRole('radio', { name: 'Blue dots' }).click();
     await editor.getByRole('button', { name: 'Save' }).click();
 
     const row = page.getByTestId('link-row').filter({ hasText: title });
