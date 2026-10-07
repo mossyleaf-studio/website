@@ -29,7 +29,7 @@ defineProps({
     font-family: var(--font-display);
     font-weight: 400;
     font-size: var(--font-size-xl);
-    color: var(--color-leaf-deep);
+    color: var(--color-ink);
 }
 
 .gallery__grid {
@@ -44,7 +44,7 @@ defineProps({
 .gallery__print {
     position: relative;
     padding: var(--space-2);
-    background: var(--color-card);
+    background: var(--color-fur);
     border: 0.0625rem solid var(--color-line);
     box-shadow: 0 0.0625rem 0.125rem var(--color-shadow), 0 0.75rem 1.25rem -0.75rem var(--color-shadow);
 }

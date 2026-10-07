@@ -49,7 +49,7 @@ defineProps({
     font-weight: 400;
     font-size: var(--font-size-xl);
     line-height: 1.2;
-    color: var(--color-leaf-deep);
+    color: var(--color-ink);
 }
 
 .note__text {

@@ -30,7 +30,7 @@ const parts = computed(() => props.name.split(/(?=\.)/));
     font-size: clamp(3rem, 15vw, 6rem);
     line-height: 0.92;
     letter-spacing: -0.015em;
-    color: var(--color-leaf-deep);
+    color: var(--color-ink);
     overflow-wrap: break-word;
 }
 

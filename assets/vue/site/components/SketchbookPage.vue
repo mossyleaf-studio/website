@@ -13,7 +13,10 @@ const year = new Date().getFullYear();
         </main>
 
         <footer class="sketchbook__footer">
-            <span class="sketchbook__stamp" aria-hidden="true">m</span>
+            <span class="sketchbook__mark" aria-hidden="true">
+                <span class="sketchbook__stamp">m</span>
+                <span class="sketchbook__star">✦</span>
+            </span>
             <p>© {{ year }} mossyleaf.studio</p>
         </footer>
     </div>
@@ -53,6 +56,11 @@ const year = new Date().getFullYear();
     color: var(--color-muted);
 }
 
+.sketchbook__mark {
+    position: relative;
+    flex-shrink: 0;
+}
+
 .sketchbook__stamp {
     display: grid;
     place-items: center;
@@ -61,12 +69,22 @@ const year = new Date().getFullYear();
     font-family: var(--font-display);
     font-size: var(--font-size-lg);
     line-height: 1;
-    color: var(--color-fern);
-    border: 0.125rem solid var(--color-fern);
+    color: var(--color-bark);
+    border: 0.125rem solid var(--color-bark);
     border-radius: 50%;
     rotate: -8deg;
-    opacity: 0.85;
     filter: url(#ink-stamp);
+}
+
+.sketchbook__star {
+    position: absolute;
+    top: -0.7rem;
+    left: 0.75rem;
+    font-size: 1.05rem;
+    line-height: 1;
+    color: var(--color-star);
+    -webkit-text-stroke: 0.04rem var(--color-ink);
+    rotate: 12deg;
 }
 
 @media (min-width: 56rem) {

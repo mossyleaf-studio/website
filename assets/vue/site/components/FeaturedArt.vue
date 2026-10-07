@@ -18,7 +18,7 @@ defineProps({
 .featured {
     position: relative;
     padding: var(--space-3);
-    background: var(--color-card);
+    background: var(--color-fur);
     border: 0.0625rem solid var(--color-line);
     box-shadow: 0 0.0625rem 0.125rem var(--color-shadow), 0 1rem 2rem -1rem var(--color-shadow);
 }

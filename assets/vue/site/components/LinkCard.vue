@@ -49,7 +49,7 @@ defineProps({
     font-family: var(--font-display);
     font-size: var(--font-size-lg);
     line-height: 1.2;
-    color: var(--color-leaf-deep);
+    color: var(--color-ink);
 }
 
 .card__description {

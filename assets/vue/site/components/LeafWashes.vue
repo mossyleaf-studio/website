@@ -1,25 +1,25 @@
 <script setup>
 const CLUSTERS = {
     canopy: [
-        [9, 1, 11, 20, 'sage'],
-        [2, 7, 9, -35, 'young-leaf'],
-        [14, 8, 12, 65, 'fern'],
-        [7, 14, 8, 5, 'eucalyptus'],
-        [18, 0, 7, -10, 'young-leaf'],
-        [0, 0, 6, 40, 'eucalyptus'],
+        [9, 1, 11, 20, 'leaf'],
+        [2, 7, 9, -35, 'sprout'],
+        [14, 8, 12, 65, 'moss'],
+        [7, 14, 8, 5, 'blush'],
+        [18, 0, 7, -10, 'sprout'],
+        [0, 0, 6, 40, 'leaf'],
     ],
     undergrowth: [
-        [4, 10, 12, -60, 'fern'],
-        [12, 6, 9, 15, 'young-leaf'],
-        [0, 4, 8, 75, 'sage'],
-        [16, 12, 7, -20, 'eucalyptus'],
-        [8, 1, 6, 50, 'sage'],
+        [4, 10, 12, -60, 'moss'],
+        [12, 6, 9, 15, 'sprout'],
+        [0, 4, 8, 75, 'leaf'],
+        [16, 12, 7, -20, 'blush'],
+        [8, 1, 6, 50, 'leaf'],
     ],
     fernery: [
-        [6, 0, 9, 110, 'eucalyptus'],
-        [0, 6, 7, 160, 'young-leaf'],
-        [8, 8, 10, 135, 'fern'],
-        [3, 13, 6, 95, 'sage'],
+        [6, 0, 9, 110, 'moss'],
+        [0, 6, 7, 160, 'sprout'],
+        [8, 8, 10, 135, 'moss'],
+        [3, 13, 6, 95, 'leaf'],
     ],
 };
 </script>

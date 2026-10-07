@@ -18,7 +18,7 @@ const segments = computed(() => parseRichText(props.text));
 
 <style>
 .rich-text__link {
-    color: var(--color-accent-strong);
+    color: var(--color-ink);
     text-decoration-thickness: 0.0625rem;
     text-underline-offset: 0.2em;
 }

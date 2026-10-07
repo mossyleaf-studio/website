@@ -58,7 +58,7 @@ function relOf(url) {
     font-family: var(--font-display);
     font-weight: 400;
     font-size: var(--font-size-xl);
-    color: var(--color-leaf-deep);
+    color: var(--color-ink);
 }
 
 .about__text {
