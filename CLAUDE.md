@@ -31,7 +31,8 @@ make ship / deploy   # build the image (after make qa) and load it on the server
 
 Contexts: `Identity` (accounts) and `Content` (`SiteText` single row, `Link`, `Artwork`). Same layers and rules as MossyDew: Domain has no dependencies, Application holds use cases `<Context>/<UseCase>/{Command, Handler}`, views and ports (`ArtworkStorage`, `ImageResizer`, `Transaction`), Infrastructure the Doctrine repositories, `LocalArtworkStorage` (`var/share/artworks`) and `GdImageResizer` (WebP, 1600 px max), Presentation the controllers.
 
-- Public pages: `HomeController` (`/`) and `BetaController` (`/beta/`, noindex) render `templates/site.html.twig` through `SitePage`: meta/OG tags server-side, the whole `SiteView` as JSON in `#site-content`. Uploaded images are served by `MediaController` (`/media/artworks/{ulid}.webp`, immutable cache).
+- **Draft and publication**: every admin edit changes the draft. `BetaController` (`/beta/`, full page) and `BetaNoteController` (`/beta/note/`, growing note) preview it for admins (noindex, no-store, draft banner). `PublishSite` freezes the draft `SiteView` as JSON in `PublishedSite` (single row, with the page shown and the media files it uses); `HomeController` (`/`) only serves that snapshot, or the draft growing note until the first publication. `MediaSweeper` deletes an image file only when neither the draft nor the published snapshot uses it: never delete media files directly.
+- `templates/site.html.twig` writes the SEO head (title from `pageTitle`, canonical, Open Graph, Twitter card, JSON-LD) and `site/_prerender.html.twig` the content as plain HTML for crawlers; Vue replaces it on load, so both must show the same content. `robots.txt` and `sitemap.xml` are controllers. Uploaded images are served by `MediaController` (`/media/artworks/{ulid}.webp`, immutable cache).
 - Admin API under `/api/admin/…` (texts per section, links, artworks), `MapRequestPayload` DTOs, domain exceptions → 422 `problem+json`.
 - Inline links in texts are written `[label](https://…)` and rendered by `assets/vue/site/richText.js` (never `v-html`).
 - Text limits live on the entities (`SiteText::MAX_*`, `Link::MAX_*`, `Artwork::MAX_ALT`) and are mirrored in `assets/vue/admin/limits.js`.
@@ -40,7 +41,7 @@ Contexts: `Identity` (accounts) and `Content` (`SiteText` single row, `Link`, `A
 
 - Sign-in = mossyleaf accounts (Authentik at `accounts.mossyleaf.studio`, project `~/Sites/mossyleaf-accounts`), OIDC code flow + PKCE, same classes as MossyDew. Only accounts whose `groups` claim contains `OIDC_REQUIRED_GROUP` (`mossyleaf-studio`) get in; dev leaves it empty.
 - Dev and e2e use the mock OIDC server (`oidc` service): type any username plus claims such as `{"email": "editor@mossyleaf.test", "groups": ["mossyleaf-studio"]}`. PHPUnit uses `Tests\Support\FakeAccounts`.
-- `/`, `/beta/` and `/media` are public and start no session; `/admin` and `/api/` need `ROLE_USER`.
+- `/`, `/media`, `/robots.txt` and `/sitemap.xml` are public and start no session; `/admin`, `/beta` and `/api/` need `ROLE_USER`.
 
 ## Frontend — `assets/`
 
