@@ -2,7 +2,7 @@
 
 Showcase site of the mossyleaf.studio illustration studio (sketchbook look: watercolor leaves, washi tape, paper cards) with an admin to edit every section. Public site in **English only**; admin UI in **English and French**. URLs, code, commits: **English**.
 
-Architecture and conventions mirror `~/Sites/mossydew` (read its `CLAUDE.md` when in doubt).
+Architecture and conventions mirror `~/Sites/mossyleaf-studio/mossydew` (read its `CLAUDE.md` when in doubt).
 
 ## Code style
 
@@ -41,7 +41,7 @@ Contexts: `Identity` (accounts) and `Content` (`SiteText` single row, `Link`, `A
 
 ## Accounts & security
 
-- Sign-in = mossyleaf accounts (Authentik at `accounts.mossyleaf.studio`, project `~/Sites/mossyleaf-accounts`), OIDC code flow + PKCE, same classes as MossyDew. Only accounts whose `groups` claim contains `OIDC_REQUIRED_GROUP` (`mossyleaf-studio`) get in; dev leaves it empty.
+- Sign-in = mossyleaf accounts (Authentik at `accounts.mossyleaf.studio`, project `~/Sites/mossyleaf-studio/accounts`), OIDC code flow + PKCE, same classes as MossyDew. Only accounts whose `groups` claim contains `OIDC_REQUIRED_GROUP` (`mossyleaf-studio`) get in; dev leaves it empty.
 - Dev and e2e use the mock OIDC server (`oidc` service): type any username plus claims such as `{"email": "editor@mossyleaf.test", "groups": ["mossyleaf-studio"]}`. PHPUnit uses `Tests\Support\FakeAccounts`.
 - `/`, `/media`, `/robots.txt` and `/sitemap.xml` are public and start no session; `/admin`, `/beta` and `/api/` need `ROLE_USER`.
 
