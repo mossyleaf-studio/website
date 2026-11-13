@@ -17,7 +17,7 @@ Fill `.env`:
 |---|---|
 | `IMAGE` / `TAG` | Image to run; `make deploy` sets `TAG` to the commit it deploys |
 | `DEFAULT_URI` | Public address, used for absolute links (`https://mossyleaf.studio`) |
-| `PROXY_NETWORK` | External Docker network of the nginx reverse proxy (`docker network ls`) |
+| `PROXY_NETWORK` | External Docker network of the reverse proxy (`web` on duprat.cloud) |
 | `APP_SECRET` | `openssl rand -hex 16` |
 | `POSTGRES_PASSWORD` | `openssl rand -hex 24` |
 | `OIDC_CLIENT_SECRET` | Secret of the `mossyleaf-studio` provider in mossyleaf accounts (Authentik) |
@@ -31,7 +31,7 @@ Sign-in goes through mossyleaf accounts (`accounts.mossyleaf.studio`). An accoun
 ## Reverse proxy
 
 - `compose.override.yaml` puts the app on the reverse proxy network (`PROXY_NETWORK`) with the alias `mossyleaf-studio`, and opens no host port.
-- The `mossyleaf.studio` server block of the nginx configuration proxies to `http://mossyleaf-studio` and needs `client_max_body_size 22M` for image uploads, plus `X-Forwarded-Host`/`X-Forwarded-Port` like the mossydew block.
+- The `mossyleaf.studio` block of the Caddyfile (repo `duprat-cloud`, `proxy/conf/Caddyfile`) proxies to `mossyleaf-studio:80` with a 22 MB body limit for image uploads (`import app mossyleaf-studio:80 22MB`); `www.mossyleaf.studio` redirects to it. Caddy sends the `X-Forwarded-*` headers and handles the certificates.
 - Uploaded images live in the `app_share` volume (`var/share/artworks`), the texts and links in `database_data`.
 
 ## Updating
