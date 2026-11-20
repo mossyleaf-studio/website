@@ -35,4 +35,10 @@ interface OrderRepository
     public function unpaidPlacedBefore(\DateTimeImmutable $before): array;
 
     public function remove(Order $order): void;
+
+    /** @return list<Order> */
+    public function lockSold(): array;
+
+    /** @return array<string, int> */
+    public function unexportedUnits(): array;
 }

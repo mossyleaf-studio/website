@@ -14,6 +14,7 @@ use App\Domain\Catalogue\Exception\EmptyCatalogue;
 use App\Domain\Catalogue\Exception\ProductRefused;
 use App\Domain\Catalogue\Product;
 use App\Domain\Catalogue\ProductRepository;
+use App\Domain\Sales\OrderRepository;
 use App\Domain\Shared\Exception\DomainException;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
@@ -33,6 +34,7 @@ final readonly class ReplaceCatalogueHandler
         private ClockInterface $clock,
         private AtomicChange $atomicChange,
         private Transaction $transaction,
+        private OrderRepository $orders,
     ) {
     }
 
@@ -109,6 +111,7 @@ final readonly class ReplaceCatalogueHandler
         }
         $this->transaction->commit();
 
+        $sold = $this->orders->unexportedUnits();
         $categories = [];
         foreach ($this->categories->all() as $category) {
             $categories[$category->name()] = $category;
@@ -132,7 +135,7 @@ final readonly class ReplaceCatalogueHandler
                 }
 
                 foreach ($item->variants as $index => $variant) {
-                    $product->stock($variant->sku, $variant->name, $variant->stock, $index);
+                    $product->stock($variant->sku, $variant->name, self::unsold($variant->stock, $sold[trim($variant->sku)] ?? 0), $index);
                 }
             } catch (DomainException $reason) {
                 throw new ProductRefused($item->reference, $reason);
@@ -142,6 +145,11 @@ final readonly class ReplaceCatalogueHandler
         $updated = \count(array_intersect_key($pushed, $known));
 
         return new CatalogueReport(\count($pushed) - $updated, $updated, $retired);
+    }
+
+    private static function unsold(int $pushed, int $sold): int
+    {
+        return $pushed < 0 ? $pushed : max(0, $pushed - $sold);
     }
 
     /**

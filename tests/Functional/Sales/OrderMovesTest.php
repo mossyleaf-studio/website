@@ -169,7 +169,8 @@ final class OrderMovesTest extends WebTestCase
         $placed = $this->placeOrder([['PRI-FOX-A4', 1], ['STI-MOTH', 2]], 2750);
         $this->gateway->pay('checkout-1');
         $this->confirm('checkout-1');
-        self::push(self::shopProducts(1, foxA4: false));
+        self::push(self::shopProducts(3, foxA4: false));
+        self::assertSame(1, self::stockOf('STI-MOTH'));
 
         $this->cancel($placed->token);
 

@@ -116,4 +116,28 @@ final readonly class DoctrineOrderRepository implements OrderRepository
     {
         $this->entityManager->remove($order);
     }
+
+    public function lockSold(): array
+    {
+        /** @var list<Order> $orders */
+        $orders = $this->entityManager
+            ->createQuery('SELECT o, l FROM '.Order::class.' o JOIN o.lines l WHERE o.status IN (:sold) AND o.test = false ORDER BY o.createdAt ASC, o.id ASC, l.position ASC')
+            ->setParameter('sold', [OrderStatus::Paid->value, OrderStatus::Shipped->value, OrderStatus::Cancelled->value])
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
+            ->setHint(Query::HINT_REFRESH, true)
+            ->getResult();
+
+        return $orders;
+    }
+
+    public function unexportedUnits(): array
+    {
+        /** @var list<array{sku: string, units: int|string}> $rows */
+        $rows = $this->entityManager
+            ->createQuery('SELECT l.sku AS sku, SUM(l.quantity) AS units FROM '.OrderLine::class.' l JOIN l.order o WHERE o.status IN (:holding) AND o.exportedAt IS NULL GROUP BY l.sku')
+            ->setParameter('holding', [OrderStatus::Paid->value, OrderStatus::Shipped->value])
+            ->getArrayResult();
+
+        return array_column(array_map(static fn (array $row): array => [$row['sku'], (int) $row['units']], $rows), 1, 0);
+    }
 }

@@ -284,6 +284,17 @@ final class OrderTest extends TestCase
         self::order(new \DateTimeImmutable())->assertDeletable();
     }
 
+    public function testTheFirstExportStampsTheOrderAndALaterOneKeepsThatStamp(): void
+    {
+        $order = self::order(new \DateTimeImmutable('2026-11-20 10:00:00'));
+        self::assertNull($order->exportedAt());
+
+        $order->export(new \DateTimeImmutable('2026-11-20 11:00:00'));
+        $order->export(new \DateTimeImmutable('2026-11-20 12:00:00'));
+
+        self::assertEquals(new \DateTimeImmutable('2026-11-20 11:00:00'), $order->exportedAt());
+    }
+
     private static function paid(): Order
     {
         $order = self::order(new \DateTimeImmutable());

@@ -114,7 +114,7 @@ class Order
     private ?\DateTimeImmutable $exportedAt = null;
 
     /** @var Collection<int, OrderLine> */
-    #[ORM\OneToMany(targetEntity: OrderLine::class, mappedBy: 'order', cascade: ['persist'])]
+    #[ORM\OneToMany(targetEntity: OrderLine::class, mappedBy: 'order', cascade: ['persist', 'remove'])]
     #[ORM\OrderBy(['position' => 'ASC'])]
     private Collection $lines;
 
@@ -388,5 +388,10 @@ class Order
         if (!$this->test) {
             throw new NotATestOrder($this->reference);
         }
+    }
+
+    public function export(\DateTimeImmutable $at): void
+    {
+        $this->exportedAt ??= $at;
     }
 }

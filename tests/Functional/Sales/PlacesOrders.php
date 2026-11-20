@@ -140,6 +140,7 @@ trait PlacesOrders
         return $variant->available;
     }
 
+    /** @phpstan-impure */
     private static function stockOf(string $sku): ?int
     {
         foreach (self::getContainer()->get(CatalogueQueries::class)->products() as $product) {
