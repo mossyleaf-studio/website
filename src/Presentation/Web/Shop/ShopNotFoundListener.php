@@ -32,7 +32,7 @@ final readonly class ShopNotFoundListener
         }
 
         $preview = $request->attributes->getBoolean('preview');
-        if (!$this->door->admits($preview) && !ShopDoor::exempts($request)) {
+        if (!$this->door->admits($preview)) {
             $event->setResponse(new RedirectResponse($this->urls->closed()));
 
             return;

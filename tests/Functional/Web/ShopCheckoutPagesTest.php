@@ -190,16 +190,27 @@ final class ShopCheckoutPagesTest extends WebTestCase
         self::assertStringContainsString('no-store', (string) $client->getResponse()->headers->get('Cache-Control'));
     }
 
-    public function testAnUnknownOrderIsTheShopNotFoundPageEvenWhileTheDoorIsShut(): void
+    public function testAnUnknownOrderStaysClosedWhileTheDoorIsShut(): void
     {
         $client = self::createClient();
 
         foreach ([str_repeat('A', 43), 'short'] as $token) {
-            $crawler = $client->request('GET', '/fr/order/'.$token);
+            $client->request('GET', '/fr/order/'.$token);
+
+            self::assertResponseRedirects('/', 302, $token);
+            self::assertResponseNotHasHeader('Set-Cookie');
+        }
+    }
+
+    public function testAnUnknownOrderIsTheShopNotFoundPageInThePreview(): void
+    {
+        $client = self::signedInClient();
+
+        foreach ([str_repeat('A', 43), 'short'] as $token) {
+            $crawler = $client->request('GET', '/beta/fr/order/'.$token);
 
             self::assertResponseStatusCodeSame(404, $token);
             self::assertSame('not-found', $crawler->filter('#shop')->attr('data-page'));
-            self::assertResponseNotHasHeader('Set-Cookie');
         }
     }
 
