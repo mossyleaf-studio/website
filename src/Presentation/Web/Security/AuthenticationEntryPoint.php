@@ -23,7 +23,9 @@ final readonly class AuthenticationEntryPoint implements AuthenticationEntryPoin
 
     public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
-        if (str_starts_with($request->getPathInfo(), '/api/')) {
+        $path = rawurldecode($request->getPathInfo());
+
+        if (str_starts_with($path, '/api/') || str_starts_with($path, '/beta/api/')) {
             return new ProblemResponse($this->translator->trans('problem.signed_out.title'), Response::HTTP_UNAUTHORIZED, $this->translator->trans('problem.signed_out.detail'));
         }
 

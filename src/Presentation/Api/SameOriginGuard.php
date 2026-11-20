@@ -14,6 +14,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final readonly class SameOriginGuard
 {
     private const array SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS'];
+    private const array GUARDED = ['/api/', '/beta/api/'];
 
     public function __construct(private TranslatorInterface $translator)
     {
@@ -23,8 +24,10 @@ final readonly class SameOriginGuard
     {
         $request = $event->getRequest();
 
+        $path = rawurldecode($request->getPathInfo());
+
         if (!$event->isMainRequest()
-            || !str_starts_with($request->getPathInfo(), '/api/')
+            || [] === array_filter(self::GUARDED, static fn (string $prefix): bool => str_starts_with($path, $prefix))
             || \in_array($request->getMethod(), self::SAFE_METHODS, true)) {
             return;
         }

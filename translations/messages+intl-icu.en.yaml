@@ -1,5 +1,14 @@
 problem:
     business_rule: 'Not possible'
+    not_found:
+        title: 'Not found'
+        detail: 'Nothing answers at this address.'
+    too_many_requests:
+        title: 'Too many requests'
+        detail: 'Too many attempts from your connection, please try again later.'
+    too_large:
+        title: 'Request too large'
+        detail: 'This request is too large to be read.'
     cross_origin:
         title: 'Request refused'
         detail: 'Request from another origin refused.'

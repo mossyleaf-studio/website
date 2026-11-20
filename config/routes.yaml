@@ -18,3 +18,12 @@ shop_preview:
     defaults:
         preview: true
     stateless: false
+
+shop_api_preview:
+    resource: ../src/Presentation/Api/Shop/
+    type: attribute
+    prefix: /beta
+    name_prefix: beta_
+    defaults:
+        preview: true
+    stateless: false

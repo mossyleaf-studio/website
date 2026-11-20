@@ -558,3 +558,19 @@ html[data-layout="shop"] .shop-prerender__pill {
     border: var(--border-strong);
     border-radius: var(--radius-pill);
 }
+
+html[data-layout="shop"] .shop-prerender__links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: var(--grid-gap);
+}
+
+html[data-layout="shop"] .shop-prerender__links li {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-5);
+    background: var(--color-card);
+    border: 0.0625rem solid var(--color-edge);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sheet);
+}

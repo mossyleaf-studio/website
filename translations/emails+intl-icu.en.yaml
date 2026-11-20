@@ -1,0 +1,4 @@
+contact:
+    subject: 'Message from {name} on the website'
+    intro: '{name} <{email}> wrote through the contact page of the shop:'
+    reply: 'Reply to this email to answer {name}.'

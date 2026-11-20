@@ -6,10 +6,12 @@ namespace App\Presentation\Integration;
 
 use App\Domain\Catalogue\Exception\CatalogueTooLarge;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 #[AsEventListener(event: KernelEvents::REQUEST, priority: 64)]
 final readonly class IntegrationGuard
@@ -23,6 +25,8 @@ final readonly class IntegrationGuard
         #[\SensitiveParameter]
         #[Autowire(env: 'MOSSYTRUNK_TOKEN')]
         private string $token,
+        #[Target('integration_authentication')]
+        private RateLimiterFactoryInterface $failedAuthentications,
     ) {
     }
 
@@ -40,8 +44,17 @@ final readonly class IntegrationGuard
             return;
         }
 
+        $failures = $this->failedAuthentications->create($request->getClientIp());
+        $limit = $failures->consume(0);
+        if (0 === $limit->getRemainingTokens()) {
+            $event->setResponse(new Response(status: Response::HTTP_TOO_MANY_REQUESTS, headers: ['Retry-After' => (string) max(1, $limit->getRetryAfter()->getTimestamp() - time())]));
+
+            return;
+        }
+
         $authorization = $request->headers->get('Authorization') ?? '';
         if (!str_starts_with($authorization, self::SCHEME) || !hash_equals($this->token, substr($authorization, \strlen(self::SCHEME)))) {
+            $failures->consume();
             $event->setResponse(new Response(status: Response::HTTP_UNAUTHORIZED, headers: ['WWW-Authenticate' => 'Bearer']));
 
             return;

@@ -42,6 +42,12 @@ defineProps({
     box-shadow: none;
 }
 
+.pill:disabled {
+    cursor: progress;
+    translate: 0 0.1875rem;
+    box-shadow: none;
+}
+
 .pill--leaf {
     background: var(--color-leaf);
 }

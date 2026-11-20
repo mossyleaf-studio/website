@@ -3,6 +3,7 @@ import { computed, provide } from 'vue';
 import ShopLayout from './components/ShopLayout.vue';
 import AboutPage from './pages/AboutPage.vue';
 import ConventionsPage from './pages/ConventionsPage.vue';
+import ContactPage from './pages/ContactPage.vue';
 import HomePage from './pages/HomePage.vue';
 import LegalPage from './pages/LegalPage.vue';
 import NotFoundPage from './pages/NotFoundPage.vue';
@@ -27,6 +28,7 @@ const shop = computed(() => props.layout.navigation.find((entry) => entry.key ==
         <AboutPage v-else-if="data.page === 'about'" :data="data" />
         <ConventionsPage v-else-if="data.page === 'conventions'" :data="data" />
         <LegalPage v-else-if="data.page === 'legal'" :data="data" />
+        <ContactPage v-else-if="data.page === 'contact'" :data="data" />
         <NotFoundPage v-else :home="home" />
     </ShopLayout>
 </template>

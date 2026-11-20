@@ -1,0 +1,4 @@
+contact:
+    subject: 'Message de {name} sur le site'
+    intro: '{name} <{email}> a écrit depuis la page contact de la boutique :'
+    reply: 'Répondez à cet e-mail pour écrire à {name}.'

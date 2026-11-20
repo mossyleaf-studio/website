@@ -22,6 +22,8 @@ Fill `.env`:
 | `POSTGRES_PASSWORD` | `openssl rand -hex 24` |
 | `OIDC_CLIENT_SECRET` | Secret of the `mossyleaf-studio` provider in mossyleaf accounts (Authentik) |
 | `MOSSYTRUNK_TOKEN` | `openssl rand -hex 32`, the same value as the token of the « Site web » service in mossytrunk. Empty or shorter than 32 characters: `/integrations/…` answers 404 and mossytrunk cannot push the catalogue |
+| `MAILER_DSN` | SMTP of the mailbox that sends the site's emails, such as `smtp://user:password@smtp.example.com:587`. Empty: nothing is sent, so set it together with `STUDIO_EMAIL`, or the contact form accepts messages and drops them |
+| `STUDIO_EMAIL` | Address of the studio: the contact form writes to it, from it, with the visitor as Reply-To. Empty: the shop offers no contact form and `/api/shop/…/contact` answers 404 |
 
 Then `docker compose up -d`. The entrypoint waits for the database and runs the migrations: the site starts with the texts and links of the former static site.
 

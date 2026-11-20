@@ -8,6 +8,8 @@ const SHOP = {
     'shop-home-en': '/beta/en/',
     'shop-about-fr': '/beta/fr/about',
     'shop-about-en': '/beta/en/about',
+    'shop-contact-fr': '/beta/fr/contact',
+    'shop-contact-en': '/beta/en/contact',
     'shop-not-found': '/beta/fr/no-such-page',
     'shop-listing-fr': '/beta/fr/shop',
     'shop-listing-en': '/beta/en/shop',
@@ -56,6 +58,46 @@ async function writeTheConventionsAndLegalPages(request) {
     await send(request, 'PUT', '/api/admin/legal-pages/privacy', { text: 'No tracker, no advertising cookie.', textFr: 'Aucun traceur, aucun cookie publicitaire.' });
 }
 
+async function shootTheContactForm(page, size) {
+    const api = '**/api/shop/fr/contact';
+    await page.goto('/beta/fr/contact');
+    const form = page.getByTestId('contact-form');
+    const send = form.getByRole('button', { name: 'Envoyer le message' });
+    await send.click();
+    await expect(form.getByTestId('field-error')).toHaveCount(3);
+    await expect(page.getByLabel('Votre nom')).toBeFocused();
+    await page.screenshot({ path: `shots/shop-contact-errors-${size}.png`, fullPage: true, animations: 'disabled' });
+
+    await page.getByLabel('Votre nom').fill('Lou');
+    await page.getByLabel('Votre e-mail').fill('lou@example.com');
+    await page.getByLabel('Votre message').fill('Bonjour ! Je voudrais une affiche de la grenouille aux fougères en A3 pour la convention de Lyon.');
+    await page.route(api, (route) => route.fulfill({ status: 429, contentType: 'application/problem+json', body: JSON.stringify({ title: 'Too many requests', status: 429, detail: 'Try again later.', code: 'problem.too_many_requests' }) }));
+    await send.click();
+    await expect(page.getByTestId('contact-failure')).toBeVisible();
+    await expect(page.getByLabel('Votre nom')).toHaveValue('Lou');
+    await page.screenshot({ path: `shots/shop-contact-failure-${size}.png`, fullPage: true, animations: 'disabled' });
+
+    await page.unroute(api);
+    await send.click();
+    await expect(page.getByTestId('contact-sent')).toBeFocused();
+    await expect(page.getByTestId('contact-form')).toHaveCount(0);
+    await page.screenshot({ path: `shots/shop-contact-sent-${size}.png`, fullPage: true, animations: 'disabled' });
+
+    const closed = await page.context().newPage();
+    await closed.setViewportSize(page.viewportSize());
+    await closed.addInitScript(() => document.addEventListener('readystatechange', () => {
+        const element = document.getElementById('site-content');
+        if (document.readyState !== 'interactive' || !element) return;
+        const props = JSON.parse(element.textContent);
+        element.textContent = JSON.stringify({ ...props, data: { ...props.data, endpoint: null } });
+    }));
+    await closed.goto('/beta/en/contact');
+    await expect(closed.getByTestId('contact-links')).toBeVisible();
+    await expect(closed.getByTestId('contact-form')).toHaveCount(0);
+    await closed.screenshot({ path: `shots/shop-contact-without-form-${size}.png`, fullPage: true });
+    await closed.close();
+}
+
 test('screenshots of the site and the admin', async ({ page }) => {
     test.setTimeout(120_000);
     await signIn(page);
@@ -92,6 +134,11 @@ test('screenshots of the site and the admin', async ({ page }) => {
         await page.screenshot({ path: `shots/admin-link-editor-${size}.png`, animations: 'disabled' });
     }
 
+    for (const [size, viewport] of Object.entries(VIEWPORTS)) {
+        await page.setViewportSize(viewport);
+        await shootTheContactForm(page, size);
+    }
+
     const crawler = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.desktop })).newPage();
     await crawler.goto('/');
     await crawler.screenshot({ path: 'shots/home-without-javascript.png', fullPage: true });
@@ -109,6 +156,9 @@ test('screenshots of the site and the admin', async ({ page }) => {
     await editorWithoutScript.goto(SHOP['shop-legal-fr']);
     await expect(editorWithoutScript.locator('#shop main [data-blocks]')).toBeVisible();
     await editorWithoutScript.screenshot({ path: 'shots/shop-legal-without-javascript.png', fullPage: true });
+    await editorWithoutScript.goto('/beta/fr/contact');
+    await expect(editorWithoutScript.locator('#shop main [data-noscript]')).toBeVisible();
+    await editorWithoutScript.screenshot({ path: 'shots/shop-contact-without-javascript.png', fullPage: true });
     await editorWithoutScript.context().close();
 
     await page.goto('/admin/images');

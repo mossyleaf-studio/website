@@ -5,3 +5,6 @@ url.invalid: 'Saisissez une adresse https complète, par exemple https://www.ets
 id.invalid: 'Identifiant invalide.'
 date.required: 'Saisissez une date.'
 date.invalid: 'Saisissez une vraie date, par exemple 2027-07-08.'
+text.line_break: 'Écrivez-le sur une seule ligne.'
+email.required: 'Saisissez votre adresse e-mail.'
+email.invalid: 'Saisissez une adresse e-mail valide, par exemple nom@exemple.fr.'

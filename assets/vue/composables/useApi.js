@@ -1,17 +1,8 @@
 import { getCurrentScope, onScopeDispose, ref } from 'vue';
 import { t } from '../i18n/index.js';
+import { ApiError } from './apiError.js';
 
-export class ApiError extends Error {
-    constructor(message, status, violations = []) {
-        super(message);
-        this.status = status;
-        this.violations = violations;
-    }
-
-    get fieldErrors() {
-        return Object.fromEntries(this.violations.map((v) => [v.propertyPath, v.title ?? v.message]));
-    }
-}
+export { ApiError };
 
 const REFRESH_HEADER = 'X-Refresh';
 const REFRESHED_HEADER = 'X-Refreshed';

@@ -33,6 +33,7 @@ final readonly class DomainExceptionListener
             $this->translator->trans('problem.business_rule'),
             $status,
             $this->translator->trans($exception->getMessage(), $exception->parameters(), 'exceptions'),
+            $exception->getMessage(),
         ));
     }
 }

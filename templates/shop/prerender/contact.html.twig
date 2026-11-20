@@ -1,0 +1,17 @@
+<h1>{{ data.title }}</h1>
+<p data-intro>{{ 'contact.intro'|site_t }}</p>
+{% if data.endpoint %}
+    <p class="shop-prerender__sheet" data-noscript>{{ 'contact.noscript'|site_t }}</p>
+{% endif %}
+{% if data.links is not empty %}
+    <ul class="shop-prerender__links" aria-label="{{ 'contact.links'|site_t }}" data-links>
+        {% for link in data.links %}
+            <li>
+                <a href="{{ link.url }}"{% if link.url matches '{^https://(www\\.)?instagram\\.com(/|$)}' %} rel="me"{% endif %}>
+                    <h2>{{ link.title }}</h2>
+                </a>
+                <p>{{ link.description }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

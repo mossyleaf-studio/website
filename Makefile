@@ -22,8 +22,8 @@ BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(T
 
 .PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional test-js deptrac phpstan cs cs-fix e2e e2e-run shots qa ci ci-up ci-build ci-bundle ci-unbundle ci-warmup ci-checks ci-e2e image push deploy deploy-files
 
-up: ## Start the stack (site on http://localhost:8094, admin on /admin, Vite on :5175, mock mossyleaf accounts on :8093)
-	$(DC) up -d --wait php database node oidc
+up: ## Start the stack (site on http://localhost:8094, admin on /admin, Vite on :5175, mock mossyleaf accounts on :8093, Mailpit on :8095)
+	$(DC) up -d --wait php database node oidc mailpit
 
 down:
 	$(DC) down

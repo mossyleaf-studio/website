@@ -61,6 +61,14 @@ defineProps({
     color: var(--color-muted);
 }
 
+html[data-layout="shop"] .card__title {
+    filter: none;
+}
+
+html[data-layout="shop"] .card__description {
+    color: var(--color-ink);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .card {
         transition: none;

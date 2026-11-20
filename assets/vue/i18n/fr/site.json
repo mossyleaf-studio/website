@@ -9,7 +9,8 @@
     "nav": {
         "shop": "Boutique",
         "conventions": "Conventions",
-        "about": "À propos"
+        "about": "À propos",
+        "contact": "Contact"
     },
     "language": {
         "code": {
@@ -47,6 +48,38 @@
         "add": "Ajouter au panier",
         "photos": "Photos",
         "photo": "Afficher la photo {number} sur {count}"
+    },
+    "contact": {
+        "title": "Contact",
+        "links": "Retrouver le studio ailleurs",
+        "intro": "Une question, une commande ou simplement un bonjour : le studio lit chaque message.",
+        "noscript": "Le formulaire a besoin de JavaScript. Vous pouvez joindre le studio par les liens de cette page.",
+        "form": {
+            "title": "Écrire au studio",
+            "name": "Votre nom",
+            "email": "Votre e-mail",
+            "emailHint": "Le studio vous répond à cette adresse.",
+            "message": "Votre message",
+            "count": "{count} caractères sur {max}",
+            "website": "Laissez ce champ vide",
+            "send": "Envoyer le message",
+            "sending": "Envoi…"
+        },
+        "sent": {
+            "title": "Message envoyé",
+            "text": "Merci. Le studio vous répondra à {email}."
+        },
+        "failure": {
+            "tooMany": "Trop de messages sont partis de cette connexion. Réessayez plus tard : ce que vous avez écrit est conservé.",
+            "closed": "Le formulaire est fermé pour le moment. Joignez le studio par les liens de cette page.",
+            "other": "Le message n’a pas pu partir. Vérifiez votre connexion et réessayez : ce que vous avez écrit est conservé."
+        }
+    },
+    "form": {
+        "required": "Remplissez ce champ.",
+        "email": "Saisissez une adresse e-mail valide.",
+        "tooLong": "{max} caractères au maximum.",
+        "lineBreak": "Écrivez-le sur une seule ligne."
     },
     "notFound": {
         "title": "Page introuvable",

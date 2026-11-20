@@ -1,5 +1,14 @@
 problem:
     business_rule: 'Impossible'
+    not_found:
+        title: 'Introuvable'
+        detail: 'Rien ne répond à cette adresse.'
+    too_many_requests:
+        title: 'Trop de demandes'
+        detail: 'Trop d’essais depuis votre connexion, réessayez plus tard.'
+    too_large:
+        title: 'Requête trop volumineuse'
+        detail: 'Cette requête est trop volumineuse pour être lue.'
     cross_origin:
         title: 'Requête refusée'
         detail: 'Requête venant d’une autre origine refusée.'

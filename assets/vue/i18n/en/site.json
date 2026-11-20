@@ -9,7 +9,8 @@
     "nav": {
         "shop": "Shop",
         "conventions": "Conventions",
-        "about": "About"
+        "about": "About",
+        "contact": "Contact"
     },
     "language": {
         "code": {
@@ -47,6 +48,38 @@
         "add": "Add to cart",
         "photos": "Photos",
         "photo": "Show photo {number} of {count}"
+    },
+    "contact": {
+        "title": "Contact",
+        "links": "Find the studio elsewhere",
+        "intro": "Questions, commissions or simply a hello: the studio reads every message.",
+        "noscript": "The form needs JavaScript. You can reach the studio through the links on this page.",
+        "form": {
+            "title": "Write to the studio",
+            "name": "Your name",
+            "email": "Your email",
+            "emailHint": "The studio answers at this address.",
+            "message": "Your message",
+            "count": "{count} of {max} characters",
+            "website": "Leave this field empty",
+            "send": "Send the message",
+            "sending": "Sending…"
+        },
+        "sent": {
+            "title": "Message sent",
+            "text": "Thank you. The studio will answer at {email}."
+        },
+        "failure": {
+            "tooMany": "Too many messages were sent from this connection. Try again later: what you wrote is still here.",
+            "closed": "The form is closed for now. Reach the studio through the links on this page.",
+            "other": "The message could not be sent. Check your connection and try again: what you wrote is still here."
+        }
+    },
+    "form": {
+        "required": "Fill in this field.",
+        "email": "Enter a valid email address.",
+        "tooLong": "Keep it to {max} characters.",
+        "lineBreak": "Write it on a single line."
     },
     "notFound": {
         "title": "Page not found",

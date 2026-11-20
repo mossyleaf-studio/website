@@ -26,5 +26,6 @@ security:
     access_control:
         - { path: ^/admin, roles: ROLE_USER }
         - { path: ^/beta, roles: ROLE_USER }
+        - { path: ^/api/shop/, roles: PUBLIC_ACCESS }
         - { path: ^/api/, roles: ROLE_USER }
         - { path: ^/, roles: PUBLIC_ACCESS }

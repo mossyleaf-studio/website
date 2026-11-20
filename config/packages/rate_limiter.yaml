@@ -1,0 +1,12 @@
+framework:
+    rate_limiter:
+        contact:
+            policy: fixed_window
+            limit: 5
+            interval: '1 hour'
+            lock_factory: null
+        integration_authentication:
+            policy: fixed_window
+            limit: 10
+            interval: '1 minute'
+            lock_factory: null
