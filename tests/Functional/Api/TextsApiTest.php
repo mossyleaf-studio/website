@@ -46,6 +46,18 @@ final class TextsApiTest extends WebTestCase
         self::assertSame('mossyleaf.studio', Json::string($texts, 'studioName'));
     }
 
+    public function testASaveAnswersWithTheFreshDataTheAdminAsksFor(): void
+    {
+        $client = self::signedInClient();
+
+        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Sketchbook'], ['HTTP_X_REFRESH' => '["/api/admin/texts","/integrations/catalogue"]']);
+
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('X-Refreshed', '1');
+        $refreshed = Json::array(Json::decode((string) $client->getResponse()->getContent()), 'refreshed');
+        self::assertSame(['/api/admin/texts'], array_keys($refreshed));
+    }
+
     public function testBlankAndTooLongTextsAreRefusedPerField(): void
     {
         $client = self::signedInClient();

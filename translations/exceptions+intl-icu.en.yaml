@@ -15,3 +15,9 @@ content:
     unknown_font: 'Google Fonts has no font called “{family}”: copy its name from fonts.google.com.'
     font_without_latin: '“{family}” has no Latin letters, so it cannot write the site’s texts.'
     fonts_unreachable: 'Google Fonts could not be reached, try again in a moment.'
+catalogue:
+    too_large: '{subject, select, products {A catalogue holds {max} products at most.} megabytes {A catalogue weighs {max} MB at most.} other {A product holds {max} variants at most.}}'
+    product_refused: 'The product “{reference}” is refused: {field, select, price {its price is negative} stock {a stock is negative} other {{field, select, product_reference {its reference} product_name {its name} product_display_name {its display name} category_name {its category} sku {a SKU} other {a variant name}} {max, plural, =0 {is empty} other {is longer than # characters}}}}.'
+    empty: 'The catalogue is empty: send at least one product, an empty list would retire the whole shop.'
+    duplicate_entry: '{field, select, id {The product {value} is sent twice.} reference {The reference “{value}” is sent for two products.} other {The SKU “{value}” is sent twice.}}'
+    negative_amount: '{field, select, price {A price cannot be negative.} other {A stock cannot be negative.}}'

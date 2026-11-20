@@ -21,6 +21,7 @@ Fill `.env`:
 | `APP_SECRET` | `openssl rand -hex 16` |
 | `POSTGRES_PASSWORD` | `openssl rand -hex 24` |
 | `OIDC_CLIENT_SECRET` | Secret of the `mossyleaf-studio` provider in mossyleaf accounts (Authentik) |
+| `MOSSYTRUNK_TOKEN` | `openssl rand -hex 32`, the same value as the token of the « Site web » service in mossytrunk. Empty or shorter than 32 characters: `/integrations/…` answers 404 and mossytrunk cannot push the catalogue |
 
 Then `docker compose up -d`. The entrypoint waits for the database and runs the migrations: the site starts with the texts and links of the former static site.
 

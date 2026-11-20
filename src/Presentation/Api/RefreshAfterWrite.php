@@ -17,6 +17,7 @@ final readonly class RefreshAfterWrite
     public const string REQUEST_HEADER = 'X-Refresh';
     public const string RESPONSE_HEADER = 'X-Refreshed';
 
+    private const string PATH = '/api/admin/';
     private const int MAX_URLS = 12;
 
     public function __construct(private ApiPreload $preload)
@@ -30,7 +31,7 @@ final readonly class RefreshAfterWrite
         $urls = $this->requestedUrls($request);
         $content = Response::HTTP_NO_CONTENT === $response->getStatusCode() ? 'null' : $response->getContent();
 
-        if (!$event->isMainRequest() || $request->isMethodSafe() || !$response->isSuccessful() || [] === $urls || !\is_string($content) || !json_validate($content)) {
+        if (!$event->isMainRequest() || !str_starts_with($request->getPathInfo(), self::PATH) || $request->isMethodSafe() || !$response->isSuccessful() || [] === $urls || !\is_string($content) || !json_validate($content)) {
             return;
         }
 
