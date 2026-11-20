@@ -39,6 +39,25 @@ final class LinksApiTest extends WebTestCase
         self::assertCount(2, self::links($client));
     }
 
+    public function testALinkCarriesItsFrenchTextsWhichAnEditWithoutThemLeavesAlone(): void
+    {
+        $client = self::signedInClient();
+        self::assertSame(['', ''], array_column(self::links($client), 'titleFr'));
+
+        $client->jsonRequest('POST', '/api/admin/links', ['title' => 'Ko-fi', 'description' => 'Buy a coffee', 'url' => 'https://ko-fi.com/mossyleaf', 'tape' => 'leaf', 'titleFr' => ' Ko-fi en français ', 'descriptionFr' => 'Offrir un café']);
+        self::assertResponseStatusCodeSame(201);
+        $link = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame(['Ko-fi en français', 'Offrir un café'], [Json::string($link, 'titleFr'), Json::string($link, 'descriptionFr')]);
+
+        $client->jsonRequest('PUT', '/api/admin/links/'.Json::string($link, 'id'), ['title' => 'Ko-fi page', 'description' => 'Buy a coffee', 'url' => 'https://ko-fi.com/mossyleaf', 'tape' => 'leaf']);
+        self::assertResponseIsSuccessful();
+        self::assertSame(['Ko-fi page', 'Ko-fi en français', 'Offrir un café'], [Json::string(self::links($client), 2, 'title'), Json::string(self::links($client), 2, 'titleFr'), Json::string(self::links($client), 2, 'descriptionFr')]);
+
+        $client->jsonRequest('PUT', '/api/admin/links/'.Json::string($link, 'id'), ['title' => 'Ko-fi page', 'description' => 'Buy a coffee', 'url' => 'https://ko-fi.com/mossyleaf', 'tape' => 'leaf', 'titleFr' => '', 'descriptionFr' => str_repeat('é', 121)]);
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame(['descriptionFr'], array_column(Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations'), 'propertyPath'));
+    }
+
     public function testOnlyHttpsAddressesAreAccepted(): void
     {
         $client = self::signedInClient();

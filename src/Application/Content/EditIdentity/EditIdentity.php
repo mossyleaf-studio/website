@@ -11,6 +11,9 @@ final readonly class EditIdentity
         public string $intro,
         public string $metaDescription,
         public string $searchTitle = '',
+        public ?string $introFr = null,
+        public ?string $metaDescriptionFr = null,
+        public ?string $searchTitleFr = null,
     ) {
     }
 }

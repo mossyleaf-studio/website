@@ -38,9 +38,14 @@ final readonly class ContentQueries
         return null === $site ? $this->draft(PublicPage::Note) : new PublicSnapshot($site->page(), $site->content(), $site->publishedAt());
     }
 
+    public function shop(): ShopContentView
+    {
+        return ShopContentView::of($this->texts->current(), $this->links->all(), $this->artworks->all());
+    }
+
     public function publication(): PublicationView
     {
-        return PublicationView::of($this->published->current(), $this->snapshots->encode($this->site()));
+        return PublicationView::of($this->published->current(), $this->snapshots->encode($this->site()), $this->snapshots->encodeShop($this->shop()));
     }
 
     public function texts(): SiteTextView
@@ -48,15 +53,15 @@ final readonly class ContentQueries
         return SiteTextView::of($this->texts->current());
     }
 
-    /** @return list<LinkView> */
+    /** @return list<DraftLinkView> */
     public function links(): array
     {
-        return LinkView::list($this->links->all());
+        return DraftLinkView::list($this->links->all());
     }
 
-    /** @return list<ArtworkView> */
+    /** @return list<DraftArtworkView> */
     public function artworks(): array
     {
-        return ArtworkView::list($this->artworks->all());
+        return DraftArtworkView::list($this->artworks->all());
     }
 }

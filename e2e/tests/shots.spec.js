@@ -22,6 +22,10 @@ test('screenshots of the site and the admin', async ({ page }) => {
             await page.waitForLoadState('networkidle');
             await page.screenshot({ path: `shots/${name}-${size}.png`, fullPage: true });
         }
+        await page.goto('/admin/links');
+        await page.getByTestId('link-row').first().getByRole('button', { name: 'Edit' }).click();
+        await expect(page.getByTestId('link-editor')).toBeVisible();
+        await page.screenshot({ path: `shots/admin-link-editor-${size}.png`, animations: 'disabled' });
     }
 
     const crawler = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.desktop })).newPage();

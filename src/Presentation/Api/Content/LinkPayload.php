@@ -22,6 +22,10 @@ final readonly class LinkPayload
         #[Assert\Length(max: Link::MAX_URL, maxMessage: 'text.too_long')]
         public string $url = '',
         public TapeTone $tape = TapeTone::Leaf,
+        #[Assert\Length(max: Link::MAX_TITLE, maxMessage: 'text.too_long')]
+        public ?string $titleFr = null,
+        #[Assert\Length(max: Link::MAX_DESCRIPTION, maxMessage: 'text.too_long')]
+        public ?string $descriptionFr = null,
     ) {
     }
 }

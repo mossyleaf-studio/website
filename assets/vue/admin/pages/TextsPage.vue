@@ -19,9 +19,9 @@ const sections = computed(() => [
         preview: { href: '/beta/', label: t('admin.texts.seeBeta') },
         fields: [
             { name: 'studioName', source: 'studioName', label: t('admin.texts.identity.studioName'), max: LIMITS.studioName },
-            { name: 'intro', source: 'intro', label: t('admin.texts.identity.intro'), max: LIMITS.intro, rows: 2 },
-            { name: 'searchTitle', source: 'searchTitle', label: t('admin.texts.identity.searchTitle'), max: LIMITS.searchTitle, hint: t('admin.texts.identity.searchTitleHint') },
-            { name: 'metaDescription', source: 'metaDescription', label: t('admin.texts.identity.metaDescription'), max: LIMITS.metaDescription, rows: 3 },
+            { name: 'intro', source: 'intro', label: t('admin.texts.identity.intro'), max: LIMITS.intro, rows: 2, localized: true },
+            { name: 'searchTitle', source: 'searchTitle', label: t('admin.texts.identity.searchTitle'), max: LIMITS.searchTitle, hint: t('admin.texts.identity.searchTitleHint'), localized: true, optional: true, ownDefault: true },
+            { name: 'metaDescription', source: 'metaDescription', label: t('admin.texts.identity.metaDescription'), max: LIMITS.metaDescription, rows: 3, localized: true },
         ],
     },
     {
@@ -38,8 +38,8 @@ const sections = computed(() => [
         title: t('admin.texts.about.title'),
         preview: { href: '/beta/', label: t('admin.texts.seeBeta') },
         fields: [
-            { name: 'title', source: 'aboutTitle', label: t('admin.texts.about.aboutTitle'), max: LIMITS.title },
-            { name: 'text', source: 'aboutText', label: t('admin.texts.about.text'), max: LIMITS.about, rows: 8, hint: `${t('admin.texts.paragraphsHint')} ${t('admin.texts.linksHint')}` },
+            { name: 'title', source: 'aboutTitle', label: t('admin.texts.about.aboutTitle'), max: LIMITS.title, localized: true },
+            { name: 'text', source: 'aboutText', label: t('admin.texts.about.text'), max: LIMITS.about, rows: 8, hint: `${t('admin.texts.paragraphsHint')} ${t('admin.texts.linksHint')}`, localized: true },
         ],
     },
     {
@@ -47,7 +47,15 @@ const sections = computed(() => [
         title: t('admin.texts.gallery.title'),
         preview: { href: '/beta/', label: t('admin.texts.seeBeta') },
         fields: [
-            { name: 'title', source: 'galleryTitle', label: t('admin.texts.gallery.galleryTitle'), max: LIMITS.title },
+            { name: 'title', source: 'galleryTitle', label: t('admin.texts.gallery.galleryTitle'), max: LIMITS.title, localized: true },
+        ],
+    },
+    {
+        section: 'shop-notes',
+        title: t('admin.texts.shopNotes.title'),
+        fields: [
+            { name: 'announcement', source: 'announcement', label: t('admin.texts.shopNotes.announcement'), max: LIMITS.announcement, hint: t('admin.texts.shopNotes.announcementHint'), localized: true, optional: true },
+            { name: 'priceNote', source: 'priceNote', label: t('admin.texts.shopNotes.priceNote'), max: LIMITS.priceNote, hint: t('admin.texts.shopNotes.priceNoteHint'), localized: true, optional: true },
         ],
     },
 ]);

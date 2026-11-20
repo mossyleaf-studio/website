@@ -19,7 +19,7 @@ final readonly class EditAboutHandler
     public function __invoke(EditAbout $command): SiteTextView
     {
         $text = $this->texts->current();
-        $text->editAbout($command->title, $command->text);
+        $text->editAbout($command->title, $command->text, $command->titleFr, $command->textFr);
         $this->texts->save($text);
         $this->transaction->commit();
 

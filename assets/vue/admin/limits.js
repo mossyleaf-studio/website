@@ -6,6 +6,8 @@ export const LIMITS = {
     title: 80,
     homeNote: 600,
     about: 2000,
+    announcement: 160,
+    priceNote: 160,
     linkTitle: 60,
     linkDescription: 120,
     linkUrl: 500,

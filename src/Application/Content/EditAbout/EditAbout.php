@@ -9,6 +9,8 @@ final readonly class EditAbout
     public function __construct(
         public string $title,
         public string $text,
+        public ?string $titleFr = null,
+        public ?string $textFr = null,
     ) {
     }
 }

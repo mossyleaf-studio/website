@@ -10,7 +10,7 @@ final readonly class TypefaceView
 {
     public const string URL_PREFIX = '/media/fonts/';
 
-    private function __construct(
+    public function __construct(
         public string $family,
         public int $weight,
         public string $stylesheet,

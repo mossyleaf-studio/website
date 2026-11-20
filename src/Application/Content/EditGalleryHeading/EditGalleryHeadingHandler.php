@@ -19,7 +19,7 @@ final readonly class EditGalleryHeadingHandler
     public function __invoke(EditGalleryHeading $command): SiteTextView
     {
         $text = $this->texts->current();
-        $text->editGallery($command->title);
+        $text->editGallery($command->title, $command->titleFr);
         $this->texts->save($text);
         $this->transaction->commit();
 

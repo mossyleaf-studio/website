@@ -16,6 +16,10 @@ final readonly class AboutPayload
         #[Assert\NotBlank(message: 'text.required', normalizer: 'trim')]
         #[Assert\Length(max: SiteText::MAX_ABOUT, maxMessage: 'text.too_long')]
         public string $text = '',
+        #[Assert\Length(max: SiteText::MAX_TITLE, maxMessage: 'text.too_long')]
+        public ?string $titleFr = null,
+        #[Assert\Length(max: SiteText::MAX_ABOUT, maxMessage: 'text.too_long')]
+        public ?string $textFr = null,
     ) {
     }
 }

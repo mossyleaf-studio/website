@@ -13,6 +13,8 @@ final readonly class GalleryPayload
         #[Assert\NotBlank(message: 'text.required', normalizer: 'trim')]
         #[Assert\Length(max: SiteText::MAX_TITLE, maxMessage: 'text.too_long')]
         public string $title = '',
+        #[Assert\Length(max: SiteText::MAX_TITLE, maxMessage: 'text.too_long')]
+        public ?string $titleFr = null,
     ) {
     }
 }

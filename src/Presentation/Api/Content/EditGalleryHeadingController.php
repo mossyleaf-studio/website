@@ -16,6 +16,6 @@ final class EditGalleryHeadingController extends AbstractController
 {
     public function __invoke(#[MapRequestPayload] GalleryPayload $payload, EditGalleryHeadingHandler $editGalleryHeading): JsonResponse
     {
-        return $this->json($editGalleryHeading(new EditGalleryHeading($payload->title)));
+        return $this->json($editGalleryHeading(new EditGalleryHeading($payload->title, $payload->titleFr)));
     }
 }

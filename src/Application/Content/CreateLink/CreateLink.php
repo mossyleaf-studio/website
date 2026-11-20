@@ -13,6 +13,8 @@ final readonly class CreateLink
         public string $description,
         public string $url,
         public TapeTone $tape,
+        public ?string $titleFr = null,
+        public ?string $descriptionFr = null,
     ) {
     }
 }

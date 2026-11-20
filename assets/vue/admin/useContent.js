@@ -68,7 +68,7 @@ export function useArtworks() {
             body.append('image', file);
             return api.post(ARTWORKS, body);
         },
-        describe: async (id, alt) => replaceArtwork(await api.put(`${ARTWORKS}/${id}`, { alt })),
+        describe: async (id, body) => replaceArtwork(await api.put(`${ARTWORKS}/${id}`, body)),
         feature: async (id) => {
             artworks.value = await api.put(`${ARTWORKS}/${id}/featured`);
         },

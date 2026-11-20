@@ -19,7 +19,7 @@ final readonly class EditIdentityHandler
     public function __invoke(EditIdentity $command): SiteTextView
     {
         $text = $this->texts->current();
-        $text->editIdentity($command->studioName, $command->intro, $command->metaDescription, $command->searchTitle);
+        $text->editIdentity($command->studioName, $command->intro, $command->metaDescription, $command->searchTitle, $command->introFr, $command->metaDescriptionFr, $command->searchTitleFr);
         $this->texts->save($text);
         $this->transaction->commit();
 

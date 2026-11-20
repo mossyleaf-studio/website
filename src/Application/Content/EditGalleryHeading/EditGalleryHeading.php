@@ -6,7 +6,9 @@ namespace App\Application\Content\EditGalleryHeading;
 
 final readonly class EditGalleryHeading
 {
-    public function __construct(public string $title)
-    {
+    public function __construct(
+        public string $title,
+        public ?string $titleFr = null,
+    ) {
     }
 }

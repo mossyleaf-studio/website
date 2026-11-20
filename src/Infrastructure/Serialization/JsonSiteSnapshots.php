@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Serialization;
 
+use App\Application\Content\ShopContentView;
 use App\Application\Content\SiteSnapshots;
 use App\Application\Content\SiteView;
 use Symfony\Component\Serializer\Encoder\JsonEncode;
@@ -20,5 +21,15 @@ final readonly class JsonSiteSnapshots implements SiteSnapshots
     public function encode(SiteView $site): string
     {
         return $this->serializer->serialize($site, 'json', [JsonEncode::OPTIONS => self::SAFE_IN_HTML]);
+    }
+
+    public function encodeShop(ShopContentView $shop): string
+    {
+        return $this->serializer->serialize($shop, 'json', [JsonEncode::OPTIONS => self::SAFE_IN_HTML]);
+    }
+
+    public function decodeShop(string $content): ShopContentView
+    {
+        return $this->serializer->deserialize($content, ShopContentView::class, 'json');
     }
 }

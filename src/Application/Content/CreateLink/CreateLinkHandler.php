@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Content\CreateLink;
 
-use App\Application\Content\LinkView;
+use App\Application\Content\DraftLinkView;
 use App\Application\Transaction;
 use App\Domain\Content\Link;
 use App\Domain\Content\LinkRepository;
@@ -17,12 +17,12 @@ final readonly class CreateLinkHandler
     ) {
     }
 
-    public function __invoke(CreateLink $command): LinkView
+    public function __invoke(CreateLink $command): DraftLinkView
     {
-        $link = Link::create($command->title, $command->description, $command->url, $command->tape, $this->links->nextPosition());
+        $link = Link::create($command->title, $command->description, $command->url, $command->tape, $this->links->nextPosition(), $command->titleFr, $command->descriptionFr);
         $this->links->add($link);
         $this->transaction->commit();
 
-        return LinkView::of($link);
+        return DraftLinkView::of($link);
     }
 }

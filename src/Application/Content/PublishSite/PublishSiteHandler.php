@@ -30,15 +30,16 @@ final readonly class PublishSiteHandler
     public function __invoke(PublishSite $command): PublicationView
     {
         $content = $this->snapshots->encode($this->queries->site());
+        $shopContent = $this->snapshots->encodeShop($this->queries->shop());
         $files = $this->media->draftFiles();
         $by = $this->currentUser->get()->displayName();
         $now = $this->clock->now();
 
         $site = $this->published->current();
         if (null === $site) {
-            $this->published->add(PublishedSite::first($content, $files, $command->page, $by, $now));
+            $this->published->add(PublishedSite::first($content, $shopContent, $files, $command->page, $by, $now));
         } else {
-            $site->replace($content, $files, $command->page, $by, $now);
+            $site->replace($content, $shopContent, $files, $command->page, $by, $now);
         }
         $this->transaction->commit();
         $this->media->sweep();

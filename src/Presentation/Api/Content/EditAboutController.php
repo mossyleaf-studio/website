@@ -16,6 +16,6 @@ final class EditAboutController extends AbstractController
 {
     public function __invoke(#[MapRequestPayload] AboutPayload $payload, EditAboutHandler $editAbout): JsonResponse
     {
-        return $this->json($editAbout(new EditAbout($payload->title, $payload->text)));
+        return $this->json($editAbout(new EditAbout($payload->title, $payload->text, $payload->titleFr, $payload->textFr)));
     }
 }

@@ -80,6 +80,81 @@ final class TextsApiTest extends WebTestCase
         self::assertSame([['title', 'This field cannot be empty.']], array_map(static fn (mixed $violation): array => [Json::string($violation, 'propertyPath'), Json::string($violation, 'title')], $violations));
     }
 
+    public function testTheFrenchTwinsAreSavedNextToTheEnglishTexts(): void
+    {
+        $client = self::signedInClient();
+
+        $client->jsonRequest('PUT', '/api/admin/texts/identity', ['studioName' => 'mossyleaf.studio', 'intro' => 'Little critters.', 'metaDescription' => 'Drawings', 'searchTitle' => 'Critter illustrations', 'introFr' => ' Petites bêtes. ', 'metaDescriptionFr' => 'Dessins', 'searchTitleFr' => 'Illustrations de petites bêtes']);
+        self::assertResponseIsSuccessful();
+        $client->jsonRequest('PUT', '/api/admin/texts/about', ['title' => 'About', 'text' => 'A tiny studio.', 'titleFr' => 'À propos', 'textFr' => "Un studio.\r\n\r\nTout petit."]);
+        self::assertResponseIsSuccessful();
+        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Sketchbook', 'titleFr' => 'Carnet']);
+        self::assertResponseIsSuccessful();
+        $client->jsonRequest('PUT', '/api/admin/texts/shop-notes', ['announcement' => 'Free shipping from 40 €', 'announcementFr' => 'Livraison offerte dès 40 €', 'priceNote' => '', 'priceNoteFr' => 'TVA non applicable, art. 293 B du CGI']);
+        self::assertResponseIsSuccessful();
+
+        $client->jsonRequest('GET', '/api/admin/texts');
+        $texts = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame([
+            'introFr' => 'Petites bêtes.',
+            'metaDescriptionFr' => 'Dessins',
+            'searchTitleFr' => 'Illustrations de petites bêtes',
+            'aboutTitleFr' => 'À propos',
+            'aboutTextFr' => "Un studio.\n\nTout petit.",
+            'galleryTitleFr' => 'Carnet',
+            'announcement' => 'Free shipping from 40 €',
+            'announcementFr' => 'Livraison offerte dès 40 €',
+            'priceNote' => '',
+            'priceNoteFr' => 'TVA non applicable, art. 293 B du CGI',
+        ], array_intersect_key($texts, array_flip(['introFr', 'metaDescriptionFr', 'searchTitleFr', 'aboutTitleFr', 'aboutTextFr', 'galleryTitleFr', 'announcement', 'announcementFr', 'priceNote', 'priceNoteFr'])));
+        self::assertSame(['Little critters.', 'About', 'Sketchbook'], [Json::string($texts, 'intro'), Json::string($texts, 'aboutTitle'), Json::string($texts, 'galleryTitle')]);
+    }
+
+    public function testAPayloadWithoutFrenchIsStillAcceptedAndLeavesFrenchAsItIs(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('PUT', '/api/admin/texts/identity', ['studioName' => 'mossyleaf.studio', 'intro' => 'Little critters.', 'metaDescription' => 'Drawings', 'introFr' => 'Petites bêtes.', 'metaDescriptionFr' => 'Dessins', 'searchTitleFr' => 'Illustrations']);
+        $client->jsonRequest('PUT', '/api/admin/texts/about', ['title' => 'About', 'text' => 'A tiny studio.', 'titleFr' => 'À propos', 'textFr' => 'Un studio.']);
+        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Sketchbook', 'titleFr' => 'Carnet']);
+
+        $client->jsonRequest('PUT', '/api/admin/texts/identity', ['studioName' => 'mossyleaf.studio', 'intro' => 'Tiny critters.', 'metaDescription' => 'Drawings', 'searchTitle' => '']);
+        self::assertResponseIsSuccessful();
+        $client->jsonRequest('PUT', '/api/admin/texts/about', ['title' => 'Hello', 'text' => 'A tiny studio.']);
+        self::assertResponseIsSuccessful();
+        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Drawings']);
+        self::assertResponseIsSuccessful();
+
+        $texts = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame(['Tiny critters.', 'Petites bêtes.', 'Dessins', 'Illustrations', 'Hello', 'À propos', 'Un studio.', 'Drawings', 'Carnet'], [
+            Json::string($texts, 'intro'),
+            Json::string($texts, 'introFr'),
+            Json::string($texts, 'metaDescriptionFr'),
+            Json::string($texts, 'searchTitleFr'),
+            Json::string($texts, 'aboutTitle'),
+            Json::string($texts, 'aboutTitleFr'),
+            Json::string($texts, 'aboutTextFr'),
+            Json::string($texts, 'galleryTitle'),
+            Json::string($texts, 'galleryTitleFr'),
+        ]);
+    }
+
+    public function testAFrenchTextIsEmptiedOnItsOwnAndRefusedWhenTooLong(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Sketchbook', 'titleFr' => 'Carnet']);
+
+        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Sketchbook', 'titleFr' => '']);
+        self::assertSame('', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'galleryTitleFr'));
+
+        $client->jsonRequest('PUT', '/api/admin/texts/identity', ['studioName' => 'mossyleaf.studio', 'intro' => 'Little critters.', 'metaDescription' => 'Drawings', 'introFr' => str_repeat('é', 201)]);
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame(['introFr'], array_column(Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations'), 'propertyPath'));
+
+        $client->jsonRequest('PUT', '/api/admin/texts/shop-notes', ['announcement' => str_repeat('a', 161), 'priceNoteFr' => str_repeat('a', 161)]);
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame(['announcement', 'priceNoteFr'], array_column(Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations'), 'propertyPath'));
+    }
+
     public function testAnyGoogleFontIsDownloadedAndServedByTheSite(): void
     {
         $client = self::signedInClient();

@@ -26,6 +26,9 @@ class Artwork
     #[ORM\Column(length: self::MAX_ALT)]
     private string $alt = '';
 
+    #[ORM\Column(length: self::MAX_ALT, options: ['default' => ''])]
+    private string $altFr = '';
+
     #[ORM\Column]
     private int $width;
 
@@ -59,13 +62,18 @@ class Artwork
         return $artwork;
     }
 
-    public function describe(string $alt): void
+    public function describe(string $alt, ?string $altFr = null): void
     {
         $alt = trim($alt);
+        $altFr = trim($altFr ?? $this->altFr);
         if (mb_strlen($alt) > self::MAX_ALT) {
             throw new TextTooLong('artwork_alt', self::MAX_ALT);
         }
+        if (mb_strlen($altFr) > self::MAX_ALT) {
+            throw new TextTooLong('artwork_alt_fr', self::MAX_ALT);
+        }
         $this->alt = $alt;
+        $this->altFr = $altFr;
     }
 
     public function feature(): void
@@ -96,6 +104,11 @@ class Artwork
     public function alt(): string
     {
         return $this->alt;
+    }
+
+    public function altFr(): string
+    {
+        return $this->altFr;
     }
 
     public function width(): int

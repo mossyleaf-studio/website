@@ -29,6 +29,12 @@ class Link
     #[ORM\Column(length: self::MAX_DESCRIPTION)]
     private string $description;
 
+    #[ORM\Column(length: self::MAX_TITLE, options: ['default' => ''])]
+    private string $titleFr = '';
+
+    #[ORM\Column(length: self::MAX_DESCRIPTION, options: ['default' => ''])]
+    private string $descriptionFr = '';
+
     #[ORM\Column(length: self::MAX_URL)]
     private string $url;
 
@@ -44,18 +50,20 @@ class Link
         $this->position = $position;
     }
 
-    public static function create(string $title, string $description, string $url, TapeTone $tape, int $position): self
+    public static function create(string $title, string $description, string $url, TapeTone $tape, int $position, ?string $titleFr = null, ?string $descriptionFr = null): self
     {
         $link = new self($position);
-        $link->edit($title, $description, $url, $tape);
+        $link->edit($title, $description, $url, $tape, $titleFr, $descriptionFr);
 
         return $link;
     }
 
-    public function edit(string $title, string $description, string $url, TapeTone $tape): void
+    public function edit(string $title, string $description, string $url, TapeTone $tape, ?string $titleFr = null, ?string $descriptionFr = null): void
     {
         $this->title = self::text('link_title', $title, self::MAX_TITLE);
         $this->description = self::text('link_description', $description, self::MAX_DESCRIPTION);
+        $this->titleFr = self::optional('link_title_fr', $titleFr, self::MAX_TITLE, $this->titleFr);
+        $this->descriptionFr = self::optional('link_description_fr', $descriptionFr, self::MAX_DESCRIPTION, $this->descriptionFr);
         $this->url = self::validUrl($url);
         $this->tape = $tape;
     }
@@ -80,6 +88,16 @@ class Link
         return $this->description;
     }
 
+    public function titleFr(): string
+    {
+        return $this->titleFr;
+    }
+
+    public function descriptionFr(): string
+    {
+        return $this->descriptionFr;
+    }
+
     public function url(): string
     {
         return $this->url;
@@ -101,6 +119,19 @@ class Link
         if ('' === $value) {
             throw new EmptyText($field);
         }
+        if (mb_strlen($value) > $max) {
+            throw new TextTooLong($field, $max);
+        }
+
+        return $value;
+    }
+
+    private static function optional(string $field, ?string $value, int $max, string $unchanged): string
+    {
+        if (null === $value) {
+            return $unchanged;
+        }
+        $value = trim($value);
         if (mb_strlen($value) > $max) {
             throw new TextTooLong($field, $max);
         }

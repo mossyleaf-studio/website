@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Content\UploadArtwork;
 
 use App\Application\Content\ArtworkStorage;
-use App\Application\Content\ArtworkView;
+use App\Application\Content\DraftArtworkView;
 use App\Application\Content\ImageResizer;
 use App\Application\Transaction;
 use App\Domain\Content\Artwork;
@@ -24,7 +24,7 @@ final readonly class UploadArtworkHandler
     ) {
     }
 
-    public function __invoke(UploadArtwork $command): ArtworkView
+    public function __invoke(UploadArtwork $command): DraftArtworkView
     {
         $image = $this->resizer->resize($command->path);
         $id = new Ulid();
@@ -34,6 +34,6 @@ final readonly class UploadArtworkHandler
         $this->artworks->add($artwork);
         $this->transaction->commit();
 
-        return ArtworkView::of($artwork);
+        return DraftArtworkView::of($artwork);
     }
 }

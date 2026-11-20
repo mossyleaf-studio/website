@@ -17,6 +17,6 @@ final class CreateLinkController extends AbstractController
 {
     public function __invoke(#[MapRequestPayload] LinkPayload $payload, CreateLinkHandler $createLink): JsonResponse
     {
-        return $this->json($createLink(new CreateLink($payload->title, $payload->description, $payload->url, $payload->tape)), Response::HTTP_CREATED);
+        return $this->json($createLink(new CreateLink($payload->title, $payload->description, $payload->url, $payload->tape, $payload->titleFr, $payload->descriptionFr)), Response::HTTP_CREATED);
     }
 }

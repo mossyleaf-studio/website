@@ -3,6 +3,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../../components/ui/BaseButton.vue';
 import FormField from '../../components/ui/FormField.vue';
+import LocalizedField from '../../components/ui/LocalizedField.vue';
 import { ApiError } from '../../composables/useApi.js';
 import { useToast } from '../../composables/useToast.js';
 import { useTexts } from '../useContent.js';
@@ -23,19 +24,32 @@ const form = reactive({});
 const errors = ref({});
 const saving = ref(false);
 
-function reset() {
-    props.fields.forEach((field) => { form[field.name] = props.values[field.source] ?? ''; });
+function stored(field) {
+    const english = props.values[field.source] ?? '';
+    return field.localized ? { en: english, fr: props.values[`${field.source}Fr`] ?? '' } : english;
 }
 
-watch(() => JSON.stringify(props.fields.map((field) => props.values[field.source] ?? '')), reset, { immediate: true });
+function reset() {
+    props.fields.forEach((field) => { form[field.name] = stored(field); });
+}
 
-const changed = computed(() => props.fields.some((field) => form[field.name] !== (props.values[field.source] ?? '')));
+const saved = computed(() => JSON.stringify(props.fields.map(stored)));
+
+watch(saved, reset, { immediate: true });
+
+const changed = computed(() => JSON.stringify(props.fields.map((field) => form[field.name])) !== saved.value);
+
+function payload() {
+    return Object.fromEntries(props.fields.flatMap((field) => (field.localized
+        ? [[field.name, form[field.name].en], [`${field.name}Fr`, form[field.name].fr]]
+        : [[field.name, form[field.name]]])));
+}
 
 async function submit() {
     saving.value = true;
     errors.value = {};
     try {
-        await save(props.section, { ...form });
+        await save(props.section, payload());
         toast.success(t('admin.saved'));
     } catch (error) {
         if (error instanceof ApiError && error.violations.length) {
@@ -55,16 +69,29 @@ async function submit() {
             <h2 class="text-section__title">{{ title }}</h2>
             <a v-if="preview" class="text-section__preview" :href="preview.href" target="_blank" rel="noopener">{{ preview.label }}</a>
         </header>
-        <FormField
-            v-for="field in fields"
-            :key="field.name"
-            :label="field.label"
-            :error="errors[field.name]"
-            :hint="[field.hint, t('admin.count', { count: (form[field.name] ?? '').length, max: field.max })].filter(Boolean).join(' · ')"
-        >
-            <textarea v-if="field.rows" v-model="form[field.name]" :rows="field.rows" :maxlength="field.max" :name="field.name" />
-            <input v-else v-model="form[field.name]" type="text" :maxlength="field.max" :name="field.name" />
-        </FormField>
+        <template v-for="field in fields" :key="field.name">
+            <LocalizedField
+                v-if="field.localized"
+                v-model="form[field.name]"
+                :label="field.label"
+                :name="field.name"
+                :max="field.max"
+                :rows="field.rows"
+                :hint="field.hint"
+                :required="!field.optional"
+                :own-default="field.ownDefault"
+                :errors="{ en: errors[field.name], fr: errors[`${field.name}Fr`] }"
+            />
+            <FormField
+                v-else
+                :label="field.label"
+                :error="errors[field.name]"
+                :hint="[field.hint, t('admin.count', { count: (form[field.name] ?? '').length, max: field.max })].filter(Boolean).join(' · ')"
+            >
+                <textarea v-if="field.rows" v-model="form[field.name]" :rows="field.rows" :maxlength="field.max" :name="field.name" />
+                <input v-else v-model="form[field.name]" type="text" :maxlength="field.max" :name="field.name" />
+            </FormField>
+        </template>
         <div class="text-section__actions">
             <BaseButton v-if="changed" variant="ghost" @click="reset">{{ t('common.cancel') }}</BaseButton>
             <BaseButton type="submit" :loading="saving" :disabled="!changed">{{ t('common.save') }}</BaseButton>

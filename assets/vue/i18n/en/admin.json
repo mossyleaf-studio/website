@@ -9,6 +9,15 @@
     },
     "count": "{count} / {max}",
     "saved": "Saved.",
+    "localized": {
+        "fr": "Français",
+        "en": "English",
+        "name": "{label} ({language})",
+        "missing": {
+            "fr": "Empty: French pages show the English text.",
+            "en": "Empty: English pages show the French text."
+        }
+    },
     "publish": {
         "never": "Not published yet: visitors see the growing note",
         "fullSince": "Full page published {when} by {by}",
@@ -75,6 +84,13 @@
         "gallery": {
             "title": "Gallery",
             "galleryTitle": "Title above the drawings"
+        },
+        "shopNotes": {
+            "title": "Shop notes",
+            "announcement": "Announcement bar",
+            "announcementHint": "One line at the very top of every shop page, e.g. “Free shipping from 40 €”. Empty: no bar.",
+            "priceNote": "Line under the prices",
+            "priceNoteHint": "E.g. “VAT not applicable, art. 293 B of the French tax code”. Empty: no line."
         }
     },
     "links": {

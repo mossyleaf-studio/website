@@ -1,11 +1,11 @@
 <script setup>
 import { ArrowDown, ArrowUp, GripVertical, Star, Trash2 } from '@lucide/vue';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../../components/ui/BaseButton.vue';
 import ConfirmButton from '../../components/ui/ConfirmButton.vue';
-import FormField from '../../components/ui/FormField.vue';
 import IconButton from '../../components/ui/IconButton.vue';
+import LocalizedField from '../../components/ui/LocalizedField.vue';
 import { useToast } from '../../composables/useToast.js';
 import { LIMITS } from '../limits.js';
 import { useArtworks } from '../useContent.js';
@@ -22,13 +22,15 @@ const { t } = useI18n();
 const toast = useToast();
 const artworks = useArtworks();
 
-const alt = ref(props.artwork.alt);
+const alt = ref({ en: '', fr: '' });
 const savingAlt = ref(false);
-watch(() => props.artwork.alt, (value) => { alt.value = value; });
+watch([() => props.artwork.alt, () => props.artwork.altFr], ([en, fr]) => { alt.value = { en, fr }; }, { immediate: true });
+
+const altChanged = computed(() => alt.value.en !== props.artwork.alt || alt.value.fr !== props.artwork.altFr);
 
 async function saveAlt() {
     savingAlt.value = true;
-    await toast.attempt(() => artworks.describe(props.artwork.id, alt.value), t('admin.saved'));
+    await toast.attempt(() => artworks.describe(props.artwork.id, { alt: alt.value.en, altFr: alt.value.fr }), t('admin.saved'));
     savingAlt.value = false;
 }
 
@@ -49,10 +51,8 @@ function remove() {
             <span v-if="artwork.featured" class="artwork-card__badge"><Star size="0.8rem" aria-hidden="true" />{{ t('admin.images.featured') }}</span>
         </div>
         <form class="artwork-card__body" @submit.prevent="saveAlt">
-            <FormField :label="t('admin.images.alt')" :hint="t('admin.images.altHint')">
-                <textarea v-model="alt" rows="2" name="alt" :maxlength="LIMITS.alt" />
-            </FormField>
-            <BaseButton v-if="alt !== artwork.alt" type="submit" variant="secondary" :loading="savingAlt">{{ t('admin.images.saveAlt') }}</BaseButton>
+            <LocalizedField v-model="alt" :label="t('admin.images.alt')" :hint="t('admin.images.altHint')" name="alt" :max="LIMITS.alt" :rows="2" />
+            <BaseButton v-if="altChanged" type="submit" variant="secondary" :loading="savingAlt">{{ t('admin.images.saveAlt') }}</BaseButton>
         </form>
         <footer class="artwork-card__actions">
             <BaseButton variant="secondary" :aria-pressed="artwork.featured" @click="toggleFeatured">
@@ -111,7 +111,6 @@ function remove() {
 
 .artwork-card__body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); padding: var(--space-3) var(--space-4) 0; }
 .artwork-card__body :deep(.form-field) { width: 100%; }
-.artwork-card__body textarea { min-height: 3.5rem; }
 .artwork-card__actions { display: flex; align-items: center; gap: var(--space-1); margin-top: auto; padding: var(--space-3) var(--space-4); }
 .artwork-card__spacer { flex: 1; }
 </style>

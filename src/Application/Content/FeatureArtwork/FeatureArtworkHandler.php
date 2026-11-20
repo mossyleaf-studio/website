@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Content\FeatureArtwork;
 
-use App\Application\Content\ArtworkView;
+use App\Application\Content\DraftArtworkView;
 use App\Application\Transaction;
 use App\Domain\Content\ArtworkRepository;
 
@@ -16,7 +16,7 @@ final readonly class FeatureArtworkHandler
     ) {
     }
 
-    /** @return list<ArtworkView> */
+    /** @return list<DraftArtworkView> */
     public function __invoke(FeatureArtwork $command): array
     {
         $artwork = $this->artworks->get($command->id);
@@ -24,6 +24,6 @@ final readonly class FeatureArtworkHandler
         $artwork->feature();
         $this->transaction->commit();
 
-        return ArtworkView::list($this->artworks->all());
+        return DraftArtworkView::list($this->artworks->all());
     }
 }

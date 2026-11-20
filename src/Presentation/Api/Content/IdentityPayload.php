@@ -21,6 +21,12 @@ final readonly class IdentityPayload
         public string $metaDescription = '',
         #[Assert\Length(max: SiteText::MAX_SEARCH_TITLE, maxMessage: 'text.too_long')]
         public string $searchTitle = '',
+        #[Assert\Length(max: SiteText::MAX_INTRO, maxMessage: 'text.too_long')]
+        public ?string $introFr = null,
+        #[Assert\Length(max: SiteText::MAX_META_DESCRIPTION, maxMessage: 'text.too_long')]
+        public ?string $metaDescriptionFr = null,
+        #[Assert\Length(max: SiteText::MAX_SEARCH_TITLE, maxMessage: 'text.too_long')]
+        public ?string $searchTitleFr = null,
     ) {
     }
 }

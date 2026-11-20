@@ -11,6 +11,7 @@ final readonly class DescribeArtwork
     public function __construct(
         public Ulid $id,
         public string $alt,
+        public ?string $altFr = null,
     ) {
     }
 }

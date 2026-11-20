@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
+use App\Domain\Content\PublishedSiteRepository;
 use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -54,6 +55,43 @@ final class PublicationApiTest extends WebTestCase
         self::assertSame('Snails on the moss', Json::string(Json::decode($crawler->filter('#site-content')->text()), 'intro'));
     }
 
+    public function testAFrenchOrShopTextAloneWaitsForPublication(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/admin/publication', ['page' => 'note']);
+        self::assertFalse(Json::decode((string) $client->getResponse()->getContent())['pendingChanges']);
+
+        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Recent drawings', 'titleFr' => 'Dessins récents']);
+        self::assertTrue(self::pendingChanges($client));
+
+        $client->jsonRequest('POST', '/api/admin/publication', ['page' => 'note']);
+        self::assertFalse(Json::decode((string) $client->getResponse()->getContent())['pendingChanges']);
+
+        $client->jsonRequest('PUT', '/api/admin/texts/shop-notes', ['announcement' => 'Free shipping from 40 €']);
+        self::assertTrue(self::pendingChanges($client));
+    }
+
+    public function testPublishingFreezesTheShopTextsNextToThePage(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('PUT', '/api/admin/texts/identity', ['studioName' => 'mossyleaf.studio', 'intro' => 'Frogs in the ferns', 'metaDescription' => 'Drawings', 'introFr' => 'Grenouilles dans les fougères']);
+        $client->jsonRequest('PUT', '/api/admin/texts/shop-notes', ['priceNoteFr' => 'TVA non applicable']);
+
+        $client->jsonRequest('POST', '/api/admin/publication', ['page' => 'full']);
+        self::assertResponseIsSuccessful();
+        $client->jsonRequest('PUT', '/api/admin/texts/identity', ['studioName' => 'mossyleaf.studio', 'intro' => 'Snails on the moss', 'metaDescription' => 'Drawings', 'introFr' => 'Escargots sur la mousse']);
+
+        $site = self::getContainer()->get(PublishedSiteRepository::class)->current();
+        self::assertNotNull($site);
+        $shop = Json::decode((string) $site->shopContent());
+        self::assertSame(['Frogs in the ferns', 'Grenouilles dans les fougères'], [Json::string($shop, 'intro', 'en'), Json::string($shop, 'intro', 'fr')]);
+        self::assertSame(['TVA non applicable', 'TVA non applicable'], [Json::string($shop, 'priceNote', 'en'), Json::string($shop, 'priceNote', 'fr')]);
+        self::assertSame(['Shop on Etsy', 'Shop on Etsy'], [Json::string($shop, 'links', 0, 'title', 'en'), Json::string($shop, 'links', 0, 'title', 'fr')]);
+        self::assertSame('Frogs in the ferns', Json::string(Json::decode($site->content()), 'intro'));
+        self::assertStringNotContainsString('Grenouilles', $site->content());
+        self::assertStringNotContainsString('TVA', $site->content());
+    }
+
     public function testTheGrowingNoteCanBePublishedAgain(): void
     {
         $client = self::signedInClient();
@@ -88,6 +126,13 @@ final class PublicationApiTest extends WebTestCase
         $client->jsonRequest('POST', '/api/admin/publication', ['page' => 'full']);
 
         self::assertResponseStatusCodeSame(401);
+    }
+
+    private static function pendingChanges(KernelBrowser $client): bool
+    {
+        $client->jsonRequest('GET', '/api/admin/publication');
+
+        return true === Json::at(Json::decode((string) $client->getResponse()->getContent()), 'pendingChanges');
     }
 
     private static function editIntro(KernelBrowser $client, string $intro): void

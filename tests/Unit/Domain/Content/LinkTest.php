@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Content;
 
 use App\Domain\Content\Exception\InvalidLinkUrl;
+use App\Domain\Content\Exception\TextTooLong;
 use App\Domain\Content\Link;
 use App\Domain\Content\TapeTone;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -17,6 +18,26 @@ final class LinkTest extends TestCase
         $link = Link::create(' Shop on Etsy ', 'Prints', ' https://www.etsy.com/shop/mossyleafstudio ', TapeTone::Blossom, 3);
 
         self::assertSame(['Shop on Etsy', 'https://www.etsy.com/shop/mossyleafstudio', TapeTone::Blossom, 3], [$link->title(), $link->url(), $link->tape(), $link->position()]);
+    }
+
+    public function testTheFrenchTextsAreOptionalAndStayWhenAnEditLeavesThemOut(): void
+    {
+        $link = Link::create('Shop on Etsy', 'Prints', 'https://www.etsy.com/shop/mossyleafstudio', TapeTone::Leaf, 0);
+        self::assertSame(['', ''], [$link->titleFr(), $link->descriptionFr()]);
+
+        $link->edit('Shop on Etsy', 'Prints', 'https://www.etsy.com/shop/mossyleafstudio', TapeTone::Leaf, ' Boutique Etsy ', 'Affiches');
+        $link->edit('Etsy', 'Prints', 'https://www.etsy.com/shop/mossyleafstudio', TapeTone::Leaf);
+        self::assertSame(['Etsy', 'Boutique Etsy', 'Affiches'], [$link->title(), $link->titleFr(), $link->descriptionFr()]);
+
+        $link->edit('Etsy', 'Prints', 'https://www.etsy.com/shop/mossyleafstudio', TapeTone::Leaf, '', 'Affiches');
+        self::assertSame('', $link->titleFr());
+    }
+
+    public function testAFrenchTextIsNotLongerThanItsEnglishTwin(): void
+    {
+        $this->expectException(TextTooLong::class);
+
+        Link::create('Shop', 'Prints', 'https://example.com', TapeTone::Leaf, 0, 'Boutique', str_repeat('é', Link::MAX_DESCRIPTION + 1));
     }
 
     /**

@@ -9,6 +9,15 @@
     },
     "count": "{count} / {max}",
     "saved": "Enregistré.",
+    "localized": {
+        "fr": "Français",
+        "en": "English",
+        "name": "{label} ({language})",
+        "missing": {
+            "fr": "Vide : les pages en français affichent le texte anglais.",
+            "en": "Vide : les pages en anglais affichent le texte français."
+        }
+    },
     "publish": {
         "never": "Pas encore publié : les visiteurs voient la note « en construction »",
         "fullSince": "Page complète publiée le {when} par {by}",
@@ -75,6 +84,13 @@
         "gallery": {
             "title": "Galerie",
             "galleryTitle": "Titre au-dessus des dessins"
+        },
+        "shopNotes": {
+            "title": "Notes de la boutique",
+            "announcement": "Bandeau d’annonce",
+            "announcementHint": "Une ligne tout en haut de chaque page de la boutique, par exemple « Livraison offerte dès 40 € ». Vide : pas de bandeau.",
+            "priceNote": "Ligne sous les prix",
+            "priceNoteHint": "Par exemple « TVA non applicable, art. 293 B du CGI ». Vide : pas de ligne."
         }
     },
     "links": {

@@ -18,6 +18,6 @@ final class DescribeArtworkController extends AbstractController
 {
     public function __invoke(Ulid $id, #[MapRequestPayload] AltPayload $payload, DescribeArtworkHandler $describeArtwork): JsonResponse
     {
-        return $this->json($describeArtwork(new DescribeArtwork($id, $payload->alt)));
+        return $this->json($describeArtwork(new DescribeArtwork($id, $payload->alt, $payload->altFr)));
     }
 }

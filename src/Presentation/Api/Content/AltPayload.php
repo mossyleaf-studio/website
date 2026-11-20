@@ -12,6 +12,8 @@ final readonly class AltPayload
     public function __construct(
         #[Assert\Length(max: Artwork::MAX_ALT, maxMessage: 'text.too_long')]
         public string $alt = '',
+        #[Assert\Length(max: Artwork::MAX_ALT, maxMessage: 'text.too_long')]
+        public ?string $altFr = null,
     ) {
     }
 }

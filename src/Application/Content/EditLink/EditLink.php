@@ -15,6 +15,8 @@ final readonly class EditLink
         public string $description,
         public string $url,
         public TapeTone $tape,
+        public ?string $titleFr = null,
+        public ?string $descriptionFr = null,
     ) {
     }
 }

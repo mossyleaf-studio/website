@@ -8,7 +8,7 @@ use App\Domain\Content\Logo;
 
 final readonly class ImageView
 {
-    private function __construct(
+    public function __construct(
         public string $url,
         public int $width,
         public int $height,

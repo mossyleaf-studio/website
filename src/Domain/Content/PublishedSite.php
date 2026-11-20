@@ -19,6 +19,9 @@ class PublishedSite
     #[ORM\Column(type: 'text')]
     private string $content;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $shopContent;
+
     /** @var list<string> */
     #[ORM\Column(type: 'json')]
     private array $files;
@@ -33,9 +36,10 @@ class PublishedSite
     private string $publishedBy;
 
     /** @param list<string> $files */
-    private function __construct(string $content, array $files, PublicPage $page, string $publishedBy, \DateTimeImmutable $now)
+    private function __construct(string $content, string $shopContent, array $files, PublicPage $page, string $publishedBy, \DateTimeImmutable $now)
     {
         $this->content = $content;
+        $this->shopContent = $shopContent;
         $this->files = $files;
         $this->page = $page;
         $this->publishedBy = $publishedBy;
@@ -43,15 +47,16 @@ class PublishedSite
     }
 
     /** @param list<string> $files */
-    public static function first(string $content, array $files, PublicPage $page, string $publishedBy, \DateTimeImmutable $now): self
+    public static function first(string $content, string $shopContent, array $files, PublicPage $page, string $publishedBy, \DateTimeImmutable $now): self
     {
-        return new self($content, $files, $page, $publishedBy, $now);
+        return new self($content, $shopContent, $files, $page, $publishedBy, $now);
     }
 
     /** @param list<string> $files */
-    public function replace(string $content, array $files, PublicPage $page, string $publishedBy, \DateTimeImmutable $now): void
+    public function replace(string $content, string $shopContent, array $files, PublicPage $page, string $publishedBy, \DateTimeImmutable $now): void
     {
         $this->content = $content;
+        $this->shopContent = $shopContent;
         $this->files = $files;
         $this->page = $page;
         $this->publishedBy = $publishedBy;
@@ -61,6 +66,11 @@ class PublishedSite
     public function content(): string
     {
         return $this->content;
+    }
+
+    public function shopContent(): ?string
+    {
+        return $this->shopContent;
     }
 
     /** @return list<string> */

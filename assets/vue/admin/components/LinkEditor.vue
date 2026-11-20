@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import BaseButton from '../../components/ui/BaseButton.vue';
 import BaseModal from '../../components/ui/BaseModal.vue';
 import FormField from '../../components/ui/FormField.vue';
+import LocalizedField from '../../components/ui/LocalizedField.vue';
 import { ApiError } from '../../composables/useApi.js';
 import { useToast } from '../../composables/useToast.js';
 import { LIMITS } from '../limits.js';
@@ -22,7 +23,7 @@ const { t } = useI18n();
 const toast = useToast();
 const links = useLinks();
 
-const form = reactive({ title: '', description: '', url: 'https://', tape: 'leaf' });
+const form = reactive({ title: { en: '', fr: '' }, description: { en: '', fr: '' }, url: 'https://', tape: 'leaf' });
 const errors = ref({});
 const saving = ref(false);
 
@@ -30,18 +31,22 @@ watch(open, (isOpen) => {
     if (!isOpen) return;
     errors.value = {};
     Object.assign(form, props.link
-        ? { title: props.link.title, description: props.link.description, url: props.link.url, tape: props.link.tape }
-        : { title: '', description: '', url: 'https://', tape: 'leaf' });
+        ? { title: { en: props.link.title, fr: props.link.titleFr }, description: { en: props.link.description, fr: props.link.descriptionFr }, url: props.link.url, tape: props.link.tape }
+        : { title: { en: '', fr: '' }, description: { en: '', fr: '' }, url: 'https://', tape: 'leaf' });
 });
+
+function payload() {
+    return { title: form.title.en, titleFr: form.title.fr, description: form.description.en, descriptionFr: form.description.fr, url: form.url, tape: form.tape };
+}
 
 async function submit() {
     saving.value = true;
     errors.value = {};
     try {
         if (props.link) {
-            await links.edit(props.link.id, { ...form });
+            await links.edit(props.link.id, payload());
         } else {
-            await links.create({ ...form });
+            await links.create(payload());
         }
         open.value = false;
         toast.success(t('admin.saved'));
@@ -60,12 +65,8 @@ async function submit() {
 <template>
     <BaseModal v-model:open="open" :title="link ? t('admin.links.editTitle') : t('admin.links.newTitle')">
         <form class="link-editor" data-test="link-editor" @submit.prevent="submit">
-            <FormField :label="t('admin.links.fields.title')" :error="errors.title">
-                <input v-model="form.title" type="text" name="title" :maxlength="LIMITS.linkTitle" required />
-            </FormField>
-            <FormField :label="t('admin.links.fields.description')" :error="errors.description">
-                <input v-model="form.description" type="text" name="description" :maxlength="LIMITS.linkDescription" required />
-            </FormField>
+            <LocalizedField v-model="form.title" :label="t('admin.links.fields.title')" name="title" :max="LIMITS.linkTitle" required :errors="{ en: errors.title, fr: errors.titleFr }" />
+            <LocalizedField v-model="form.description" :label="t('admin.links.fields.description')" name="description" :max="LIMITS.linkDescription" required :errors="{ en: errors.description, fr: errors.descriptionFr }" />
             <FormField :label="t('admin.links.fields.url')" :error="errors.url">
                 <input v-model="form.url" type="url" name="url" inputmode="url" :maxlength="LIMITS.linkUrl" required />
             </FormField>

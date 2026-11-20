@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Content\ReorderLinks;
 
-use App\Application\Content\LinkView;
+use App\Application\Content\DraftLinkView;
 use App\Application\Transaction;
 use App\Domain\Content\Link;
 use App\Domain\Content\LinkRepository;
@@ -18,7 +18,7 @@ final readonly class ReorderLinksHandler
     ) {
     }
 
-    /** @return list<LinkView> */
+    /** @return list<DraftLinkView> */
     public function __invoke(ReorderLinks $command): array
     {
         $links = $this->links->all();
@@ -27,6 +27,6 @@ final readonly class ReorderLinksHandler
 
         usort($links, static fn (Link $a, Link $b): int => $a->position() <=> $b->position());
 
-        return LinkView::list($links);
+        return DraftLinkView::list($links);
     }
 }

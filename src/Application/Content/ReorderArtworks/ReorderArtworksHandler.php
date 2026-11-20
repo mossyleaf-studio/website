@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Content\ReorderArtworks;
 
-use App\Application\Content\ArtworkView;
+use App\Application\Content\DraftArtworkView;
 use App\Application\Transaction;
 use App\Domain\Content\Artwork;
 use App\Domain\Content\ArtworkRepository;
@@ -18,7 +18,7 @@ final readonly class ReorderArtworksHandler
     ) {
     }
 
-    /** @return list<ArtworkView> */
+    /** @return list<DraftArtworkView> */
     public function __invoke(ReorderArtworks $command): array
     {
         $artworks = $this->artworks->all();
@@ -27,6 +27,6 @@ final readonly class ReorderArtworksHandler
 
         usort($artworks, static fn (Artwork $a, Artwork $b): int => $a->position() <=> $b->position());
 
-        return ArtworkView::list($artworks);
+        return DraftArtworkView::list($artworks);
     }
 }

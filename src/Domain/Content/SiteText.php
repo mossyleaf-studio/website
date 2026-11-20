@@ -19,6 +19,8 @@ class SiteText
     public const int MAX_TITLE = 80;
     public const int MAX_HOME_NOTE = 600;
     public const int MAX_ABOUT = 2000;
+    public const int MAX_ANNOUNCEMENT = 160;
+    public const int MAX_PRICE_NOTE = 160;
 
     private const int ID = 1;
 
@@ -52,6 +54,36 @@ class SiteText
 
     #[ORM\Column(length: self::MAX_TITLE)]
     private string $galleryTitle;
+
+    #[ORM\Column(length: self::MAX_INTRO, options: ['default' => ''])]
+    private string $introFr = '';
+
+    #[ORM\Column(length: self::MAX_META_DESCRIPTION, options: ['default' => ''])]
+    private string $metaDescriptionFr = '';
+
+    #[ORM\Column(length: self::MAX_SEARCH_TITLE, options: ['default' => ''])]
+    private string $searchTitleFr = '';
+
+    #[ORM\Column(length: self::MAX_TITLE, options: ['default' => ''])]
+    private string $aboutTitleFr = '';
+
+    #[ORM\Column(length: self::MAX_ABOUT, options: ['default' => ''])]
+    private string $aboutTextFr = '';
+
+    #[ORM\Column(length: self::MAX_TITLE, options: ['default' => ''])]
+    private string $galleryTitleFr = '';
+
+    #[ORM\Column(length: self::MAX_ANNOUNCEMENT, options: ['default' => ''])]
+    private string $announcement = '';
+
+    #[ORM\Column(length: self::MAX_ANNOUNCEMENT, options: ['default' => ''])]
+    private string $announcementFr = '';
+
+    #[ORM\Column(length: self::MAX_PRICE_NOTE, options: ['default' => ''])]
+    private string $priceNote = '';
+
+    #[ORM\Column(length: self::MAX_PRICE_NOTE, options: ['default' => ''])]
+    private string $priceNoteFr = '';
 
     #[ORM\Column(length: 64, nullable: true)]
     private ?string $logoFile = null;
@@ -97,16 +129,23 @@ class SiteText
         return new self();
     }
 
-    public function editIdentity(string $studioName, string $intro, string $metaDescription, string $searchTitle = ''): void
+    public function editIdentity(string $studioName, string $intro, string $metaDescription, string $searchTitle = '', ?string $introFr = null, ?string $metaDescriptionFr = null, ?string $searchTitleFr = null): void
     {
         $this->studioName = self::text('studio_name', $studioName, self::MAX_STUDIO_NAME);
         $this->intro = self::text('intro', $intro, self::MAX_INTRO);
         $this->metaDescription = self::text('meta_description', $metaDescription, self::MAX_META_DESCRIPTION);
-        $searchTitle = trim($searchTitle);
-        if (mb_strlen($searchTitle) > self::MAX_SEARCH_TITLE) {
-            throw new TextTooLong('search_title', self::MAX_SEARCH_TITLE);
-        }
-        $this->searchTitle = $searchTitle;
+        $this->searchTitle = self::optional('search_title', $searchTitle, self::MAX_SEARCH_TITLE, '');
+        $this->introFr = self::optional('intro_fr', $introFr, self::MAX_INTRO, $this->introFr);
+        $this->metaDescriptionFr = self::optional('meta_description_fr', $metaDescriptionFr, self::MAX_META_DESCRIPTION, $this->metaDescriptionFr);
+        $this->searchTitleFr = self::optional('search_title_fr', $searchTitleFr, self::MAX_SEARCH_TITLE, $this->searchTitleFr);
+    }
+
+    public function editShopNotes(string $announcement, string $announcementFr, string $priceNote, string $priceNoteFr): void
+    {
+        $this->announcement = self::optional('announcement', $announcement, self::MAX_ANNOUNCEMENT, '');
+        $this->announcementFr = self::optional('announcement_fr', $announcementFr, self::MAX_ANNOUNCEMENT, '');
+        $this->priceNote = self::optional('price_note', $priceNote, self::MAX_PRICE_NOTE, '');
+        $this->priceNoteFr = self::optional('price_note_fr', $priceNoteFr, self::MAX_PRICE_NOTE, '');
     }
 
     public function searchTitle(): string
@@ -154,15 +193,18 @@ class SiteText
         $this->homeNoteText = self::text('home_note_text', $text, self::MAX_HOME_NOTE);
     }
 
-    public function editAbout(string $title, string $text): void
+    public function editAbout(string $title, string $text, ?string $titleFr = null, ?string $textFr = null): void
     {
         $this->aboutTitle = self::text('about_title', $title, self::MAX_TITLE);
         $this->aboutText = self::text('about_text', str_replace("\r\n", "\n", $text), self::MAX_ABOUT);
+        $this->aboutTitleFr = self::optional('about_title_fr', $titleFr, self::MAX_TITLE, $this->aboutTitleFr);
+        $this->aboutTextFr = self::optional('about_text_fr', null === $textFr ? null : str_replace("\r\n", "\n", $textFr), self::MAX_ABOUT, $this->aboutTextFr);
     }
 
-    public function editGallery(string $title): void
+    public function editGallery(string $title, ?string $titleFr = null): void
     {
         $this->galleryTitle = self::text('gallery_title', $title, self::MAX_TITLE);
+        $this->galleryTitleFr = self::optional('gallery_title_fr', $titleFr, self::MAX_TITLE, $this->galleryTitleFr);
     }
 
     public function useFont(FontRole $role, ?Typeface $typeface): void
@@ -236,12 +278,75 @@ class SiteText
         return $this->galleryTitle;
     }
 
+    public function introFr(): string
+    {
+        return $this->introFr;
+    }
+
+    public function metaDescriptionFr(): string
+    {
+        return $this->metaDescriptionFr;
+    }
+
+    public function searchTitleFr(): string
+    {
+        return $this->searchTitleFr;
+    }
+
+    public function aboutTitleFr(): string
+    {
+        return $this->aboutTitleFr;
+    }
+
+    public function aboutTextFr(): string
+    {
+        return $this->aboutTextFr;
+    }
+
+    public function galleryTitleFr(): string
+    {
+        return $this->galleryTitleFr;
+    }
+
+    public function announcement(): string
+    {
+        return $this->announcement;
+    }
+
+    public function announcementFr(): string
+    {
+        return $this->announcementFr;
+    }
+
+    public function priceNote(): string
+    {
+        return $this->priceNote;
+    }
+
+    public function priceNoteFr(): string
+    {
+        return $this->priceNoteFr;
+    }
+
     private static function text(string $field, string $value, int $max): string
     {
         $value = trim($value);
         if ('' === $value) {
             throw new EmptyText($field);
         }
+        if (mb_strlen($value) > $max) {
+            throw new TextTooLong($field, $max);
+        }
+
+        return $value;
+    }
+
+    private static function optional(string $field, ?string $value, int $max, string $unchanged): string
+    {
+        if (null === $value) {
+            return $unchanged;
+        }
+        $value = trim($value);
         if (mb_strlen($value) > $max) {
             throw new TextTooLong($field, $max);
         }

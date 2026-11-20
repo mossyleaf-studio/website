@@ -85,6 +85,25 @@ final class ArtworksApiTest extends WebTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    public function testAnArtworkIsDescribedInFrenchToo(): void
+    {
+        $client = self::signedInClient();
+        $artwork = self::upload($client, 'large-fern.png', 'A fern');
+        self::assertSame('', Json::string($artwork, 'altFr'));
+        $url = '/api/admin/artworks/'.Json::string($artwork, 'id');
+
+        $client->jsonRequest('PUT', $url, ['alt' => 'A fern', 'altFr' => ' Une fougère ']);
+        self::assertSame('Une fougère', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'altFr'));
+
+        $client->jsonRequest('PUT', $url, ['alt' => 'A fern unrolling']);
+        self::assertResponseIsSuccessful();
+        $client->jsonRequest('GET', '/api/admin/artworks');
+        self::assertSame(['A fern unrolling', 'Une fougère'], [Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'alt'), Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'altFr')]);
+
+        $client->jsonRequest('PUT', $url, ['alt' => 'A fern', 'altFr' => str_repeat('é', 201)]);
+        self::assertResponseStatusCodeSame(422);
+    }
+
     public function testUploadsNeedASignedInEditor(): void
     {
         $client = self::createClient();

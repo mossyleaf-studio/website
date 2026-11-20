@@ -11,7 +11,7 @@ async function publish(page, button) {
 
 async function editIntro(page, intro) {
     const identity = page.getByTestId('section-identity');
-    await identity.getByLabel('Introduction').fill(intro);
+    await identity.getByLabel('Introduction (English)').fill(intro);
     await Promise.all([
         page.waitForResponse((response) => response.url().endsWith('/api/admin/texts/identity') && response.ok()),
         identity.getByRole('button', { name: 'Save' }).click(),

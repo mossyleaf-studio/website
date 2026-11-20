@@ -18,6 +18,6 @@ final class EditLinkController extends AbstractController
 {
     public function __invoke(Ulid $id, #[MapRequestPayload] LinkPayload $payload, EditLinkHandler $editLink): JsonResponse
     {
-        return $this->json($editLink(new EditLink($id, $payload->title, $payload->description, $payload->url, $payload->tape)));
+        return $this->json($editLink(new EditLink($id, $payload->title, $payload->description, $payload->url, $payload->tape, $payload->titleFr, $payload->descriptionFr)));
     }
 }
