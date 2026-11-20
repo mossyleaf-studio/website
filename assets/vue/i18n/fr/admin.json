@@ -13,7 +13,8 @@
         "products": "Produits",
         "conventions": "Conventions",
         "legal": "Pages légales",
-        "settings": "Livraison"
+        "settings": "Livraison",
+        "orders": "Commandes"
     },
     "count": "{count} / {max}",
     "saved": "Enregistré.",
@@ -302,5 +303,116 @@
         "freeFromHint": "Laisser vide pour ne jamais offrir la livraison.",
         "invalidAmount": "Saisissez un montant en euros jusqu’à 10 000, par exemple 4,50.",
         "save": "Enregistrer : {zone}"
+    },
+    "orders": {
+        "title": "Commandes",
+        "subtitle": "Ce qui a été acheté dans la boutique. Expédiez les commandes payées depuis ici.",
+        "search": "Chercher une commande",
+        "searchPlaceholder": "Référence, nom ou email",
+        "tabsLabel": "États des commandes",
+        "tabs": {
+            "toShip": "À expédier",
+            "shipped": "Expédiées",
+            "other": "Autres"
+        },
+        "empty": "Aucune commande pour l’instant",
+        "emptyHint": "Les commandes apparaissent ici dès que quelqu’un paie dans la boutique.",
+        "emptyTab": {
+            "toShip": "Rien à expédier",
+            "shipped": "Aucune commande expédiée",
+            "other": "Rien d’autre ici"
+        },
+        "emptyTabHint": "Les commandes passent ici au fil de leur état.",
+        "noMatch": "Aucune commande ne correspond",
+        "noMatchHint": "Essayez une référence, un nom ou une adresse email.",
+        "noMatchInTab": "Rien dans cet onglet",
+        "noMatchInTabHint": "D’autres onglets ont des commandes qui correspondent : voyez le nombre à côté de leur nom.",
+        "loading": "Chargement des commandes…",
+        "loadFailed": "Les commandes n’ont pas pu être chargées",
+        "columns": {
+            "reference": "Référence",
+            "date": "Date",
+            "customer": "Client",
+            "country": "Pays",
+            "items": "Articles",
+            "total": "Total",
+            "status": "État"
+        },
+        "items": "{count} article | {count} articles",
+        "open": "Ouvrir la commande {reference}",
+        "test": "Test",
+        "status": {
+            "pending": "En attente de paiement",
+            "paid": "Payée",
+            "shipped": "Expédiée",
+            "failed": "Paiement échoué",
+            "expired": "Expirée",
+            "cancelled": "Annulée"
+        }
+    },
+    "order": {
+        "back": "Toutes les commandes",
+        "notFound": "Commande introuvable",
+        "notFoundHint": "Elle a peut-être été supprimée.",
+        "loadFailed": "La commande n’a pas pu être chargée",
+        "address": {
+            "title": "Adresse de livraison",
+            "copy": "Copier l’adresse",
+            "copied": "Adresse copiée.",
+            "copyFailed": "L’adresse n’a pas pu être copiée."
+        },
+        "contact": {
+            "title": "Client",
+            "email": "Email",
+            "phone": "Téléphone",
+            "language": "Commandé en"
+        },
+        "lines": {
+            "title": "Articles",
+            "each": "{price} l’unité",
+            "goods": "Articles",
+            "shipping": "Livraison",
+            "total": "Total"
+        },
+        "dates": {
+            "title": "Historique",
+            "placed": "Passée",
+            "paid": "Payée",
+            "shipped": "Expédiée",
+            "cancelled": "Annulée",
+            "transaction": "Transaction SumUp",
+            "tracking": "Numéro de suivi"
+        },
+        "customerPage": "Page vue par le client",
+        "actions": {
+            "title": "Actions"
+        },
+        "ship": {
+            "label": "Marquer comme expédiée",
+            "intro": "Le client reçoit un email lui disant que le colis est en route.",
+            "tracking": "Numéro de suivi (facultatif)",
+            "trackingHint": "Affiché dans l’email et sur la page de la commande.",
+            "submit": "Marquer comme expédiée",
+            "done": "Commande {reference} marquée comme expédiée."
+        },
+        "cancel": {
+            "label": "Annuler la commande",
+            "message": "Les articles sont remis en vente et aucun email n’est envoyé au client. Le site ne rembourse rien : remboursez d’abord le paiement dans SumUp.",
+            "confirm": "Annuler la commande",
+            "keep": "Garder la commande",
+            "done": "Commande {reference} annulée."
+        },
+        "checkPayment": {
+            "label": "Vérifier le paiement",
+            "hint": "Demande à SumUp si ce paiement a été réglé.",
+            "done": "Paiement vérifié : la commande {reference} est maintenant « {status} »."
+        },
+        "delete": {
+            "label": "Supprimer cette commande de test",
+            "message": "La commande est supprimée définitivement. Si elle était payée, ses articles sont remis en vente.",
+            "confirm": "Supprimer",
+            "done": "Commande de test {reference} supprimée."
+        },
+        "unreachable": "SumUp est injoignable. Rien n’a été modifié."
     }
 }

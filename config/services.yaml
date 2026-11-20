@@ -48,3 +48,7 @@ when@test:
         App\Tests\Support\FakeSumUpSettleController:
             autowire: true
             autoconfigure: true
+
+        App\Tests\Support\FakeOrderExpiryController:
+            autowire: true
+            autoconfigure: true

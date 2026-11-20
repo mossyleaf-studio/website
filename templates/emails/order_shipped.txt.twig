@@ -1,0 +1,16 @@
+{% if order.test %}
+{{ 'order.test_notice'|trans({}, 'emails') }}
+
+{% endif %}
+{{ 'order_shipped.intro'|trans({name: order.name, reference: order.reference}, 'emails') }}
+{% if order.trackingNumber %}
+
+{{ 'order_shipped.tracking'|trans({trackingNumber: order.trackingNumber}, 'emails') }}
+{% endif %}
+
+{% include 'emails/_order_lines.txt.twig' %}
+
+{{ 'order_shipped.follow'|trans({}, 'emails') }}
+{{ statusUrl }}
+
+{{ 'order_shipped.reply'|trans({}, 'emails') }}

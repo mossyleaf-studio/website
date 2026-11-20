@@ -24,6 +24,8 @@ final class InMemoryPaymentGateway implements PaymentGateway
     /** @var list<string> */
     public array $asked = [];
 
+    public ?\Closure $answering = null;
+
     public function isReady(): bool
     {
         return $this->ready;
@@ -44,6 +46,9 @@ final class InMemoryPaymentGateway implements PaymentGateway
     public function find(string $id): CheckoutState
     {
         $this->asked[] = $id;
+        if (null !== $this->answering) {
+            ($this->answering)();
+        }
         if ($this->down) {
             throw new PaymentUnavailable();
         }

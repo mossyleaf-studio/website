@@ -9,6 +9,6 @@ const { t } = useI18n();
 
 <template>
     <EmptyState :icon="Compass" :title="t('notFound.title')" :hint="t('notFound.hint')">
-        <BaseButton href="/admin/texts">{{ t('notFound.back') }}</BaseButton>
+        <BaseButton href="/admin/orders">{{ t('notFound.back') }}</BaseButton>
     </EmptyState>
 </template>

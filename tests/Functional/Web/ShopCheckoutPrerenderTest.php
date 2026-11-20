@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Web;
 
+use App\Domain\Sales\OrderRepository;
 use App\Tests\Functional\Sales\ShopsOnline;
 use App\Tests\Support\FakeSumUp;
 use App\Tests\Support\Json;
@@ -69,6 +70,38 @@ final class ShopCheckoutPrerenderTest extends WebTestCase
         self::assertCount(0, $sheet->filter('a[data-reload]'));
         self::assertCount(0, $sheet->filter('a[data-cart-back]'));
         self::assertLinesAndAmounts($sheet, self::orderOf($crawler), 'en');
+    }
+
+    public function testAShippedOrderShowsItsTrackingNumberAsTextAndNothingWithoutOne(): void
+    {
+        $client = self::stockedClient();
+        $placed = self::placeThroughTheShop($client, locale: 'en');
+        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
+        $client->request('GET', '/beta/en/order/'.$placed['token']);
+        $id = (string) self::getContainer()->get(OrderRepository::class)->withToken($placed['token'])?->id();
+
+        $client->jsonRequest('POST', '/api/admin/orders/'.$id.'/shipment', ['trackingNumber' => 'LA123456789FR']);
+        $sheet = self::sheet($client->request('GET', '/beta/en/order/'.$placed['token']));
+
+        self::assertSame('Your order is on its way', $sheet->filter('[data-status]')->text());
+        self::assertSame('Tracking number: LA123456789FR', $sheet->filter('[data-tracking]')->text());
+        self::assertSame('LA123456789FR', $sheet->filter('[data-tracking-number]')->text());
+    }
+
+    public function testAShippedOrderWithoutATrackingNumberAndAPaidOrderShowNoTrackingLine(): void
+    {
+        $client = self::stockedClient();
+        $placed = self::placeThroughTheShop($client, locale: 'en');
+        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
+        $paid = self::sheet($client->request('GET', '/beta/en/order/'.$placed['token']));
+        self::assertCount(0, $paid->filter('[data-tracking]'));
+        $id = (string) self::getContainer()->get(OrderRepository::class)->withToken($placed['token'])?->id();
+
+        $client->jsonRequest('POST', '/api/admin/orders/'.$id.'/shipment', ['trackingNumber' => '']);
+        $sheet = self::sheet($client->request('GET', '/beta/en/order/'.$placed['token']));
+
+        self::assertSame('Your order is on its way', $sheet->filter('[data-status]')->text());
+        self::assertCount(0, $sheet->filter('[data-tracking]'));
     }
 
     public function testADeclinedOrderSaysNothingWasChargedAndLinksTheCart(): void

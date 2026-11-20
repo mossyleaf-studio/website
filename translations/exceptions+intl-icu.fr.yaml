@@ -1,5 +1,5 @@
 shared:
-    not_found: '{subject, select, link {Ce lien n’existe} artwork {Cette image n’existe} user {Ce compte n’existe} product {Ce produit n’existe} photo {Cette photo n’existe} category {Cette catégorie n’existe} convention {Cette convention n’existe} shipping_zone {Cette zone de livraison n’existe} other {Cet élément n’existe}} plus.'
+    not_found: '{subject, select, link {Ce lien n’existe} artwork {Cette image n’existe} user {Ce compte n’existe} product {Ce produit n’existe} photo {Cette photo n’existe} category {Cette catégorie n’existe} convention {Cette convention n’existe} shipping_zone {Cette zone de livraison n’existe} order {Cette commande n’existe} other {Cet élément n’existe}} plus.'
 user:
     invalid_email: '« {email} » n’est pas une adresse email valide.'
     email_taken: 'Un compte utilise déjà {email}.'
@@ -35,3 +35,5 @@ sales:
     empty_cart: 'Votre panier est vide.'
     region_required: 'Indiquez l’État, la province ou la région de l’adresse.'
     order_move_refused: 'Cette commande est {from, select, pending {en attente de paiement} paid {payée} shipped {expédiée} failed {impayée} expired {expirée} other {annulée}}, elle ne peut pas être {to, select, pending {remise en attente} paid {payée} shipped {expédiée} failed {marquée impayée} expired {expirée} other {annulée}}.'
+    invalid_tracking_number: 'Écrivez le numéro de suivi sur une seule ligne.'
+    not_a_test_order: 'La commande {reference} est une vraie commande : seules les commandes de test peuvent être supprimées.'

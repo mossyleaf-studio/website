@@ -213,6 +213,7 @@
         "backToCart": "Back to the cart",
         "reload": "Reload the page",
         "lines": "Products ordered",
+        "tracking": "Tracking number:",
         "state": {
             "pending": {
                 "title": "Payment not confirmed yet",

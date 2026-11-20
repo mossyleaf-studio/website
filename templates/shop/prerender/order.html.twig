@@ -8,6 +8,9 @@
     <p data-reference>{{ 'order.reference'|site_t({reference: order.reference}) }}</p>
     <h2 data-status>{{ (state ~ '.title')|site_t }}</h2>
     <p data-status-text>{{ (state ~ '.text')|site_t }}</p>
+    {% if order.status == 'shipped' and order.trackingNumber %}
+        <p data-tracking>{{ 'order.tracking'|site_t }} <strong data-tracking-number>{{ order.trackingNumber }}</strong></p>
+    {% endif %}
     {% if order.status == 'pending' and order.paymentUrl %}
         <p><a href="{{ order.paymentUrl }}" data-pay>{{ 'order.pay'|site_t }}</a></p>
     {% endif %}

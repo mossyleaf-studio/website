@@ -13,7 +13,8 @@
         "products": "Products",
         "conventions": "Conventions",
         "legal": "Legal pages",
-        "settings": "Shipping"
+        "settings": "Shipping",
+        "orders": "Orders"
     },
     "count": "{count} / {max}",
     "saved": "Saved.",
@@ -302,5 +303,116 @@
         "freeFromHint": "Leave empty to never offer free shipping.",
         "invalidAmount": "Enter an amount in euros up to 10,000, like 4.50.",
         "save": "Save {zone}"
+    },
+    "orders": {
+        "title": "Orders",
+        "subtitle": "What was bought in the shop. Ship paid orders from here.",
+        "search": "Search orders",
+        "searchPlaceholder": "Reference, name or email",
+        "tabsLabel": "Order states",
+        "tabs": {
+            "toShip": "To ship",
+            "shipped": "Shipped",
+            "other": "Other"
+        },
+        "empty": "No order yet",
+        "emptyHint": "Orders appear here as soon as someone pays in the shop.",
+        "emptyTab": {
+            "toShip": "Nothing to ship",
+            "shipped": "No shipped order yet",
+            "other": "Nothing else here"
+        },
+        "emptyTabHint": "Orders move here as they change state.",
+        "noMatch": "No order matches",
+        "noMatchHint": "Try a reference, a name or an email address.",
+        "noMatchInTab": "No match in this tab",
+        "noMatchInTabHint": "Other tabs hold matching orders: see the counts beside their names.",
+        "loading": "Loading orders…",
+        "loadFailed": "The orders could not be loaded",
+        "columns": {
+            "reference": "Reference",
+            "date": "Date",
+            "customer": "Customer",
+            "country": "Country",
+            "items": "Items",
+            "total": "Total",
+            "status": "State"
+        },
+        "items": "{count} item | {count} items",
+        "open": "Open order {reference}",
+        "test": "Test",
+        "status": {
+            "pending": "Awaiting payment",
+            "paid": "Paid",
+            "shipped": "Shipped",
+            "failed": "Payment failed",
+            "expired": "Expired",
+            "cancelled": "Cancelled"
+        }
+    },
+    "order": {
+        "back": "All orders",
+        "notFound": "Order not found",
+        "notFoundHint": "It may have been deleted.",
+        "loadFailed": "The order could not be loaded",
+        "address": {
+            "title": "Deliver to",
+            "copy": "Copy the address",
+            "copied": "Address copied.",
+            "copyFailed": "The address could not be copied."
+        },
+        "contact": {
+            "title": "Customer",
+            "email": "Email",
+            "phone": "Phone",
+            "language": "Ordered in"
+        },
+        "lines": {
+            "title": "Items",
+            "each": "{price} each",
+            "goods": "Items",
+            "shipping": "Shipping",
+            "total": "Total"
+        },
+        "dates": {
+            "title": "History",
+            "placed": "Placed",
+            "paid": "Paid",
+            "shipped": "Shipped",
+            "cancelled": "Cancelled",
+            "transaction": "SumUp transaction",
+            "tracking": "Tracking number"
+        },
+        "customerPage": "Page the customer sees",
+        "actions": {
+            "title": "Actions"
+        },
+        "ship": {
+            "label": "Mark as shipped",
+            "intro": "The customer receives an email saying the parcel is on its way.",
+            "tracking": "Tracking number (optional)",
+            "trackingHint": "Shown in the email and on the order page.",
+            "submit": "Mark as shipped",
+            "done": "Order {reference} marked as shipped."
+        },
+        "cancel": {
+            "label": "Cancel the order",
+            "message": "The items go back on sale and no email is sent to the customer. The site does not refund anything: refund the payment in SumUp first.",
+            "confirm": "Cancel the order",
+            "keep": "Keep the order",
+            "done": "Order {reference} cancelled."
+        },
+        "checkPayment": {
+            "label": "Check the payment",
+            "hint": "Asks SumUp whether this checkout was paid.",
+            "done": "Payment checked: order {reference} is now “{status}”."
+        },
+        "delete": {
+            "label": "Delete this test order",
+            "message": "The order is removed for good. If it was paid, its items go back on sale.",
+            "confirm": "Delete",
+            "done": "Test order {reference} deleted."
+        },
+        "unreachable": "SumUp cannot be reached. Nothing was changed."
     }
 }

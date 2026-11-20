@@ -6,6 +6,8 @@ namespace App\Tests\Unit\Domain\Sales;
 
 use App\Domain\Sales\Country;
 use App\Domain\Sales\Delivery;
+use App\Domain\Sales\Exception\InvalidTrackingNumber;
+use App\Domain\Sales\Exception\NotATestOrder;
 use App\Domain\Sales\Exception\OrderMoveRefused;
 use App\Domain\Sales\Exception\RegionRequired;
 use App\Domain\Sales\Order;
@@ -163,6 +165,131 @@ final class OrderTest extends TestCase
         $order->openPayment('checkout-1', 'https://pay.test/checkout-1');
 
         self::assertSame(['checkout-1', 'https://pay.test/checkout-1'], [$order->paymentId(), $order->paymentUrl()]);
+    }
+
+    public function testShippingAPaidOrderTrimsTheTrackingNumberAndDatesIt(): void
+    {
+        $shippedAt = new \DateTimeImmutable('2026-11-21 09:00:00');
+        $order = self::paid();
+
+        $order->ship('  LA123456789FR  ', $shippedAt);
+
+        self::assertSame([OrderStatus::Shipped, 'LA123456789FR'], [$order->status(), $order->trackingNumber()]);
+        self::assertEquals($shippedAt, $order->shippedAt());
+    }
+
+    public function testTheTrackingNumberIsOptional(): void
+    {
+        foreach ([null, '', '   '] as $trackingNumber) {
+            $order = self::paid();
+
+            $order->ship($trackingNumber, new \DateTimeImmutable());
+
+            self::assertSame([OrderStatus::Shipped, null], [$order->status(), $order->trackingNumber()]);
+        }
+    }
+
+    public function testATrackingNumberTooLongIsRefusedAndShipsNothing(): void
+    {
+        $order = self::paid();
+        $order->ship(str_repeat('A', Order::MAX_CODE), new \DateTimeImmutable());
+        self::assertSame(Order::MAX_CODE, \strlen((string) $order->trackingNumber()));
+
+        $order = self::paid();
+        try {
+            $order->ship(str_repeat('A', Order::MAX_CODE + 1), new \DateTimeImmutable());
+            self::fail('A tracking number holds 64 characters at most.');
+        } catch (TextTooLong $exception) {
+            self::assertSame(['field' => 'tracking_number', 'max' => Order::MAX_CODE], $exception->parameters());
+        }
+        self::assertSame([OrderStatus::Paid, null, null], [$order->status(), $order->trackingNumber(), $order->shippedAt()]);
+    }
+
+    public function testATrackingNumberWithALineBreakIsRefused(): void
+    {
+        $order = self::paid();
+
+        $this->expectException(InvalidTrackingNumber::class);
+        $order->ship("LA123\nBcc: victim@example.test", new \DateTimeImmutable());
+    }
+
+    /** @return iterable<string, array{\Closure(Order): void, string}> */
+    public static function notPaid(): iterable
+    {
+        yield 'pending' => [static fn (Order $order): null => null, 'pending'];
+        yield 'failed' => [static fn (Order $order) => $order->fail(), 'failed'];
+        yield 'expired' => [static fn (Order $order) => $order->expire(), 'expired'];
+        yield 'shipped' => [static fn (Order $order) => $order->ship(null, new \DateTimeImmutable()), 'shipped'];
+        yield 'cancelled' => [static fn (Order $order) => $order->cancel(new \DateTimeImmutable()), 'cancelled'];
+    }
+
+    /** @param \Closure(Order): void $reach */
+    #[DataProvider('notPaid')]
+    public function testOnlyAPaidOrderShips(\Closure $reach, string $status): void
+    {
+        $order = 'pending' === $status || 'failed' === $status || 'expired' === $status ? self::order(new \DateTimeImmutable()) : self::paid();
+        $reach($order);
+
+        try {
+            $order->ship('LA1', new \DateTimeImmutable());
+            self::fail('Only a paid order ships.');
+        } catch (OrderMoveRefused $exception) {
+            self::assertSame(['from' => $status, 'to' => 'shipped'], $exception->parameters());
+        }
+        self::assertSame($status, $order->status()->value);
+    }
+
+    public function testAPaidOrAShippedOrderIsCancelledOnce(): void
+    {
+        $cancelledAt = new \DateTimeImmutable('2026-11-22 09:00:00');
+        $paid = self::paid();
+        $shipped = self::paid();
+        $shipped->ship('LA1', new \DateTimeImmutable());
+
+        $paid->cancel($cancelledAt);
+        $shipped->cancel($cancelledAt);
+
+        self::assertSame([OrderStatus::Cancelled, OrderStatus::Cancelled], [$paid->status(), $shipped->status()]);
+        self::assertEquals([$cancelledAt, $cancelledAt], [$paid->cancelledAt(), $shipped->cancelledAt()]);
+        $this->expectException(OrderMoveRefused::class);
+        $paid->cancel($cancelledAt);
+    }
+
+    public function testAnUnpaidOrderCannotBeCancelled(): void
+    {
+        $order = self::order(new \DateTimeImmutable());
+
+        $this->expectException(OrderMoveRefused::class);
+        $order->cancel(new \DateTimeImmutable());
+    }
+
+    public function testOnlyAPaidOrAShippedOrderHoldsUnits(): void
+    {
+        $order = self::order(new \DateTimeImmutable());
+        self::assertSame(['PRI-FOX-A4' => 2, 'STI-MOTH' => 1], $order->units());
+        self::assertFalse($order->holdsUnits());
+        $order->pay('TX', new \DateTimeImmutable());
+        self::assertTrue($order->holdsUnits());
+        $order->ship(null, new \DateTimeImmutable());
+        self::assertTrue($order->holdsUnits());
+        $order->cancel(new \DateTimeImmutable());
+        self::assertFalse($order->holdsUnits());
+    }
+
+    public function testOnlyATestOrderMayBeDeleted(): void
+    {
+        self::order(new \DateTimeImmutable(), test: true)->assertDeletable();
+
+        $this->expectException(NotATestOrder::class);
+        self::order(new \DateTimeImmutable())->assertDeletable();
+    }
+
+    private static function paid(): Order
+    {
+        $order = self::order(new \DateTimeImmutable());
+        $order->pay('TX', new \DateTimeImmutable());
+
+        return $order;
     }
 
     private static function order(\DateTimeImmutable $now, bool $test = false, ?Delivery $delivery = null): Order

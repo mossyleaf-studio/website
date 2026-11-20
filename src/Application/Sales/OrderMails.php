@@ -11,4 +11,6 @@ interface OrderMails
     public function confirm(Order $order): void;
 
     public function notify(Order $order): void;
+
+    public function shipped(Order $order): void;
 }

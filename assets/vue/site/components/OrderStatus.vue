@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { formatPrice } from '../money.js';
-import { statusView } from '../orderStatus.js';
+import { statusView, trackingOf } from '../orderStatus.js';
 import PaperSheet from './PaperSheet.vue';
 import PillButton from './PillButton.vue';
 import SummaryLines from './SummaryLines.vue';
@@ -18,6 +18,7 @@ const props = defineProps({
 const { locale } = useI18n();
 const price = (cents) => formatPrice(cents, locale.value);
 const view = computed(() => statusView(props.order, { stalled: props.stalled }));
+const tracking = computed(() => trackingOf(props.order));
 </script>
 
 <template>
@@ -33,6 +34,9 @@ const view = computed(() => statusView(props.order, { stalled: props.stalled }))
                 {{ $t(`order.state.${view.state}.title`) }}
             </h2>
             <p class="order-status__text">{{ $t(`order.state.${view.state}.text`) }}</p>
+            <p v-if="tracking" class="order-status__tracking" data-test="order-tracking">
+                {{ $t('order.tracking') }} <strong class="order-status__tracking-number" data-test="order-tracking-number">{{ tracking }}</strong>
+            </p>
         </div>
 
         <div v-if="view.payUrl || view.backToCart || view.reload" class="order-status__actions">
@@ -107,6 +111,16 @@ const view = computed(() => statusView(props.order, { stalled: props.stalled }))
     max-width: 52ch;
     font-size: var(--font-size);
     line-height: 1.5;
+}
+
+.order-status__tracking {
+    font-family: var(--font-ui);
+    font-size: var(--font-size-sm);
+}
+
+.order-status__tracking-number {
+    font-variant-numeric: tabular-nums;
+    user-select: all;
 }
 
 .order-status__progress {

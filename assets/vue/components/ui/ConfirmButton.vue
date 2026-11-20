@@ -19,6 +19,7 @@ const { t } = useI18n();
 defineProps({
     label: { type: String, required: true },
     confirmLabel: { type: String, default: undefined },
+    cancelLabel: { type: String, default: undefined },
     message: { type: String, default: undefined },
     icon: { type: [Object, Function], default: null },
     variant: { type: String, default: 'ghost' },
@@ -39,7 +40,7 @@ const open = ref(false);
                     <AlertDialogTitle class="modal__title">{{ label }}</AlertDialogTitle>
                     <AlertDialogDescription class="confirm-dialog__message">{{ message ?? t('ui.confirm.message') }}</AlertDialogDescription>
                     <div class="actions-row">
-                        <AlertDialogCancel as-child><BaseButton variant="ghost">{{ t('common.cancel') }}</BaseButton></AlertDialogCancel>
+                        <AlertDialogCancel as-child><BaseButton variant="ghost">{{ cancelLabel ?? t('common.cancel') }}</BaseButton></AlertDialogCancel>
                         <AlertDialogAction as-child><BaseButton variant="danger" @click="emit('confirm')">{{ confirmLabel ?? t('ui.confirm.action') }}</BaseButton></AlertDialogAction>
                     </div>
                 </AlertDialogContent>

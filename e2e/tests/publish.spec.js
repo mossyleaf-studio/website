@@ -24,6 +24,7 @@ test('drafts stay private until they are published', async ({ page, browser }) =
     const visitor = await (await browser.newContext()).newPage();
 
     await signIn(page);
+    await page.goto('/admin/texts');
     await editIntro(page, published);
     await expect(page.getByTestId('publish-bar')).toContainText('not visible to visitors yet');
 

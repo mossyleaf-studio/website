@@ -28,6 +28,11 @@ final class RecordingOrderMails implements OrderMails
         $this->record('notify', $order);
     }
 
+    public function shipped(Order $order): void
+    {
+        $this->record('shipped', $order);
+    }
+
     private function record(string $kind, Order $order): void
     {
         $this->sent[] = [$kind, $order->reference(), $order->status()->value, null === $this->probe ? null : ($this->probe)()];

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales;
 
+use App\Domain\Sales\Exception\InvalidTrackingNumber;
+use App\Domain\Sales\Exception\NotATestOrder;
 use App\Domain\Sales\Exception\OrderMoveRefused;
 use App\Domain\Sales\Exception\RegionRequired;
+use App\Domain\Shared\Exception\TextTooLong;
 use App\Domain\Shared\Locale;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -23,6 +26,7 @@ class Order
     public const string PAYMENT_WINDOW = '+30 minutes';
     public const int MAX_PAYMENT_ID = 255;
     public const int MAX_CODE = 64;
+    public const string CONTROL_CHARACTERS = '/[\x00-\x1F\x7F\x{2028}\x{2029}]/u';
 
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
@@ -341,5 +345,48 @@ class Order
     public function lines(): array
     {
         return array_values($this->lines->toArray());
+    }
+
+    public function ship(?string $trackingNumber, \DateTimeImmutable $at): void
+    {
+        $trackingNumber = trim($trackingNumber ?? '');
+        if (mb_strlen($trackingNumber) > self::MAX_CODE) {
+            throw new TextTooLong('tracking_number', self::MAX_CODE);
+        }
+        if (1 === preg_match(self::CONTROL_CHARACTERS, $trackingNumber)) {
+            throw new InvalidTrackingNumber();
+        }
+        $this->move(OrderStatus::Shipped);
+        $this->trackingNumber = '' === $trackingNumber ? null : $trackingNumber;
+        $this->shippedAt = $at;
+    }
+
+    public function cancel(\DateTimeImmutable $at): void
+    {
+        $this->move(OrderStatus::Cancelled);
+        $this->cancelledAt = $at;
+    }
+
+    public function holdsUnits(): bool
+    {
+        return OrderStatus::Paid === $this->status || OrderStatus::Shipped === $this->status;
+    }
+
+    /** @return array<string, int> */
+    public function units(): array
+    {
+        $units = [];
+        foreach ($this->lines() as $line) {
+            $units[$line->sku()] = ($units[$line->sku()] ?? 0) + $line->quantity();
+        }
+
+        return $units;
+    }
+
+    public function assertDeletable(): void
+    {
+        if (!$this->test) {
+            throw new NotATestOrder($this->reference);
+        }
     }
 }

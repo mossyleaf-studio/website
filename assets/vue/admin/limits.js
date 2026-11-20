@@ -22,4 +22,5 @@ export const LIMITS = {
     conventionNote: 300,
     legalText: 30000,
     shippingAmount: 1000000,
+    trackingNumber: 64,
 };

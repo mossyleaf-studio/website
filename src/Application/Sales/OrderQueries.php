@@ -31,6 +31,12 @@ final readonly class OrderQueries
         return null !== $order && OrderStatus::Pending === $order->status() ? $order->paymentId() : null;
     }
 
+    /** @return list<OrderView> */
+    public function orders(): array
+    {
+        return array_map(OrderView::of(...), $this->orders->newestFirst());
+    }
+
     private function withToken(string $token): ?Order
     {
         return Order::TOKEN_LENGTH === \strlen($token) ? $this->orders->withToken($token) : null;

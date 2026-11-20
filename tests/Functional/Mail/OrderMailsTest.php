@@ -145,6 +145,52 @@ final class OrderMailsTest extends KernelTestCase
         self::assertEmailCount(0);
     }
 
+    public function testTheShippedMailGoesToTheCustomerInFrenchWithTheTrackingNumber(): void
+    {
+        $order = self::shipped(Locale::Fr, 'LA123456789FR');
+
+        self::mails()->shipped($order);
+
+        self::assertEmailCount(1);
+        $email = self::sent();
+        self::assertSame(['lou@example.test'], self::addresses($email->getTo()));
+        self::assertSame([self::SHOP], self::addresses($email->getFrom()));
+        self::assertSame([self::STUDIO], self::addresses($email->getReplyTo()));
+        self::assertSame('Votre commande ML-AB12-CD34 est en route', $email->getSubject());
+        self::assertNull($email->getHtmlBody());
+        self::assertEmailTextBodyContains($email, 'ML-AB12-CD34');
+        self::assertEmailTextBodyContains($email, 'Numéro de suivi : LA123456789FR');
+        self::assertEmailTextBodyContains($email, '2 × Affiche renard (A4) : 15,00'.self::NBSP.'€ l’unité, 30,00'.self::NBSP.'€');
+        self::assertEmailTextBodyContains($email, 'https://shop.test/fr/order/'.$order->token());
+        self::assertEmailTextBodyNotContains($email, 'TEST');
+        self::assertEmailTextBodyNotContains($email, '&');
+    }
+
+    public function testTheShippedMailOfAnEnglishOrderWithoutTrackingIsInEnglish(): void
+    {
+        $order = self::shipped(Locale::En, null);
+
+        self::mails()->shipped($order);
+
+        $email = self::sent();
+        self::assertSame('Your order ML-AB12-CD34 is on its way', $email->getSubject());
+        self::assertEmailTextBodyContains($email, '2 × Fox print (A4): €15.00 each, €30.00');
+        self::assertEmailTextBodyContains($email, 'https://shop.test/en/order/'.$order->token());
+        self::assertEmailTextBodyNotContains($email, 'Tracking');
+    }
+
+    public function testTheShippedMailOfATestOrderSaysSo(): void
+    {
+        $order = self::shipped(Locale::Fr, null, test: true);
+
+        self::mails()->shipped($order);
+
+        $email = self::sent();
+        self::assertSame('[TEST] Votre commande ML-AB12-CD34 est en route', $email->getSubject());
+        self::assertEmailTextBodyContains($email, 'COMMANDE DE TEST');
+        self::assertEmailTextBodyContains($email, 'https://shop.test/beta/fr/order/'.$order->token());
+    }
+
     /** @return iterable<string, array{string, string}> */
     public static function closedAddresses(): iterable
     {
@@ -160,6 +206,7 @@ final class OrderMailsTest extends KernelTestCase
 
         $mails->confirm(self::order(Locale::Fr));
         $mails->notify(self::order(Locale::Fr));
+        $mails->shipped(self::shipped(Locale::Fr, 'LA1'));
 
         self::assertEmailCount(0);
         self::assertFalse(new MailAddresses($from, $studio)->isOpen());
@@ -182,6 +229,15 @@ final class OrderMailsTest extends KernelTestCase
     private static function order(Locale $locale, bool $test = false, ?string $region = null, ?string $phone = null): Order
     {
         return Order::place('ML-AB12-CD34', $test, $locale, new Delivery('lou@example.test', 'Lou Fern', $phone, '12 rue des Lilas', 'Bâtiment B', '69001', 'Lyon', $region), Country::of('FR'), Zone::France, self::lines($locale), 650, new \DateTimeImmutable('2026-11-20 10:00:00'));
+    }
+
+    private static function shipped(Locale $locale, ?string $trackingNumber, bool $test = false): Order
+    {
+        $order = self::order($locale, $test);
+        $order->pay('TX', new \DateTimeImmutable('2026-11-20 10:05:00'));
+        $order->ship($trackingNumber, new \DateTimeImmutable('2026-11-21 09:00:00'));
+
+        return $order;
     }
 
     /** @return list<array{sku: string, name: string, title: string, variant: ?string, unitPrice: int, quantity: int}> */

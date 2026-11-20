@@ -41,6 +41,7 @@ final readonly class OrderStatusJson
             'shipping' => $order->shipping,
             'total' => $order->total,
             'placedAt' => $order->placedAt->format(\DATE_ATOM),
+            'trackingNumber' => $order->trackingNumber,
         ];
     }
 }

@@ -16,3 +16,5 @@ export function statusView(order, { stalled = false } = {}) {
         settled: ['paid', 'shipped'].includes(order.status),
     };
 }
+
+export const trackingOf = (order) => (order.status === 'shipped' ? order.trackingNumber || null : null);

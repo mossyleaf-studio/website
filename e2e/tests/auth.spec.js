@@ -13,7 +13,7 @@ test('the home page needs no account, the draft preview does', async ({ page }) 
 
 test('an editor signs in with their mossyleaf account and signs out', async ({ page }) => {
     await signIn(page);
-    await expect(page.getByRole('heading', { level: 1, name: 'Texts' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Orders' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Sign out' }).click();
     await page.waitForURL(/endsession|\/$/);

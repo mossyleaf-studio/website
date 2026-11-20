@@ -7,10 +7,17 @@ import TextsPage from './pages/TextsPage.vue';
 export const router = createRouter({
     history: createWebHistory('/admin/'),
     routes: [
-        { path: '/', redirect: { name: 'texts' } },
+        { path: '/', redirect: { name: 'orders' } },
         { path: '/texts', name: 'texts', component: TextsPage },
         { path: '/links', name: 'links', component: LinksPage },
         { path: '/images', name: 'images', component: ImagesPage },
+        {
+            path: '/orders',
+            children: [
+                { path: '', name: 'orders', component: () => import('./pages/OrdersPage.vue') },
+                { path: ':id', name: 'order', component: () => import('./pages/OrderPage.vue'), props: true },
+            ],
+        },
         {
             path: '/products',
             children: [

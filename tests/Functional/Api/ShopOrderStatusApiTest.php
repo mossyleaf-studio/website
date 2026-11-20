@@ -50,11 +50,39 @@ final class ShopOrderStatusApiTest extends WebTestCase
             'shipping' => 650,
             'total' => 2750,
             'placedAt' => new \DateTimeImmutable('2026-11-20 10:00:00')->format(\DATE_ATOM),
+            'trackingNumber' => null,
         ], self::answer($client));
         $content = (string) $client->getResponse()->getContent();
         foreach ([...self::CUSTOMER, 'lou', 'Fougères', $placed['token'], 'PRI-FOX-A4'] as $personal) {
             self::assertStringNotContainsString($personal, $content);
         }
+    }
+
+    public function testAShippedOrderShowsItsTrackingNumberUntilItIsCancelled(): void
+    {
+        $client = self::stockedClient();
+        $placed = self::placeThroughTheShop($client);
+        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
+        self::getContainer()->get(ConfirmPaymentHandler::class)(new ConfirmPayment($placed['paymentId']));
+        $id = (string) self::order($placed['token'])->id();
+        $client->jsonRequest('GET', '/beta/api/shop/fr/orders/'.$placed['token']);
+        self::assertNull(self::answer($client)['trackingNumber']);
+
+        $client->jsonRequest('POST', '/api/admin/orders/'.$id.'/shipment', ['trackingNumber' => 'LA123456789FR']);
+        self::assertResponseIsSuccessful();
+        $client->jsonRequest('GET', '/beta/api/shop/fr/orders/'.$placed['token']);
+
+        self::assertSame(['shipped', 'LA123456789FR'], [self::answer($client)['status'], self::answer($client)['trackingNumber']]);
+        self::assertSame('trackingNumber', array_key_last(self::answer($client)));
+        $content = (string) $client->getResponse()->getContent();
+        foreach ([...self::CUSTOMER, 'lou', 'Fougères', $placed['token'], 'STI-MOTH'] as $personal) {
+            self::assertStringNotContainsString($personal, $content);
+        }
+
+        $client->jsonRequest('POST', '/api/admin/orders/'.$id.'/cancellation');
+        $client->jsonRequest('GET', '/beta/api/shop/fr/orders/'.$placed['token']);
+
+        self::assertSame(['cancelled', null], [self::answer($client)['status'], self::answer($client)['trackingNumber']]);
     }
 
     public function testItSettlesAPaidCheckoutWithoutAnyWebhook(): void

@@ -51,6 +51,20 @@ final readonly class MailerOrderMails implements OrderMails
             ->context($this->context($order, Locale::Fr)));
     }
 
+    public function shipped(Order $order): void
+    {
+        if (!$this->addresses->isOpen()) {
+            return;
+        }
+
+        $locale = $order->locale();
+        $this->mailer->send($this->mail($order, $locale, 'order_shipped')
+            ->to($order->email())
+            ->replyTo($this->addresses->studio)
+            ->textTemplate('emails/order_shipped.txt.twig')
+            ->context([...$this->context($order, $locale), 'statusUrl' => $this->urls->statusPage($order->token(), $locale, $order->isTest())]));
+    }
+
     private function mail(Order $order, Locale $locale, string $kind): TemplatedEmail
     {
         $subject = $this->translator->trans($kind.'.subject', ['reference' => $order->reference(), 'total' => $order->total() / 100], 'emails', $locale->value);

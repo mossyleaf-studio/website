@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { POLL_INTERVAL, POLL_WINDOW, keepAsking, statusView } from './orderStatus.js';
+import { POLL_INTERVAL, POLL_WINDOW, keepAsking, statusView, trackingOf } from './orderStatus.js';
 
 const order = (overrides = {}) => ({ reference: 'ML-ABCD-EFGH', status: 'pending', test: false, paymentUrl: '/_fake/sumup/fake-1', lines: [], goods: 3000, shipping: 450, total: 3450, placedAt: '2026-11-20T10:00:00+00:00', ...overrides });
 
@@ -61,5 +61,22 @@ describe('keepAsking', () => {
     it('asks every few seconds', () => {
         expect(POLL_INTERVAL).toBeGreaterThanOrEqual(2000);
         expect(POLL_INTERVAL).toBeLessThanOrEqual(10000);
+    });
+});
+
+describe('trackingOf', () => {
+    it('gives the tracking number of a shipped order that has one', () => {
+        expect(trackingOf(order({ status: 'shipped', trackingNumber: 'LA123456789FR' }))).toBe('LA123456789FR');
+    });
+
+    it('gives nothing for a shipped order without one', () => {
+        expect(trackingOf(order({ status: 'shipped', trackingNumber: null }))).toBeNull();
+        expect(trackingOf(order({ status: 'shipped' }))).toBeNull();
+    });
+
+    it('never gives one in another state', () => {
+        for (const status of ['pending', 'paid', 'failed', 'expired', 'cancelled']) {
+            expect(trackingOf(order({ status, trackingNumber: 'LA123456789FR' })), status).toBeNull();
+        }
     });
 });

@@ -116,10 +116,28 @@ final class SumUpGatewayTest extends TestCase
         self::assertSame([1050, 'TSECOND'], [$gateway->find('chk-1')->amount, $gateway->find('chk-1')->transactionCode]);
     }
 
+    public function testACheckoutSumUpDoesNotKnowIsExpired(): void
+    {
+        $gateway = $this->gateway(new JsonMockResponse(['error_code' => 'NOT_FOUND', 'message' => self::SECRET_ANSWER], ['http_code' => 404]));
+
+        $checkout = $gateway->find('chk-1');
+
+        self::assertSame(PaymentState::Expired, $checkout->state);
+        self::assertNull($checkout->transactionCode);
+    }
+
+    public function testOpeningAnswered404IsAFailure(): void
+    {
+        $gateway = $this->gateway(new JsonMockResponse(['error_code' => 'NOT_FOUND'], ['http_code' => 404]));
+
+        self::failure(static fn () => $gateway->open('ML-AB12-CD34', 1234, 'order', 'https://shop.test/webhooks/sumup', 'https://shop.test/en/order/token', new \DateTimeImmutable()));
+    }
+
     /** @return iterable<string, array{ResponseInterface}> */
     public static function failures(): iterable
     {
-        yield 'a client error' => [new JsonMockResponse(['error_code' => 'NOT_FOUND', 'message' => self::SECRET_ANSWER], ['http_code' => 404])];
+        yield 'a client error' => [new JsonMockResponse(['error_code' => 'UNAUTHORIZED', 'message' => self::SECRET_ANSWER], ['http_code' => 401])];
+        yield 'too many requests' => [new JsonMockResponse(['message' => self::SECRET_ANSWER], ['http_code' => 429])];
         yield 'a server error' => [new JsonMockResponse(['detail' => self::SECRET_ANSWER, 'title' => self::SECRET_ANSWER], ['http_code' => 500, 'response_headers' => ['content-type' => 'application/problem+json']])];
         yield 'a redirect' => [new MockResponse(self::SECRET_ANSWER, ['http_code' => 302, 'response_headers' => ['location' => 'https://elsewhere.test/']])];
         yield 'a timeout' => [new MockResponse((static function (): \Generator {

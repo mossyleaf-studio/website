@@ -220,7 +220,7 @@ final class ConfirmPaymentTest extends WebTestCase
             [['Fox print', 'A4', 2, 1500, 3000], ['Stickers Moth', null, 1, 300, 300]],
             array_map(static fn (OrderStatusLine $line): array => [$line->title, $line->variant, $line->quantity, $line->unitPrice, $line->lineTotal], $status->lines),
         );
-        self::assertSame(['reference', 'status', 'test', 'paymentUrl', 'lines', 'goods', 'shipping', 'total', 'placedAt'], array_keys(get_object_vars($status)));
+        self::assertSame(['reference', 'status', 'test', 'paymentUrl', 'lines', 'goods', 'shipping', 'total', 'placedAt', 'trackingNumber'], array_keys(get_object_vars($status)));
         self::assertSame('checkout-1', $queries->paymentToVerify($placed->token));
 
         $paymentUrl = static fn (): ?string => $queries->status($placed->token)?->paymentUrl;

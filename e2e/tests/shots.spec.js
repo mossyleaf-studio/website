@@ -202,6 +202,42 @@ async function shootTheCheckout(page, size) {
     return page.url();
 }
 
+async function shootTheAdminOrders(page) {
+    const orders = await (await page.request.get('/api/admin/orders')).json();
+    const paid = orders.find((order) => order.status === 'paid');
+    expect(paid, 'the checkout shots leave a paid order').toBeDefined();
+    for (const [size, viewport] of Object.entries(VIEWPORTS)) {
+        await page.setViewportSize(viewport);
+        await page.goto('/admin/orders');
+        for (const tab of ['toShip', 'other']) {
+            await page.getByTestId(`order-tab-${tab}`).click();
+            await expect(page.getByTestId('order-row').first()).toBeVisible();
+            await page.screenshot({ path: `shots/admin-orders-${tab}-${size}.png`, fullPage: true, animations: 'disabled' });
+        }
+        await page.goto(`/admin/orders/${paid.id}`);
+        await expect(page.getByTestId('order-page')).toBeVisible();
+        await page.screenshot({ path: `shots/admin-order-to-ship-${size}.png`, fullPage: true, animations: 'disabled' });
+        await page.getByTestId('order-ship').click();
+        await page.getByTestId('order-ship-tracking').fill('LA123456789FR');
+        await page.screenshot({ path: `shots/admin-order-ship-dialog-${size}.png`, animations: 'disabled' });
+        await page.keyboard.press('Escape');
+    }
+    await page.goto(`/admin/orders/${paid.id}`);
+    await page.getByTestId('order-ship').click();
+    await page.getByTestId('order-ship-tracking').fill('LA123456789FR');
+    await page.getByTestId('order-ship-submit').click();
+    await expect(page.getByTestId('order-tracking')).toBeVisible();
+    for (const [size, viewport] of Object.entries(VIEWPORTS)) {
+        await page.setViewportSize(viewport);
+        await page.goto(`/admin/orders/${paid.id}`);
+        await expect(page.getByTestId('order-tracking')).toBeVisible();
+        await page.screenshot({ path: `shots/admin-order-shipped-${size}.png`, fullPage: true, animations: 'disabled' });
+        await page.goto(paid.statusUrl);
+        await expect(page.getByTestId('order-tracking-number')).toHaveText('LA123456789FR');
+        await page.screenshot({ path: `shots/shop-order-shipped-${size}.png`, fullPage: true, animations: 'disabled' });
+    }
+}
+
 test('screenshots of the site and the admin', async ({ page }) => {
     test.setTimeout(240_000);
     await signIn(page);
@@ -245,6 +281,7 @@ test('screenshots of the site and the admin', async ({ page }) => {
         await shootTheCart(page, size);
         order = await shootTheCheckout(page, size);
     }
+    await shootTheAdminOrders(page);
 
     const crawler = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.desktop })).newPage();
     await crawler.goto('/');

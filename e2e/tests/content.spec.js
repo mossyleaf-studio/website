@@ -3,6 +3,7 @@ import { PNG, signIn, unique } from './support/session.js';
 
 test.beforeEach(async ({ page }) => {
     await signIn(page);
+    await page.goto('/admin/texts');
 });
 
 async function saved(page, section, click) {

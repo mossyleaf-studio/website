@@ -21,6 +21,8 @@ final readonly class SumUpGateway implements PaymentGateway
     private const array STATES = ['PENDING' => PaymentState::Pending, 'PAID' => PaymentState::Paid, 'FAILED' => PaymentState::Failed, 'EXPIRED' => PaymentState::Expired];
     private const string SUCCESSFUL = 'SUCCESSFUL';
     public const string HOSTED_CHECKOUT = '#^https://([a-z0-9-]+\.)*sumup\.com/#';
+    private const int NOT_FOUND = 404;
+    private const array UNKNOWN_CHECKOUT = ['status' => 'EXPIRED', 'checkout_reference' => '', 'amount' => 0, 'currency' => CheckoutState::CURRENCY];
 
     private string $apiKey;
     private string $merchantCode;
@@ -67,7 +69,7 @@ final readonly class SumUpGateway implements PaymentGateway
 
     public function find(string $id): CheckoutState
     {
-        $answer = $this->call('GET', self::CHECKOUTS.'/'.rawurlencode($id), []);
+        $answer = $this->call('GET', self::CHECKOUTS.'/'.rawurlencode($id), [], self::UNKNOWN_CHECKOUT);
 
         $status = $answer['status'] ?? null;
         $state = \is_string($status) ? (self::STATES[$status] ?? null) : null;
@@ -82,18 +84,24 @@ final readonly class SumUpGateway implements PaymentGateway
     }
 
     /**
-     * @param array<string, mixed> $options
+     * @param array<string, mixed>      $options
+     * @param array<string, mixed>|null $unknown
      *
      * @return array<mixed>
      */
-    private function call(string $method, string $url, array $options): array
+    private function call(string $method, string $url, array $options, ?array $unknown = null): array
     {
         if (!$this->isReady()) {
             throw new PaymentUnavailable();
         }
 
         try {
-            return $this->http->request($method, $url, [...self::OPTIONS, 'auth_bearer' => $this->apiKey, ...$options])->toArray();
+            $response = $this->http->request($method, $url, [...self::OPTIONS, 'auth_bearer' => $this->apiKey, ...$options]);
+            if (null !== $unknown && self::NOT_FOUND === $response->getStatusCode()) {
+                return $unknown;
+            }
+
+            return $response->toArray();
         } catch (ExceptionInterface) {
             throw new PaymentUnavailable();
         }

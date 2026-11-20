@@ -31,7 +31,8 @@ final class AppShellController extends AbstractController
     private function pageUrls(string $path): array
     {
         return match (true) {
-            '' === $path, 'texts' === $path => ['/api/admin/texts'],
+            '' === $path, 'orders' === $path, str_starts_with($path, 'orders/') => ['/api/admin/orders'],
+            'texts' === $path => ['/api/admin/texts'],
             'links' === $path => ['/api/admin/links'],
             'images' === $path => ['/api/admin/artworks'],
             'products' === $path, str_starts_with($path, 'products/') => ['/api/admin/products', '/api/admin/categories'],

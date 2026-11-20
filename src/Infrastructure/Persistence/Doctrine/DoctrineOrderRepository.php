@@ -8,10 +8,13 @@ use App\Domain\Sales\Order;
 use App\Domain\Sales\OrderLine;
 use App\Domain\Sales\OrderRepository;
 use App\Domain\Sales\OrderStatus;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\DBAL\LockMode;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
+use Symfony\Bridge\Doctrine\Types\UlidType;
+use Symfony\Component\Uid\Ulid;
 
 final readonly class DoctrineOrderRepository implements OrderRepository
 {
@@ -61,5 +64,56 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->getArrayResult();
 
         return array_column(array_map(static fn (array $row): array => [$row['sku'], (int) $row['units']], $rows), 1, 0);
+    }
+
+    public function get(Ulid $id): Order
+    {
+        return $this->entityManager->find(Order::class, $id) ?? throw new NotFound('order', (string) $id);
+    }
+
+    public function lock(Ulid $id): Order
+    {
+        $order = $this->entityManager
+            ->createQuery('SELECT o FROM '.Order::class.' o WHERE o.id = :id')
+            ->setParameter('id', $id, UlidType::NAME)
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
+            ->setHint(Query::HINT_REFRESH, true)
+            ->getOneOrNullResult();
+
+        return $order instanceof Order ? $order : throw new NotFound('order', (string) $id);
+    }
+
+    public function newestFirst(): array
+    {
+        return $this->entityManager->getRepository(Order::class)->findBy([], ['createdAt' => 'DESC', 'id' => 'DESC']);
+    }
+
+    public function staleHolds(\DateTimeImmutable $now): array
+    {
+        /** @var list<Order> $orders */
+        $orders = $this->entityManager
+            ->createQuery('SELECT o FROM '.Order::class.' o WHERE o.status = :pending AND o.expiresAt <= :now ORDER BY o.createdAt ASC, o.id ASC')
+            ->setParameter('pending', OrderStatus::Pending->value)
+            ->setParameter('now', $now, Types::DATETIME_IMMUTABLE)
+            ->getResult();
+
+        return $orders;
+    }
+
+    public function unpaidPlacedBefore(\DateTimeImmutable $before): array
+    {
+        /** @var list<Order> $orders */
+        $orders = $this->entityManager
+            ->createQuery('SELECT o FROM '.Order::class.' o WHERE o.status IN (:unpaid) AND o.createdAt < :before ORDER BY o.createdAt ASC, o.id ASC')
+            ->setParameter('unpaid', [OrderStatus::Failed->value, OrderStatus::Expired->value])
+            ->setParameter('before', $before, Types::DATETIME_IMMUTABLE)
+            ->getResult();
+
+        return $orders;
+    }
+
+    public function remove(Order $order): void
+    {
+        $this->entityManager->remove($order);
     }
 }

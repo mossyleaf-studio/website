@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Sales;
 
 use App\Domain\Sales\Order;
+use App\Domain\Sales\OrderStatus;
 
 final readonly class OrderStatusView
 {
@@ -19,6 +20,7 @@ final readonly class OrderStatusView
         public int $shipping,
         public int $total,
         public \DateTimeImmutable $placedAt,
+        public ?string $trackingNumber,
     ) {
     }
 
@@ -34,6 +36,7 @@ final readonly class OrderStatusView
             $order->shipping(),
             $order->total(),
             $order->createdAt(),
+            OrderStatus::Shipped === $order->status() ? $order->trackingNumber() : null,
         );
     }
 }

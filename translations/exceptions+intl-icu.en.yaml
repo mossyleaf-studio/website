@@ -1,5 +1,5 @@
 shared:
-    not_found: 'This {subject, select, link {link} artwork {image} user {account} product {product} photo {photo} category {category} convention {convention} shipping_zone {shipping zone} other {item}} no longer exists.'
+    not_found: 'This {subject, select, link {link} artwork {image} user {account} product {product} photo {photo} category {category} convention {convention} shipping_zone {shipping zone} order {order} other {item}} no longer exists.'
 user:
     invalid_email: '“{email}” is not a valid email address.'
     email_taken: 'An account already uses {email}.'
@@ -35,3 +35,5 @@ sales:
     empty_cart: 'Your cart is empty.'
     region_required: 'Give the state, province or region of the address.'
     order_move_refused: 'This order is {from, select, pending {awaiting payment} paid {paid} shipped {shipped} failed {unpaid} expired {expired} other {cancelled}}, so it cannot be {to, select, pending {awaiting payment} paid {paid} shipped {shipped} failed {marked unpaid} expired {expired} other {cancelled}}.'
+    invalid_tracking_number: 'Write the tracking number on a single line.'
+    not_a_test_order: 'The order {reference} is a real order: only test orders can be deleted.'

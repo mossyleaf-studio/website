@@ -213,6 +213,7 @@
         "backToCart": "Retour au panier",
         "reload": "Recharger la page",
         "lines": "Articles commandés",
+        "tracking": "Numéro de suivi :",
         "state": {
             "pending": {
                 "title": "Paiement pas encore confirmé",

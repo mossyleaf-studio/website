@@ -21,3 +21,9 @@ order_notice:
     customer: 'Client :'
     address: 'Adresse de livraison :'
     reply: 'Répondez à cet e-mail pour écrire au client.'
+order_shipped:
+    subject: 'Votre commande {reference} est en route'
+    intro: 'Bonjour {name}, votre commande {reference} a été expédiée.'
+    tracking: 'Numéro de suivi : {trackingNumber}'
+    follow: 'Suivez votre commande ici :'
+    reply: 'Une question ? Répondez à cet e-mail.'
