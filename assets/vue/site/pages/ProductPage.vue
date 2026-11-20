@@ -1,8 +1,9 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, inject, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Breadcrumb from '../components/Breadcrumb.vue';
 import BuyBox from '../components/BuyBox.vue';
+import Notice from '../components/Notice.vue';
 import ProductGallery from '../components/ProductGallery.vue';
 import ProductGrid from '../components/ProductGrid.vue';
 import RichText from '../components/RichText.vue';
@@ -12,7 +13,15 @@ import { formatPrice } from '../money.js';
 const props = defineProps({
     data: { type: Object, required: true },
     shop: { type: String, required: true },
+    cartUrl: { type: String, required: true },
 });
+
+const cart = inject('cart');
+const added = ref(null);
+const add = (line) => {
+    const available = props.data.variants.find((variant) => variant.sku === line.sku)?.available ?? 0;
+    added.value = cart.add(line, available) ? 'added' : 'full';
+};
 
 const { t, locale } = useI18n();
 const trail = computed(() => [{ label: t('nav.shop'), url: props.shop }, { label: props.data.category.label, url: props.data.category.url }, { label: props.data.title }]);
@@ -40,7 +49,15 @@ const paragraphs = computed(() =>
                     <p class="product__amount" data-price>{{ price }}</p>
                     <p v-if="data.priceNote" class="product__note" data-price-note>{{ data.priceNote }}</p>
                 </div>
-                <BuyBox :variants="data.variants" />
+                <BuyBox :variants="data.variants" @add="add" />
+                <div class="product__added" role="status">
+                    <Notice v-if="added" :tone="added === 'added' ? 'success' : 'error'" data-test="cart-added">
+                        <p>
+                            {{ $t(`product.${added}`) }}
+                            <a :href="cartUrl" data-test="see-cart">{{ $t('product.seeCart') }}</a>
+                        </p>
+                    </Notice>
+                </div>
                 <div v-if="paragraphs.length" class="product__description" data-description>
                     <p v-for="(paragraph, index) in paragraphs" :key="index"><RichText :text="paragraph" /></p>
                 </div>
@@ -103,6 +120,20 @@ const paragraphs = computed(() =>
 .product__note {
     font-size: var(--font-size-xs);
     color: var(--color-muted);
+}
+
+.product__added {
+    justify-self: stretch;
+    max-width: 30rem;
+}
+
+.product__added:empty {
+    margin-top: calc(-1 * var(--space-5));
+}
+
+.product__added a {
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .product__description {

@@ -1,5 +1,5 @@
 shared:
-    not_found: '{subject, select, link {Ce lien n’existe} artwork {Cette image n’existe} user {Ce compte n’existe} product {Ce produit n’existe} photo {Cette photo n’existe} category {Cette catégorie n’existe} convention {Cette convention n’existe} other {Cet élément n’existe}} plus.'
+    not_found: '{subject, select, link {Ce lien n’existe} artwork {Cette image n’existe} user {Ce compte n’existe} product {Ce produit n’existe} photo {Cette photo n’existe} category {Cette catégorie n’existe} convention {Cette convention n’existe} shipping_zone {Cette zone de livraison n’existe} other {Cet élément n’existe}} plus.'
 user:
     invalid_email: '« {email} » n’est pas une adresse email valide.'
     email_taken: 'Un compte utilise déjà {email}.'
@@ -25,3 +25,8 @@ catalogue:
     invalid_slug: 'L’adresse d’un produit s’écrit en minuscules sans accents, chiffres et tirets simples, {max} caractères au maximum, par exemple « affiche-renard ».'
     slug_taken: 'Un autre produit utilise déjà l’adresse « {slug} ».'
     product_retired: 'Le produit « {reference} » n’est plus dans le catalogue de mossytrunk, il ne peut pas être affiché.'
+sales:
+    unknown_country: 'Le site ne connaît pas ce pays.'
+    negative_amount: '{field, select, price {Un prix de livraison ne peut pas être négatif.} other {Un seuil de livraison offerte ne peut pas être négatif.}}'
+    amount_too_large: '{field, select, price {Un prix de livraison} other {Un seuil de livraison offerte}} ne dépasse pas {max, number} €.'
+    cart_too_large: 'Un panier contient {max} articles différents au maximum.'

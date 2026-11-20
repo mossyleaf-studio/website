@@ -77,6 +77,7 @@ final readonly class ShopPage
                 fn (Locale $language): array => ['locale' => $language->value, 'url' => $this->urls->to($route, $language, $preview, $parameters), 'current' => $language === $locale],
                 Locale::cases(),
             ),
+            'cartUrl' => $this->urls->to('shop_cart', $locale, $preview),
             'footer' => [
                 'links' => array_map(
                     static fn (ShopLinkView $link): array => ['id' => $link->id, 'title' => $link->title->in($locale), 'url' => $link->url],

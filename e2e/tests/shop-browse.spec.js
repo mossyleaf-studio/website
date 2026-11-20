@@ -50,7 +50,7 @@ test('a product opens from its card and choosing a variant changes the stock and
     await expect(quantity).toHaveValue('2');
     await expect(page.getByRole('button', { name: 'One more' })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'One more' })).toBeFocused();
-    await expect(page.getByRole('button', { name: 'Add to cart' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Add to cart' })).toBeVisible();
 });
 
 test('a sold-out product says so and offers no quantity', async ({ page }) => {

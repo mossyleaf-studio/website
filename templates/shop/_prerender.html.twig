@@ -24,6 +24,7 @@
                 {% endfor %}
             </ul>
         </nav>
+        <a href="{{ layout.cartUrl }}"{% if data.page == 'cart' %} aria-current="page"{% endif %} data-cart>{{ 'cart.link'|site_t }}</a>
     </header>
 
     <main id="main" class="shop-prerender__main">

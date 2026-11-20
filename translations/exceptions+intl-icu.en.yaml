@@ -1,5 +1,5 @@
 shared:
-    not_found: 'This {subject, select, link {link} artwork {image} user {account} product {product} photo {photo} category {category} convention {convention} other {item}} no longer exists.'
+    not_found: 'This {subject, select, link {link} artwork {image} user {account} product {product} photo {photo} category {category} convention {convention} shipping_zone {shipping zone} other {item}} no longer exists.'
 user:
     invalid_email: '“{email}” is not a valid email address.'
     email_taken: 'An account already uses {email}.'
@@ -25,3 +25,8 @@ catalogue:
     invalid_slug: 'The address of a product is written in lowercase letters, digits and single dashes, {max} characters at most, such as “fox-print”.'
     slug_taken: 'Another product already uses the address “{slug}”.'
     product_retired: 'The product “{reference}” is no longer in the mossytrunk catalogue, so it cannot be shown.'
+sales:
+    unknown_country: 'The site does not know this country.'
+    negative_amount: '{field, select, price {A shipping price cannot be negative.} other {A free shipping threshold cannot be negative.}}'
+    amount_too_large: '{field, select, price {A shipping price} other {A free shipping threshold}} is €{max, number} at most.'
+    cart_too_large: 'A cart holds {max} different items at most.'

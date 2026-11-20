@@ -5,6 +5,7 @@ import { boundedQuantity } from '../buying.js';
 const props = defineProps({
     max: { type: Number, required: true },
     id: { type: String, required: true },
+    product: { type: String, default: null },
 });
 
 const quantity = defineModel({ type: Number, required: true });
@@ -21,13 +22,13 @@ const typed = (event) => {
 
 <template>
     <div class="quantity-stepper" data-test="quantity-stepper">
-        <label class="quantity-stepper__label" :for="id">{{ $t('product.quantity') }}</label>
+        <label class="quantity-stepper__label" :for="id">{{ product ? $t('product.quantityOf', { product }) : $t('product.quantity') }}</label>
         <div class="quantity-stepper__controls">
-            <button class="quantity-stepper__step" type="button" :aria-label="$t('product.less')" :aria-controls="id" :aria-disabled="quantity <= 1" @click="set(quantity - 1)">
+            <button class="quantity-stepper__step" type="button" :aria-label="product ? $t('product.lessOf', { product }) : $t('product.less')" :aria-controls="id" :aria-disabled="quantity <= 1" @click="set(quantity - 1)">
                 <Minus :size="18" aria-hidden="true" />
             </button>
             <input :id="id" class="quantity-stepper__input" type="number" inputmode="numeric" min="1" :max="max" :value="quantity" @change="typed" />
-            <button class="quantity-stepper__step" type="button" :aria-label="$t('product.more')" :aria-controls="id" :aria-disabled="quantity >= max" @click="set(quantity + 1)">
+            <button class="quantity-stepper__step" type="button" :aria-label="product ? $t('product.moreOf', { product }) : $t('product.more')" :aria-controls="id" :aria-disabled="quantity >= max" @click="set(quantity + 1)">
                 <Plus :size="18" aria-hidden="true" />
             </button>
         </div>

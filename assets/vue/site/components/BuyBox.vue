@@ -29,9 +29,9 @@ watch(available, (max) => {
     <div class="buy-box" data-test="buy-box">
         <VariantPicker v-if="picking" v-model="sku" :variants="variants" :name="`${id}-variant`" />
         <p :class="['buy-box__stock', `buy-box__stock--${state}`]" aria-live="polite" data-stock data-test="stock-state">{{ $t(`product.${state}`) }}</p>
-        <div v-if="state !== 'soldOut'" class="buy-box__row">
-            <QuantityStepper :id="`${id}-quantity`" v-model="quantity" :max="available" />
-            <PillButton v-if="cart" class="buy-box__add" @click="emit('add', { sku, quantity })">{{ $t('product.add') }}</PillButton>
+        <div v-if="state !== 'soldOut' || cart" class="buy-box__row">
+            <QuantityStepper v-if="state !== 'soldOut'" :id="`${id}-quantity`" v-model="quantity" :max="available" />
+            <PillButton v-if="cart" class="buy-box__add" :disabled="state === 'soldOut'" data-test="add-to-cart" @click="emit('add', { sku, quantity })">{{ $t('product.add') }}</PillButton>
         </div>
     </div>
 </template>
@@ -61,5 +61,12 @@ watch(available, (max) => {
     flex-wrap: wrap;
     align-items: end;
     gap: var(--space-4);
+}
+
+.buy-box__add:disabled {
+    color: var(--color-muted);
+    background: var(--color-paper);
+    border-style: dashed;
+    cursor: not-allowed;
 }
 </style>

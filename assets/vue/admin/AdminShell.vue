@@ -1,5 +1,5 @@
 <script setup>
-import { CalendarDays, ExternalLink, Image, Scale, Link2, LogOut, Package, Type } from '@lucide/vue';
+import { CalendarDays, ExternalLink, Image, Scale, Link2, LogOut, Package, Truck, Type } from '@lucide/vue';
 import { ConfigProvider, TooltipProvider } from 'reka-ui';
 import { nextTick, useTemplateRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -30,6 +30,7 @@ const GROUPS = [
         sections: [
             { name: 'products', icon: Package },
             { name: 'conventions', icon: CalendarDays },
+            { name: 'settings', icon: Truck },
         ],
     },
     {

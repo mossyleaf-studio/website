@@ -21,4 +21,5 @@ export const LIMITS = {
     conventionUrl: 500,
     conventionNote: 300,
     legalText: 30000,
+    shippingAmount: 1000000,
 };

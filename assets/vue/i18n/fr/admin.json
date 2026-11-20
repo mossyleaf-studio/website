@@ -12,7 +12,8 @@
         },
         "products": "Produits",
         "conventions": "Conventions",
-        "legal": "Pages légales"
+        "legal": "Pages légales",
+        "settings": "Livraison"
     },
     "count": "{count} / {max}",
     "saved": "Enregistré.",
@@ -40,7 +41,7 @@
         "confirmNote": "Les visiteurs verront la note « en construction » à la place de la page complète, avec les textes du brouillon.",
         "fullDone": "Publié : les visiteurs voient la page complète.",
         "noteDone": "Publié : les visiteurs voient la note « en construction ».",
-        "scope": "Les textes, liens, images et pages légales attendent « Publier » ; les produits et les conventions sont en ligne tout de suite."
+        "scope": "Les textes, liens, images et pages légales attendent « Publier » ; les produits, les conventions et la livraison sont en ligne tout de suite."
     },
     "moveUp": "Monter",
     "moveDown": "Descendre",
@@ -278,5 +279,28 @@
         "neverChanged": "Jamais écrite",
         "preview": "Voir dans la boutique",
         "hint": "Blocs : commencez une ligne par ## suivi d’une espace pour un titre, par - suivi d’une espace pour un élément de liste, laissez une ligne vide entre les paragraphes, et écrivez [libellé](https://…) pour un lien."
+    },
+    "shipping": {
+        "title": "Livraison",
+        "subtitle": "Où l'atelier livre, et à quel prix.",
+        "hint": "Une zone désactivée ne peut pas être choisie au paiement. Enregistrer une zone la met en ligne tout de suite, sans publier.",
+        "zones": {
+            "france": "France",
+            "eu": "Union européenne",
+            "world": "Reste du monde"
+        },
+        "covers": {
+            "france": "France et Monaco.",
+            "eu": "Les 26 autres États membres de l'Union européenne.",
+            "world": "Tous les autres pays."
+        },
+        "enabled": "Livrer : {zone}",
+        "on": "Livraison ouverte",
+        "off": "Pas de livraison",
+        "price": "Prix (€)",
+        "freeFrom": "Gratuite à partir de (€)",
+        "freeFromHint": "Laisser vide pour ne jamais offrir la livraison.",
+        "invalidAmount": "Saisissez un montant en euros jusqu’à 10 000, par exemple 4,50.",
+        "save": "Enregistrer : {zone}"
     }
 }

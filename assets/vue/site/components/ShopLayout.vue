@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AnnouncementBar from './AnnouncementBar.vue';
+import CartLink from './CartLink.vue';
 import DraftBanner from './DraftBanner.vue';
 import SiteFooter from './SiteFooter.vue';
 import SiteHeader from './SiteHeader.vue';
@@ -9,6 +10,7 @@ import SiteHeader from './SiteHeader.vue';
 defineProps({
     layout: { type: Object, required: true },
     home: { type: String, required: true },
+    cartCurrent: { type: Boolean, default: false },
 });
 
 const { t } = useI18n();
@@ -20,7 +22,11 @@ const draft = computed(() => Object.fromEntries(['region', 'title', 'text', 'sho
         <a class="shop-layout__skip" href="#main">{{ $t('layout.skip') }}</a>
         <DraftBanner v-if="layout.preview" page="shop" :shop="home" :labels="draft" />
         <AnnouncementBar :text="layout.announcement" />
-        <SiteHeader :home="home" :studio-name="layout.studioName" :logo="layout.logo" :navigation="layout.navigation" :languages="layout.languages" />
+        <SiteHeader :home="home" :studio-name="layout.studioName" :logo="layout.logo" :navigation="layout.navigation" :languages="layout.languages">
+            <template #end>
+                <CartLink :url="layout.cartUrl" :current="cartCurrent" />
+            </template>
+        </SiteHeader>
         <main id="main" class="shop-layout__main" tabindex="-1">
             <slot />
         </main>

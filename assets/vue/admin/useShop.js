@@ -5,6 +5,7 @@ const PRODUCTS = '/api/admin/products';
 const CATEGORIES = '/api/admin/categories';
 const CONVENTIONS = '/api/admin/conventions';
 const LEGAL_PAGES = '/api/admin/legal-pages';
+const SHIPPING_ZONES = '/api/admin/shipping-zones';
 
 const api = useApi();
 
@@ -72,6 +73,20 @@ export function useLegalPages() {
         save: async (kind, body) => {
             const saved = await api.put(`${LEGAL_PAGES}/${kind}`, body);
             legalPages.value = legalPages.value.map((page) => (page.kind === kind ? saved : page));
+            return saved;
+        },
+    };
+}
+
+const shippingZones = ref([]);
+
+export function useShippingZones() {
+    return {
+        shippingZones,
+        load: () => api.load(SHIPPING_ZONES, shippingZones),
+        save: async (code, body) => {
+            const saved = await api.put(`${SHIPPING_ZONES}/${code}`, body);
+            shippingZones.value = shippingZones.value.map((zone) => (zone.code === code ? saved : zone));
             return saved;
         },
     };

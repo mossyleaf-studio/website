@@ -228,6 +228,7 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame(Json::string($layout, 'studioName'), $shop->filter('header a[data-home]')->text());
         self::assertSame(array_map(static fn (mixed $entry): array => [self::label($locale, 'nav.'.Json::string($entry, 'key')), Json::string($entry, 'url')], $navigation), self::links($shop->filter('nav[data-navigation] a')));
         self::assertSame(self::label($locale, 'layout.navigation'), $shop->filter('nav[data-navigation]')->attr('aria-label'));
+        self::assertSame([[self::label($locale, 'cart.link'), Json::string($layout, 'cartUrl')]], self::links($shop->filter('header a[data-cart]')));
         self::assertSame(self::label($locale, 'layout.languages'), $shop->filter('header nav[data-languages]')->attr('aria-label'));
         self::assertCount(1, $shop->filter('nav[data-languages]'));
         self::assertSame(self::links($shop->filter('header [data-languages] a')), self::links($shop->filter('footer [data-languages] a')));

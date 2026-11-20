@@ -12,7 +12,8 @@
         },
         "products": "Products",
         "conventions": "Conventions",
-        "legal": "Legal pages"
+        "legal": "Legal pages",
+        "settings": "Shipping"
     },
     "count": "{count} / {max}",
     "saved": "Saved.",
@@ -40,7 +41,7 @@
         "confirmNote": "Visitors will see the “still growing” note instead of the full page, with the texts of the draft.",
         "fullDone": "Published: visitors see the full page.",
         "noteDone": "Published: visitors see the growing note.",
-        "scope": "Texts, links, images and legal pages wait for “Publish”; products and conventions are live at once."
+        "scope": "Texts, links, images and legal pages wait for “Publish”; products, conventions and shipping are live at once."
     },
     "moveUp": "Move up",
     "moveDown": "Move down",
@@ -278,5 +279,28 @@
         "neverChanged": "Never written",
         "preview": "Preview in the shop",
         "hint": "Blocks: start a line with “## ” for a heading, with “- ” for a list item, leave a blank line between paragraphs, and write [label](https://…) for a link."
+    },
+    "shipping": {
+        "title": "Shipping",
+        "subtitle": "Where the studio ships, and what it costs.",
+        "hint": "A zone left off cannot be chosen at checkout. Saving a zone puts it live at once, no need to publish.",
+        "zones": {
+            "france": "France",
+            "eu": "European Union",
+            "world": "Rest of the world"
+        },
+        "covers": {
+            "france": "France and Monaco.",
+            "eu": "The other 26 member states of the European Union.",
+            "world": "Every other country."
+        },
+        "enabled": "Ship to {zone}",
+        "on": "Ships here",
+        "off": "Does not ship here",
+        "price": "Price (€)",
+        "freeFrom": "Free from (€)",
+        "freeFromHint": "Leave empty to never offer free shipping.",
+        "invalidAmount": "Enter an amount in euros up to 10,000, like 4.50.",
+        "save": "Save {zone}"
     }
 }

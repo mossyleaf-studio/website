@@ -47,7 +47,52 @@
         "more": "Un de plus",
         "add": "Ajouter au panier",
         "photos": "Photos",
-        "photo": "Afficher la photo {number} sur {count}"
+        "photo": "Afficher la photo {number} sur {count}",
+        "added": "Ajouté au panier.",
+        "full": "Votre panier ne peut pas contenir davantage de ce produit.",
+        "seeCart": "Voir le panier",
+        "quantityOf": "Quantité de {product}",
+        "lessOf": "Un de moins : {product}",
+        "moreOf": "Un de plus : {product}"
+    },
+    "cart": {
+        "title": "Panier",
+        "noscript": "Le panier a besoin de JavaScript pour compter vos articles et calculer la livraison.",
+        "backToShop": "Retour à la boutique",
+        "link": "Panier",
+        "units": "{count} article | {count} articles",
+        "announce": "Votre panier contient maintenant {count} article | Votre panier contient maintenant {count} articles",
+        "lines": "Articles de votre panier",
+        "each": "{price} l’unité",
+        "remove": "Retirer",
+        "removeProduct": "Retirer {product}",
+        "empty": "Votre panier est vide. Les produits que vous ajoutez depuis la boutique vous attendent ici.",
+        "loading": "Chargement de votre panier…",
+        "issues": {
+            "title": "Votre panier a changé",
+            "removed": "Retiré : {products}.",
+            "reduced": "Quantité réduite : {products}.",
+            "unnamed": "{count} produit qui n’est plus vendu | {count} produits qui ne sont plus vendus"
+        },
+        "failure": {
+            "other": "Le panier n’a pas pu être mis à jour. Vérifiez votre connexion, puis réessayez.",
+            "tooMany": "Trop de mises à jour en peu de temps. Attendez une minute, puis réessayez.",
+            "retry": "Réessayer"
+        },
+        "summary": {
+            "title": "Récapitulatif",
+            "country": "Pays de livraison",
+            "chooseCountry": "Choisissez un pays",
+            "goods": "Articles",
+            "shipping": "Livraison",
+            "free": "Offerte",
+            "chooseFirst": "Choisissez le pays de livraison pour voir les frais de port.",
+            "undeliverable": "La boutique ne livre pas encore ce pays. Choisissez-en un autre.",
+            "nowhere": "La boutique ne livre pas encore.",
+            "missing": "Encore {amount} pour la livraison offerte.",
+            "total": "Total",
+            "checkout": "Passer la commande"
+        }
     },
     "contact": {
         "title": "Contact",

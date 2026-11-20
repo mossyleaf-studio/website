@@ -20,6 +20,7 @@ export const router = createRouter({
         },
         { path: '/conventions', name: 'conventions', component: () => import('./pages/ConventionsPage.vue') },
         { path: '/legal', name: 'legal', component: () => import('./pages/LegalPage.vue') },
+        { path: '/settings', name: 'settings', component: () => import('./pages/ShippingPage.vue') },
         { path: '/:path(.*)*', name: 'not-found', component: NotFoundPage },
     ],
 });

@@ -7,6 +7,8 @@ namespace App\Fixtures;
 use App\Domain\Content\Convention;
 use App\Domain\Content\LegalKind;
 use App\Domain\Content\LegalPage;
+use App\Domain\Sales\ShippingZone;
+use App\Domain\Sales\Zone;
 use App\Domain\Shared\Translation;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -33,6 +35,12 @@ final class ShopContentFixtures extends Fixture
         ],
     ];
 
+    private const array ZONES = [
+        'france' => [450, 4000],
+        'eu' => [900, null],
+        'world' => [1500, null],
+    ];
+
     public function __construct(private readonly ClockInterface $clock)
     {
     }
@@ -50,6 +58,12 @@ final class ShopContentFixtures extends Fixture
             $page = LegalPage::blank(LegalKind::from($kind));
             $page->write(Translation::of($en, $fr), $now);
             $manager->persist($page);
+        }
+
+        foreach (self::ZONES as $code => [$price, $freeFrom]) {
+            $zone = ShippingZone::off(Zone::from($code));
+            $zone->set($price, $freeFrom, true);
+            $manager->persist($zone);
         }
 
         $manager->flush();

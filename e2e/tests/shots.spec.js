@@ -22,7 +22,7 @@ const SHOP = {
     'shop-conventions-en': '/beta/en/conventions',
     'shop-legal-fr': '/beta/fr/legal/terms',
 };
-const ADMIN = { texts: '/admin/texts', links: '/admin/links', images: '/admin/images', products: '/admin/products', conventions: '/admin/conventions', legal: '/admin/legal' };
+const ADMIN = { texts: '/admin/texts', links: '/admin/links', images: '/admin/images', products: '/admin/products', conventions: '/admin/conventions', legal: '/admin/legal', settings: '/admin/settings' };
 
 async function send(request, method, url, data) {
     const response = await request.fetch(url, { method, data });
@@ -56,6 +56,50 @@ async function writeTheConventionsAndLegalPages(request) {
         textFr: '## Commandes\nChaque commande est confirmée par e-mail une fois le paiement accepté par SumUp.\nLes prix sont TTC.\n\n## Livraison\n- France : 3 à 5 jours ouvrés\n- Union européenne : 5 à 10 jours ouvrés\n- Reste du monde : 10 à 20 jours ouvrés\n\n## Questions\nÉcrivez via [la page contact](https://mossyleaf.studio/fr/contact).',
     });
     await send(request, 'PUT', '/api/admin/legal-pages/privacy', { text: 'No tracker, no advertising cookie.', textFr: 'Aucun traceur, aucun cookie publicitaire.' });
+}
+
+const CART = 'mossyleaf.cart';
+const line = (sku, quantity) => ({ sku, quantity });
+
+async function fillTheCart(page, lines, country = 'FR') {
+    await page.evaluate(([key, value]) => (value === null ? localStorage.removeItem(key) : localStorage.setItem(key, value)), [CART, lines === null ? null : JSON.stringify({ lines, country })]);
+}
+
+async function shootTheCart(page, size) {
+    await page.goto('/beta/fr/shop');
+    for (const [locale, lines, units] of [['fr', [line('PRT-001-A4', 1), line('STK-003-B', 1), line('CRD-001', 1)], '3 articles'], ['en', [line('PRT-001-A4', 2), line('STK-003-G', 1), line('CRD-001', 1), line('PRT-002', 1)], '5 items']]) {
+        await fillTheCart(page, lines);
+        await page.goto(`/beta/${locale}/cart`);
+        await expect(page.getByTestId('cart-line')).toHaveCount(lines.length);
+        await expect(page.getByTestId('cart-units')).toHaveText(units);
+        await expect(page.getByTestId('missing-for-free')).toHaveCount(locale === 'fr' ? 1 : 0);
+        await expect(page.getByTestId('order-summary')).not.toHaveAttribute('aria-busy', 'true');
+        await page.screenshot({ path: `shots/shop-cart-${locale}-${size}.png`, fullPage: true, animations: 'disabled' });
+    }
+
+    await fillTheCart(page, [line('PRT-001-A3', 1), line('STK-001', 1), line('STK-003-B', 5), line('NO-SUCH-SKU', 1)], 'DE');
+    await page.goto('/beta/fr/cart');
+    await expect(page.getByTestId('cart-issues')).toBeVisible();
+    await expect(page.getByTestId('cart-line')).toHaveCount(2);
+    await expect(page.getByTestId('order-summary')).not.toHaveAttribute('aria-busy', 'true');
+    expect(JSON.parse(await page.evaluate((key) => localStorage.getItem(key), CART))).toEqual({ lines: [line('PRT-001-A3', 1), line('STK-003-B', 2)], country: 'DE' });
+    await page.screenshot({ path: `shots/shop-cart-issues-${size}.png`, fullPage: true, animations: 'disabled' });
+
+    await fillTheCart(page, null);
+    await page.goto('/beta/fr/cart');
+    await expect(page.getByTestId('cart-empty')).toBeVisible();
+    await page.screenshot({ path: `shots/shop-cart-empty-${size}.png`, fullPage: true, animations: 'disabled' });
+
+    await page.goto('/beta/fr/shop/moss-print');
+    await page.getByRole('button', { name: 'Un de plus' }).click();
+    await page.getByTestId('add-to-cart').click();
+    await expect(page.getByTestId('cart-added')).toBeVisible();
+    await expect(page.getByTestId('cart-count')).toHaveText('2');
+    await expect(page.getByTestId('cart-announcement')).toHaveText('Votre panier contient maintenant 2 articles');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: `shots/shop-product-added-${size}.png`, fullPage: true, animations: 'disabled' });
+    await page.locator('header.site-header').screenshot({ path: `shots/shop-header-count-${size}.png`, animations: 'disabled' });
+    await fillTheCart(page, null);
 }
 
 async function shootTheContactForm(page, size) {
@@ -137,6 +181,7 @@ test('screenshots of the site and the admin', async ({ page }) => {
     for (const [size, viewport] of Object.entries(VIEWPORTS)) {
         await page.setViewportSize(viewport);
         await shootTheContactForm(page, size);
+        await shootTheCart(page, size);
     }
 
     const crawler = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.desktop })).newPage();

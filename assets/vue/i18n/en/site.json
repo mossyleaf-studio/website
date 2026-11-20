@@ -47,7 +47,52 @@
         "more": "One more",
         "add": "Add to cart",
         "photos": "Photos",
-        "photo": "Show photo {number} of {count}"
+        "photo": "Show photo {number} of {count}",
+        "added": "Added to your cart.",
+        "full": "Your cart cannot hold more of this product.",
+        "seeCart": "See the cart",
+        "quantityOf": "Quantity of {product}",
+        "lessOf": "One less: {product}",
+        "moreOf": "One more: {product}"
+    },
+    "cart": {
+        "title": "Cart",
+        "noscript": "The cart needs JavaScript to count your items and work out the shipping.",
+        "backToShop": "Back to the shop",
+        "link": "Cart",
+        "units": "{count} item | {count} items",
+        "announce": "Your cart now holds {count} item | Your cart now holds {count} items",
+        "lines": "Products in your cart",
+        "each": "{price} each",
+        "remove": "Remove",
+        "removeProduct": "Remove {product}",
+        "empty": "Your cart is empty. The products you add in the shop wait for you here.",
+        "loading": "Loading your cart…",
+        "issues": {
+            "title": "Your cart changed",
+            "removed": "Removed: {products}.",
+            "reduced": "Quantity lowered: {products}.",
+            "unnamed": "{count} product no longer sold | {count} products no longer sold"
+        },
+        "failure": {
+            "other": "The cart could not be updated. Check your connection, then try again.",
+            "tooMany": "Too many updates in a short time. Wait a minute, then try again.",
+            "retry": "Try again"
+        },
+        "summary": {
+            "title": "Summary",
+            "country": "Delivery country",
+            "chooseCountry": "Choose a country",
+            "goods": "Products",
+            "shipping": "Shipping",
+            "free": "Free",
+            "chooseFirst": "Choose the delivery country to see the shipping.",
+            "undeliverable": "The shop does not deliver to this country for now. Choose another one.",
+            "nowhere": "The shop does not deliver yet.",
+            "missing": "{amount} more for free shipping.",
+            "total": "Total",
+            "checkout": "Go to checkout"
+        }
     },
     "contact": {
         "title": "Contact",
