@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Site;
 
 use App\Application\Content\ContentQueries;
+use App\Presentation\Web\Shop\ShopUrls;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -17,11 +19,19 @@ final readonly class HomeController
     public function __construct(
         private ContentQueries $queries,
         private SitePage $page,
+        private ShopUrls $urls,
     ) {
     }
 
     public function __invoke(Request $request): Response
     {
-        return $this->page->render($request, $this->queries->public(), false);
+        if (!$this->queries->shopIsOpen()) {
+            return $this->page->render($request, $this->queries->public(), false);
+        }
+
+        $response = new RedirectResponse($this->urls->to('shop_home', ShopUrls::preferredLocale($request), false));
+        $response->setVary('Accept-Language');
+
+        return $response;
     }
 }

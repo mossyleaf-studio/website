@@ -18,36 +18,45 @@ async function editIntro(page, intro) {
     ]);
 }
 
-test('drafts stay private until they are published', async ({ page, browser }) => {
+test('drafts stay private until they are published, and the shop closes back on the note', async ({ page, browser }) => {
     const published = unique('Moss frogs');
     const draft = unique('Fern snails');
     const visitor = await (await browser.newContext()).newPage();
+    const bar = page.getByTestId('publish-bar');
 
     await signIn(page);
-    await page.goto('/admin/texts');
-    await editIntro(page, published);
-    await expect(page.getByTestId('publish-bar')).toContainText('not visible to visitors yet');
+    try {
+        await page.goto('/admin/texts');
+        await editIntro(page, published);
+        await expect(bar).toContainText('not visible to visitors yet');
 
-    await publish(page, 'Publish');
-    await expect(page.getByTestId('publish-bar')).toContainText('Full page published');
-    await expect(page.getByTestId('publish-bar')).toContainText('Visitors see the same content as the draft.');
+        await publish(page, 'Publish');
+        await expect(bar.getByTestId('publish-state')).toHaveAttribute('data-open', 'true');
+        await expect(bar).toContainText('The shop is open. Last published');
+        await expect(bar).toContainText('Visitors see the same content as the draft.');
 
-    await visitor.goto('/');
-    await expect(visitor.getByText(published)).toBeVisible();
-    await expect(visitor.getByRole('heading', { name: 'About the studio' })).toBeVisible();
+        await visitor.goto('/');
+        await expect(visitor).toHaveURL(/\/en\/$/);
+        await expect(visitor.getByText(published).first()).toBeVisible();
 
-    await editIntro(page, draft);
-    await visitor.reload();
-    await expect(visitor.getByText(published)).toBeVisible();
-    await expect(visitor.getByText(draft)).toHaveCount(0);
+        await editIntro(page, draft);
+        await visitor.reload();
+        await expect(visitor.getByText(published).first()).toBeVisible();
+        await expect(visitor.getByText(draft)).toHaveCount(0);
 
-    await page.goto('/beta/');
-    await expect(page.getByRole('complementary', { name: 'Draft preview' })).toBeVisible();
-    await expect(page.getByText(draft)).toBeVisible();
+        await page.goto('/beta/en/');
+        await expect(page.getByRole('complementary', { name: 'Draft preview' })).toBeVisible();
+        await expect(page.getByText(draft).first()).toBeVisible();
 
-    await page.goto('/admin/texts');
-    await publish(page, 'Show the growing note');
-    await visitor.reload();
-    await expect(visitor.getByRole('heading', { name: 'The website is still growing' })).toBeVisible();
-    await expect(visitor.getByText(draft)).toBeVisible();
+        await page.goto('/admin/texts');
+        await publish(page, 'Show the growing note');
+        await expect(bar.getByTestId('publish-state')).toHaveAttribute('data-open', 'false');
+        await visitor.goto('/');
+        await expect(visitor).toHaveURL(/\/$/);
+        await expect(visitor.getByRole('heading', { name: 'The website is still growing' })).toBeVisible();
+        await expect(visitor.getByText(draft)).toBeVisible();
+    } finally {
+        await page.request.post('/api/admin/publication', { data: { page: 'note' } });
+        await visitor.context().close();
+    }
 });

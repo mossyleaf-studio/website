@@ -33,19 +33,20 @@ defineProps({
     transition: background var(--transition), border-color var(--transition), color var(--transition), opacity var(--transition);
 }
 
-.button:disabled { opacity: 0.5; cursor: not-allowed; }
+.button:disabled,
+.button[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; }
 
 .button--primary { background: var(--color-accent); color: var(--color-on-accent); }
-.button--primary:hover:not(:disabled) { background: var(--color-accent-strong); }
+.button--primary:hover:not(:disabled, [aria-disabled='true']) { background: var(--color-accent-strong); }
 
 .button--secondary { background: var(--color-surface); border-color: var(--color-border-strong); color: var(--color-ink); }
-.button--secondary:hover:not(:disabled) { border-color: var(--color-ink); }
+.button--secondary:hover:not(:disabled, [aria-disabled='true']) { border-color: var(--color-ink); }
 
 .button--danger { background: var(--color-surface); border-color: var(--color-danger); color: var(--color-danger); }
-.button--danger:hover:not(:disabled) { background: var(--color-danger-soft); }
+.button--danger:hover:not(:disabled, [aria-disabled='true']) { background: var(--color-danger-soft); }
 
 .button--ghost { min-height: auto; padding: var(--space-1) var(--space-2); background: none; color: var(--color-muted); font-weight: 500; }
-.button--ghost:hover:not(:disabled) { color: var(--color-ink); text-decoration: underline; text-underline-offset: 0.1875rem; }
+.button--ghost:hover:not(:disabled, [aria-disabled='true']) { color: var(--color-ink); text-decoration: underline; text-underline-offset: 0.1875rem; }
 
 .button__spinner { width: 0.85rem; height: 0.85rem; border: 0.125rem solid currentColor; border-right-color: transparent; border-radius: 50%; animation: button-spin 0.7s linear infinite; }
 

@@ -66,6 +66,16 @@ final readonly class DoctrineOrderRepository implements OrderRepository
         return array_column(array_map(static fn (array $row): array => [$row['sku'], (int) $row['units']], $rows), 1, 0);
     }
 
+    public function testOrdersHoldingUnits(\DateTimeImmutable $now): int
+    {
+        return (int) $this->entityManager
+            ->createQuery('SELECT COUNT(o.id) FROM '.Order::class.' o WHERE o.test = true AND (o.status IN (:holding) OR (o.status = :pending AND o.expiresAt > :now))')
+            ->setParameter('holding', [OrderStatus::Paid->value, OrderStatus::Shipped->value])
+            ->setParameter('pending', OrderStatus::Pending->value)
+            ->setParameter('now', $now, Types::DATETIME_IMMUTABLE)
+            ->getSingleScalarResult();
+    }
+
     public function get(Ulid $id): Order
     {
         return $this->entityManager->find(Order::class, $id) ?? throw new NotFound('order', (string) $id);

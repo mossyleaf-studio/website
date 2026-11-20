@@ -1,7 +1,7 @@
 {% set home = (layout.navigation|filter(entry => entry.key == 'home')|first).url %}
 <div class="shop-prerender">
     <a class="shop-prerender__skip" href="#main">{{ 'layout.skip'|site_t }}</a>
-    {% if layout.preview %}
+    {% if layout.draft is defined %}
         {% include 'shop/prerender/_draft.html.twig' %}
     {% endif %}
     {% if layout.announcement %}

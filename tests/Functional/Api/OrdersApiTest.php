@@ -302,7 +302,7 @@ final class OrdersApiTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         $preloaded = Json::decode($crawler->filter('#app-preload')->text());
-        self::assertSame(['/api/admin/publication', '/api/admin/orders'], array_keys($preloaded));
+        self::assertSame(['/api/admin/publication', '/api/admin/shop/readiness', '/api/admin/orders'], array_keys($preloaded));
         self::assertSame([$placed['reference']], array_column(Json::array($preloaded, '/api/admin/orders'), 'reference'));
     }
 
@@ -312,7 +312,7 @@ final class OrdersApiTest extends WebTestCase
 
         $crawler = $client->request('GET', '/admin/texts');
 
-        self::assertSame(['/api/admin/publication', '/api/admin/texts'], array_keys(Json::decode($crawler->filter('#app-preload')->text())));
+        self::assertSame(['/api/admin/publication', '/api/admin/shop/readiness', '/api/admin/texts'], array_keys(Json::decode($crawler->filter('#app-preload')->text())));
     }
 
     /** @return list<array{string, string}> */

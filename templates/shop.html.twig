@@ -54,7 +54,7 @@
 
 {% block body %}
     <script type="application/json" id="site-content">{{ props|raw }}</script>
-    <div id="shop" data-page="{{ data.page }}"{% if layout.preview %} data-preview{% endif %}>
+    <div id="shop" data-page="{{ data.page }}"{% if layout.preview ?? false %} data-preview{% endif %}>
         {% include 'shop/_prerender.html.twig' %}
     </div>
 {% endblock %}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Integration;
 
+use App\Application\Catalogue\IntegrationToken;
 use App\Domain\Catalogue\Exception\CatalogueTooLarge;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -18,7 +19,6 @@ final readonly class IntegrationGuard
 {
     private const string PATH = '/integrations/';
     private const string SCHEME = 'Bearer ';
-    private const int MIN_TOKEN_LENGTH = 32;
     private const int MAX_MEGABYTES = 8;
 
     public function __construct(
@@ -38,7 +38,7 @@ final readonly class IntegrationGuard
             return;
         }
 
-        if (\strlen($this->token) < self::MIN_TOKEN_LENGTH) {
+        if (!IntegrationToken::accepts($this->token)) {
             $event->setResponse(new Response(status: Response::HTTP_NOT_FOUND));
 
             return;

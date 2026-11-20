@@ -28,7 +28,7 @@ final readonly class CatalogueProps
             'price' => $product->price,
             'image' => self::cover($product),
             'soldOut' => $product->soldOut,
-            'hidden' => $product->hidden,
+            ...($preview ? ['hidden' => $product->hidden] : []),
         ], $products);
     }
 

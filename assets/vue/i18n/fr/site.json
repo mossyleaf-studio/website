@@ -138,9 +138,8 @@
     "draft": {
         "region": "Aperçu du brouillon",
         "title": "Brouillon",
-        "text": "Seuls les admins voient cette page. Les visiteurs gardent la version publiée jusqu’à ce que vous publiiez.",
+        "text": "Seuls les admins voient cette page. Les textes, liens, images et pages légales attendent « Publier » ; les produits, conventions et frais de port sont déjà en ligne.",
         "shop": "Boutique",
-        "full": "Page complète",
         "note": "Note « en construction »",
         "admin": "Retour à l’admin"
     },

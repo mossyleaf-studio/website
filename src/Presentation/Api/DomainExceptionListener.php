@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Api;
 
+use App\Domain\Content\Exception\ShopNotReady;
 use App\Domain\Sales\Exception\CartOutdated;
 use App\Domain\Sales\Exception\PaymentUnavailable;
 use App\Domain\Shared\Exception\DomainException;
@@ -41,6 +42,7 @@ final readonly class DomainExceptionListener
             $status,
             $this->translator->trans($exception->getMessage(), $exception->parameters(), 'exceptions'),
             $exception->getMessage(),
+            $exception instanceof ShopNotReady ? ['blockers' => $exception->blockers] : [],
         ));
     }
 }

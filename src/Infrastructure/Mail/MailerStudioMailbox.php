@@ -25,6 +25,11 @@ final readonly class MailerStudioMailbox implements StudioMailbox
         return $this->addresses->isOpen();
     }
 
+    public function hasTransport(): bool
+    {
+        return $this->addresses->hasTransport();
+    }
+
     public function deliver(SendContactMessage $message): void
     {
         $locale = $message->locale->value;

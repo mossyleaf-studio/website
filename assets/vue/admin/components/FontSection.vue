@@ -6,13 +6,14 @@ import '@fontsource/kalam/latin-300.css';
 import BaseButton from '../../components/ui/BaseButton.vue';
 import FormField from '../../components/ui/FormField.vue';
 import { useToast } from '../../composables/useToast.js';
-import { useTexts } from '../useContent.js';
+import { usePreview, useTexts } from '../useContent.js';
 
 const props = defineProps({
     values: { type: Object, required: true },
 });
 
 const { t } = useI18n();
+const { shop: href } = usePreview();
 const toast = useToast();
 const { chooseFont, fontFamilies, loadFontFamilies } = useTexts();
 
@@ -78,7 +79,7 @@ async function submit() {
     <form class="font-section" data-test="section-fonts" @submit.prevent="submit">
         <header class="font-section__header">
             <h2 class="font-section__title">{{ t('admin.texts.fonts.title') }}</h2>
-            <a class="font-section__preview" href="/beta/" target="_blank" rel="noopener">{{ t('admin.texts.seeBeta') }}</a>
+            <a v-if="href" class="font-section__preview" :href="href" target="_blank" rel="noopener">{{ t('admin.texts.seeShop') }}</a>
         </header>
         <p class="font-section__hint">
             {{ t('admin.texts.fonts.hint') }}

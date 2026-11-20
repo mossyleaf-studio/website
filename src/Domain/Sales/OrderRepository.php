@@ -21,6 +21,8 @@ interface OrderRepository
     /** @return array<string, int> */
     public function heldUnits(\DateTimeImmutable $now): array;
 
+    public function testOrdersHoldingUnits(\DateTimeImmutable $now): int;
+
     public function get(Ulid $id): Order;
 
     public function lock(Ulid $id): Order;

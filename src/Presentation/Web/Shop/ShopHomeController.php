@@ -28,6 +28,7 @@ final readonly class ShopHomeController
         private CatalogueProps $props,
         private ShopPage $page,
         private ConventionQueries $conventions,
+        private StudioSeo $seo,
     ) {
     }
 
@@ -55,6 +56,6 @@ final readonly class ShopHomeController
             ],
             ...([] === $products ? [] : ['categories' => $this->props->tiles($products, $locale, $preview)]),
             ...(null === $nextConvention ? [] : ['nextConvention' => LocalizedConvention::of($nextConvention, $locale)]),
-        ]);
+        ], seo: $preview ? [] : $this->seo->of($content, $locale, $request));
     }
 }

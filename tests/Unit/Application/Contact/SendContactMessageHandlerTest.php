@@ -43,6 +43,11 @@ final class SendContactMessageHandlerTest extends TestCase
                 return true;
             }
 
+            public function hasTransport(): bool
+            {
+                return true;
+            }
+
             public function deliver(SendContactMessage $message): void
             {
                 $this->delivered[] = $message;

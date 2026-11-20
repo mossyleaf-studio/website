@@ -9,12 +9,12 @@
                 {% endif %}
                 <span data-card-title>{{ product.title }}</span>
                 <strong data-card-price>{{ product.price|money }}</strong>
-                {% if product.soldOut or product.hidden %}
+                {% if product.soldOut or (product.hidden ?? false) %}
                     <span class="shop-prerender__labels">
                         {% if product.soldOut %}
                             <span class="shop-prerender__tape shop-prerender__tape--blossom" data-label>{{ 'product.soldOut'|site_t }}</span>
                         {% endif %}
-                        {% if product.hidden %}
+                        {% if product.hidden ?? false %}
                             <span class="shop-prerender__tape" data-label>{{ 'product.hidden'|site_t }}</span>
                         {% endif %}
                     </span>

@@ -7,7 +7,6 @@ namespace App\Application\Content;
 use App\Domain\Content\ArtworkRepository;
 use App\Domain\Content\LegalPageRepository;
 use App\Domain\Content\LinkRepository;
-use App\Domain\Content\PublicPage;
 use App\Domain\Content\PublishedSiteRepository;
 use App\Domain\Content\SiteTextRepository;
 
@@ -28,16 +27,21 @@ final readonly class ContentQueries
         return SiteView::of($this->texts->current(), $this->links->all(), $this->artworks->all());
     }
 
-    public function draft(PublicPage $page): PublicSnapshot
+    public function draft(): PublicSnapshot
     {
-        return new PublicSnapshot($page, $this->snapshots->encode($this->site()));
+        return new PublicSnapshot($this->snapshots->encode($this->site()));
     }
 
     public function public(): PublicSnapshot
     {
         $site = $this->published->current();
 
-        return null === $site ? $this->draft(PublicPage::Note) : new PublicSnapshot($site->page(), $site->content(), $site->publishedAt());
+        return null === $site ? $this->draft() : new PublicSnapshot($site->content(), $site->publishedAt());
+    }
+
+    public function shopIsOpen(): bool
+    {
+        return $this->published->current()?->opensShop() ?? false;
     }
 
     public function shop(bool $draft): ShopContentView

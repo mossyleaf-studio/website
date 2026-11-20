@@ -19,7 +19,7 @@
             <span class="shop-prerender__blank"></span>
         {% endif %}
         <div class="shop-prerender__details">
-            {% if data.hidden %}
+            {% if data.hidden ?? false %}
                 <p data-hidden><span class="shop-prerender__tape" data-label>{{ 'product.hidden'|site_t }}</span> {{ 'product.hiddenNote'|site_t }}</p>
             {% endif %}
             <h1>{{ data.title }}</h1>

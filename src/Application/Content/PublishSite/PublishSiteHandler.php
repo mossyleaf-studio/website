@@ -7,9 +7,12 @@ namespace App\Application\Content\PublishSite;
 use App\Application\Content\ContentQueries;
 use App\Application\Content\MediaSweeper;
 use App\Application\Content\PublicationView;
+use App\Application\Content\ShopReadiness;
 use App\Application\Content\SiteSnapshots;
 use App\Application\Identity\CurrentUser;
 use App\Application\Transaction;
+use App\Domain\Content\Exception\ShopNotReady;
+use App\Domain\Content\PublicPage;
 use App\Domain\Content\PublishedSite;
 use App\Domain\Content\PublishedSiteRepository;
 use Psr\Clock\ClockInterface;
@@ -24,11 +27,19 @@ final readonly class PublishSiteHandler
         private CurrentUser $currentUser,
         private ClockInterface $clock,
         private Transaction $transaction,
+        private ShopReadiness $readiness,
     ) {
     }
 
     public function __invoke(PublishSite $command): PublicationView
     {
+        if (PublicPage::Full === $command->page) {
+            $blockers = $this->readiness->check()->blockers();
+            if ([] !== $blockers) {
+                throw new ShopNotReady($blockers);
+            }
+        }
+
         $content = $this->snapshots->encode($this->queries->site());
         $shopContent = $this->snapshots->encodeShop($this->queries->shop(true));
         $files = $this->media->draftFiles();

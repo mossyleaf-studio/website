@@ -13,41 +13,11 @@
         </figure>
     {% endif %}
 
-    {% if page == 'full' %}
-        {% if site.links is not empty %}
-            <nav aria-label="Find {{ site.studioName }}">
-                <ul>
-                    {% for link in site.links %}
-                        <li><a href="{{ link.url }}">{{ link.title }}</a> <span>{{ link.description }}</span></li>
-                    {% endfor %}
-                </ul>
-            </nav>
-        {% endif %}
-
-        {% if site.gallery.artworks is not empty %}
-            <section aria-labelledby="gallery-title">
-                <h2 id="gallery-title">{{ site.gallery.title }}</h2>
-                <ul>
-                    {% for artwork in site.gallery.artworks %}
-                        <li><img src="{{ artwork.url }}" alt="{{ artwork.alt }}" width="{{ artwork.width }}" height="{{ artwork.height }}" loading="lazy"></li>
-                    {% endfor %}
-                </ul>
-            </section>
-        {% endif %}
-
-        <section aria-labelledby="about-title">
-            <h2 id="about-title">{{ site.about.title }}</h2>
-            {% for paragraph in site.about.paragraphs %}
-                <p>{{ paragraph|rich_text }}</p>
-            {% endfor %}
-        </section>
-    {% else %}
-        <section aria-labelledby="note-title">
+            <section aria-labelledby="note-title">
             <h2 id="note-title">{{ site.homeNote.title }}</h2>
             <p>{{ site.homeNote.text|rich_text }}</p>
         </section>
-    {% endif %}
-
+    
     <footer>
         <p>© {{ 'now'|date('Y') }} {{ site.studioName }}</p>
     </footer>

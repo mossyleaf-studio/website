@@ -11,8 +11,8 @@ export const stockOf = async (page, sku) => {
     return products.flatMap((product) => product.variants).find((variant) => variant.sku === sku).stock;
 };
 
-export async function fillCart(page, lines) {
-    await page.goto('/beta/en/shop');
+export async function fillCart(page, lines, base = '/beta') {
+    await page.goto(`${base}/en/shop`);
     await page.evaluate(([key, value]) => localStorage.setItem(key, JSON.stringify({ lines: value, country: 'FR' })), [CART, lines]);
 }
 
@@ -24,9 +24,9 @@ export async function fillForm(page) {
     await page.getByLabel('City').fill('Lyon');
 }
 
-export async function openCheckout(page, lines) {
-    await fillCart(page, lines);
-    await page.goto('/beta/en/checkout');
+export async function openCheckout(page, lines, base = '/beta') {
+    await fillCart(page, lines, base);
+    await page.goto(`${base}/en/checkout`);
     await expect(page.getByTestId('checkout-pay')).toBeEnabled();
 }
 
@@ -36,8 +36,8 @@ export async function pay(page) {
     await page.waitForURL(/\/_fake\/sumup\//);
 }
 
-export async function placePaidOrder(page, lines) {
-    await openCheckout(page, lines);
+export async function placePaidOrder(page, lines, base = '/beta') {
+    await openCheckout(page, lines, base);
     await fillForm(page);
     await pay(page);
     await page.getByTestId('fake-sumup-pay').click();

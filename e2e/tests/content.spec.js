@@ -47,7 +47,7 @@ test('a French text is typed next to the English one, and its absence is flagged
     await page.reload();
     await expect(title).toHaveValue(french);
 
-    await page.goto('/beta/');
+    await page.goto('/beta/en/');
     await expect(page.getByText(french)).toHaveCount(0);
 
     await page.goto('/admin/texts');
@@ -91,7 +91,7 @@ test('any Google font is typed on the texts page and used by the draft', async (
     ]);
     await expect(page.getByTestId('toast').first()).toContainText('Saved.');
 
-    await page.goto('/beta/');
+    await page.goto('/beta/note/');
     await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('font-family', /Caveat/);
     await expect(page.locator('body')).toHaveCSS('font-family', /Patrick Hand/);
 
@@ -108,7 +108,7 @@ test('any Google font is typed on the texts page and used by the draft', async (
     ]);
 });
 
-test('a link is added, moved to the top and shown on the full page', async ({ page }) => {
+test('a link is added, moved to the top and shown on the contact page', async ({ page }) => {
     const title = unique('Ko-fi');
     await page.getByRole('link', { name: 'Links' }).click();
     await page.getByRole('button', { name: 'Add a link' }).click();
@@ -134,8 +134,8 @@ test('a link is added, moved to the top and shown on the full page', async ({ pa
         ]);
     }
 
-    await page.goto('/beta/');
-    await expect(page.getByRole('navigation').getByRole('listitem').first()).toContainText(title);
+    await page.goto('/beta/en/contact');
+    await expect(page.getByTestId('contact-links').getByRole('listitem').first()).toContainText(title);
 
     await page.goto('/admin/links');
     await page.getByTestId('link-row').filter({ hasText: title }).getByRole('button', { name: 'Delete' }).click();

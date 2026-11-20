@@ -1,5 +1,7 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useApi } from '../composables/useApi.js';
+import { currentLanguage } from '../i18n/locale.js';
+import { aboutHref, noteHref, shopHref } from './publication.js';
 
 const TEXTS = '/api/admin/texts';
 const LINKS = '/api/admin/links';
@@ -7,6 +9,7 @@ const ARTWORKS = '/api/admin/artworks';
 const LOGO = '/api/admin/logo';
 const PUBLICATION = '/api/admin/publication';
 const FONTS = '/api/admin/fonts';
+const READINESS = '/api/admin/shop/readiness';
 
 const api = useApi();
 
@@ -89,5 +92,24 @@ export function usePublication() {
         publish: async (page) => {
             publication.value = await api.post(PUBLICATION, { page });
         },
+    };
+}
+
+export function usePreview() {
+    const { publication, load } = usePublication();
+    load();
+    return {
+        shop: computed(() => shopHref(publication.value, currentLanguage())),
+        about: computed(() => aboutHref(publication.value, currentLanguage())),
+        note: computed(() => noteHref(publication.value)),
+    };
+}
+
+const readiness = ref(null);
+
+export function useReadiness() {
+    return {
+        readiness,
+        load: () => api.load(READINESS, readiness),
     };
 }

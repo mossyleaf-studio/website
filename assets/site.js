@@ -5,16 +5,12 @@ import '@fontsource/kalam/latin-400.css';
 import './styles/site/tokens.css';
 import './styles/site/base.css';
 import DraftBanner from './vue/site/components/DraftBanner.vue';
-import BetaPage from './vue/site/pages/BetaPage.vue';
 import NotePage from './vue/site/pages/NotePage.vue';
-
-const PAGES = { note: NotePage, full: BetaPage };
 
 const root = document.getElementById('site');
 const site = JSON.parse(document.getElementById('site-content').textContent);
-const page = PAGES[root.dataset.page] ? root.dataset.page : 'note';
-const draft = 'draft' in root.dataset;
+const { draft, shop, note, admin } = root.dataset;
 
 createApp({
-    render: () => [draft ? h(DraftBanner, { page }) : null, h(PAGES[page], { site })],
+    render: () => [draft === undefined ? null : h(DraftBanner, { current: 'note', links: { shop, note, admin } }), h(NotePage, { site })],
 }).mount(root);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Site;
 
-use App\Application\Content\ContentQueries;
-use App\Domain\Content\PublicPage;
+use App\Presentation\Web\Shop\ShopUrls;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -15,14 +15,15 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/beta/', name: 'beta', methods: ['GET'])]
 final readonly class BetaController
 {
-    public function __construct(
-        private ContentQueries $queries,
-        private SitePage $page,
-    ) {
+    public function __construct(private ShopUrls $urls)
+    {
     }
 
     public function __invoke(Request $request): Response
     {
-        return $this->page->render($request, $this->queries->draft(PublicPage::Full), true);
+        $response = new RedirectResponse($this->urls->to('shop_home', ShopUrls::preferredLocale($request), true));
+        $response->setVary('Accept-Language');
+
+        return $response;
     }
 }

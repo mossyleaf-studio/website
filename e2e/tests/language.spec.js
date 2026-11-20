@@ -34,10 +34,17 @@ test('the draft banner speaks the language of the shop and the note keeps its ow
     await page.goto('/beta/fr/about');
     const banner = page.getByRole('complementary', { name: 'Aperçu du brouillon' });
     await expect(banner.getByRole('link', { name: 'Boutique' })).toHaveAttribute('href', '/beta/fr/');
-    await expect(banner.getByRole('link', { name: 'Boutique' })).not.toHaveAttribute('aria-current');
+    await expect(banner.getByRole('link', { name: 'Boutique' })).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('#shop nav[data-languages]')).toHaveCount(1);
 
     await page.goto('/beta/note/');
     const note = page.getByRole('complementary', { name: 'Draft preview' });
-    await expect(note.getByRole('link')).toHaveText(['Full page', 'Growing note', 'Back to the admin']);
+    await expect(note.getByRole('link')).toHaveText(['Shop', 'Growing note', 'Back to the admin']);
+    await expect(note.getByRole('link', { name: 'Shop' })).toHaveAttribute('href', '/beta/en/');
+    await expect(note.getByRole('link', { name: 'Growing note' })).toHaveAttribute('aria-current', 'page');
+    await expect(note.getByRole('link', { name: 'Back to the admin' })).toHaveAttribute('href', '/admin');
+
+    await page.goto('/beta/');
+    await expect(page).toHaveURL(/\/beta\/en\/$/);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });

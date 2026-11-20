@@ -4,13 +4,14 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ConfirmButton from '../../components/ui/ConfirmButton.vue';
 import { useToast } from '../../composables/useToast.js';
-import { useTexts } from '../useContent.js';
+import { usePreview, useTexts } from '../useContent.js';
 
 defineProps({
     logo: { type: Object, default: null },
 });
 
 const { t } = useI18n();
+const { shop: href } = usePreview();
 const toast = useToast();
 const { uploadLogo, removeLogo } = useTexts();
 
@@ -35,7 +36,7 @@ function remove() {
     <section class="logo-section" data-test="section-logo">
         <header class="logo-section__header">
             <h2 class="logo-section__title">{{ t('admin.texts.logo.title') }}</h2>
-            <a class="logo-section__preview" href="/beta/" target="_blank" rel="noopener">{{ t('admin.texts.seeBeta') }}</a>
+            <a v-if="href" class="logo-section__preview" :href="href" target="_blank" rel="noopener">{{ t('admin.texts.seeShop') }}</a>
         </header>
         <div class="logo-section__body">
             <div class="logo-section__frame">

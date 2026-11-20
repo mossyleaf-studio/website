@@ -28,21 +28,105 @@
         }
     },
     "publish": {
-        "never": "Not published yet: visitors see the growing note",
-        "fullSince": "Full page published {when} by {by}",
-        "noteSince": "Growing note published {when} by {by}",
+        "state": {
+            "closed": "The shop is closed: visitors see the growing note",
+            "open": "The shop is open. Last published {when} by {by}"
+        },
         "pending": "Your changes are in the draft and not visible to visitors yet.",
         "upToDate": "Visitors see the same content as the draft.",
+        "effect": {
+            "opens": "“Publish” opens the shop to everyone, with the texts of the draft.",
+            "updates": "“Publish” puts the waiting texts, links, images and legal pages live. The shop stays open.",
+            "nothing": "Nothing is waiting for “Publish”.",
+            "closes": "“Show the growing note” closes the shop: visitors see the note again.",
+            "refreshesNote": "“Show the growing note” puts the draft texts into the note; visitors keep seeing the note."
+        },
         "preview": "Preview the draft",
         "publish": "Publish",
         "showNote": "Show the growing note",
-        "confirmFullTitle": "Publish the full page?",
-        "confirmFull": "Visitors will see the full page exactly as it is in the draft preview now.",
-        "confirmNoteTitle": "Show the growing note?",
-        "confirmNote": "Visitors will see the “still growing” note instead of the full page, with the texts of the draft.",
-        "fullDone": "Published: visitors see the full page.",
+        "confirmFullTitle": "Open the shop?",
+        "confirmFull": "The shop opens to everyone: visitors can browse and order, and the home address leads to it. Check the preview first if you have not yet.",
+        "confirmUpdateTitle": "Publish the waiting changes?",
+        "confirmUpdate": "Visitors will see the draft texts, links, images and legal pages. The shop stays open.",
+        "confirmNoteTitle": "Close the shop and show the growing note?",
+        "confirmNote": "The shop closes and visitors see the “still growing” note again, with the texts of the draft. Customers who already ordered can still open the page of their order.",
+        "confirmNoteRefreshTitle": "Update the growing note?",
+        "confirmNoteRefresh": "Visitors keep seeing the “still growing” note, now with the texts of the draft.",
+        "fullDone": "Published: the shop is open.",
+        "updateDone": "Published: visitors see the new texts.",
         "noteDone": "Published: visitors see the growing note.",
-        "scope": "Texts, links, images and legal pages wait for “Publish”; products, conventions and shipping are live at once."
+        "scope": "Texts, links, images and legal pages wait for “Publish”; products, conventions and shipping are live at once.",
+        "beforeOpening": "Before the shop can open",
+        "readyCount": "{ready} of {total} ready",
+        "attention": "Needs your attention",
+        "blocked": "“Publish” stays unavailable until the blocking item is fixed. | “Publish” stays unavailable until the {count} blocking items are fixed.",
+        "states": {
+            "ok": "Ready",
+            "blocker": "Blocking",
+            "warning": "To check"
+        },
+        "items": {
+            "identity": {
+                "label": "Studio name",
+                "problem": "The studio has no name yet.",
+                "fix": "Write it in Texts"
+            },
+            "payment": {
+                "label": "Payment",
+                "problem": "Online payment is not connected.",
+                "server": "The server must be set up: SUMUP_API_KEY and SUMUP_MERCHANT_CODE."
+            },
+            "mail": {
+                "label": "Order emails",
+                "problem": "Order emails cannot be sent.",
+                "server": "The server must be set up: STUDIO_EMAIL, MAILER_FROM and MAILER_DSN (a real mail server)."
+            },
+            "shipping": {
+                "label": "Shipping",
+                "problem": "No shipping zone is on, so nobody could check out.",
+                "fix": "Turn a zone on"
+            },
+            "products": {
+                "label": "Products on sale",
+                "problem": "No product is on sale yet: a product needs to be visible and have a price.",
+                "fix": "Open the products"
+            },
+            "terms": {
+                "label": "Terms of sale",
+                "problem": "The terms of sale have no text.",
+                "fix": "Write them in Legal pages"
+            },
+            "legalNotice": {
+                "label": "Legal notice",
+                "problem": "The legal notice has no text.",
+                "fix": "Write it in Legal pages"
+            },
+            "privacy": {
+                "label": "Privacy policy",
+                "problem": "The privacy policy has no text.",
+                "fix": "Write it in Legal pages"
+            },
+            "shippingReturns": {
+                "label": "Shipping and returns",
+                "problem": "The shipping and returns page has no text. The shop can open without it.",
+                "fix": "Write it in Legal pages"
+            },
+            "photos": {
+                "label": "Product photos",
+                "problem": "{count} product on sale has no photo. | {count} products on sale have no photo.",
+                "fix": "Add photos"
+            },
+            "mossytrunk": {
+                "label": "Stock follows mossytrunk",
+                "problem": "Stock will not follow mossytrunk: the connection is not set up.",
+                "server": "The server must be set up: MOSSYTRUNK_TOKEN (at least 32 characters)."
+            },
+            "testOrders": {
+                "label": "Test orders",
+                "problem": "{count} test order still holds stock. | {count} test orders still hold stock.",
+                "fix": "Cancel or delete them in Orders"
+            }
+        }
     },
     "moveUp": "Move up",
     "moveDown": "Move down",
@@ -52,7 +136,7 @@
         "linksHint": "Write [Etsy](https://www.etsy.com/…) to turn a word into a link.",
         "paragraphsHint": "Leave an empty line between two paragraphs.",
         "seeHome": "Preview the growing note",
-        "seeBeta": "Preview the full page",
+        "seeShop": "Preview in the shop",
         "logo": {
             "title": "Logo",
             "hint": "Shown next to the studio name at the top of the site. A PNG with a transparent background works best; it is resized to 800 pixels.",

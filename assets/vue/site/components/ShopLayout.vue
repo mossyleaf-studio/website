@@ -14,13 +14,13 @@ defineProps({
 });
 
 const { t } = useI18n();
-const draft = computed(() => Object.fromEntries(['region', 'title', 'text', 'shop', 'full', 'note', 'admin'].map((key) => [key, t(`draft.${key}`)])));
+const draft = computed(() => Object.fromEntries(['region', 'title', 'text', 'shop', 'note', 'admin'].map((key) => [key, t(`draft.${key}`)])));
 </script>
 
 <template>
-    <div :class="['shop-layout', { 'shop-layout--preview': layout.preview }]">
+    <div :class="['shop-layout', { 'shop-layout--preview': layout.draft }]">
         <a class="shop-layout__skip" href="#main">{{ $t('layout.skip') }}</a>
-        <DraftBanner v-if="layout.preview" page="shop" :shop="home" :labels="draft" />
+        <DraftBanner v-if="layout.draft" current="shop" :links="layout.draft" :labels="draft" />
         <AnnouncementBar :text="layout.announcement" />
         <SiteHeader :home="home" :studio-name="layout.studioName" :logo="layout.logo" :navigation="layout.navigation" :languages="layout.languages">
             <template #end>

@@ -63,6 +63,11 @@ class PublishedSite
         $this->publishedAt = $now;
     }
 
+    public function opensShop(): bool
+    {
+        return PublicPage::Full === $this->page && null !== $this->shopContent;
+    }
+
     public function content(): string
     {
         return $this->content;

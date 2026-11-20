@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Site;
 
+use App\Application\Content\ContentQueries;
+use App\Domain\Shared\Locale;
+use App\Presentation\Web\Shop\ShopUrls;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
@@ -15,8 +18,11 @@ final readonly class RobotsController
 {
     private const array PRIVATE_PATHS = ['/admin', '/beta', '/api/', '/login', '/logout'];
 
-    public function __construct(private UrlGeneratorInterface $urls)
-    {
+    public function __construct(
+        private UrlGeneratorInterface $urls,
+        private ContentQueries $queries,
+        private ShopUrls $shopUrls,
+    ) {
     }
 
     public function __invoke(): Response
@@ -24,6 +30,11 @@ final readonly class RobotsController
         $lines = ['User-agent: *', 'Allow: /'];
         foreach (self::PRIVATE_PATHS as $path) {
             $lines[] = 'Disallow: '.$path;
+        }
+        if ($this->queries->shopIsOpen()) {
+            foreach (Locale::cases() as $locale) {
+                $lines[] = 'Disallow: '.\dirname($this->shopUrls->to('shop_order', $locale, false, ['token' => 'token'])).'/';
+            }
         }
         $lines[] = '';
         $lines[] = 'Sitemap: '.$this->urls->generate('sitemap', [], UrlGeneratorInterface::ABSOLUTE_URL);

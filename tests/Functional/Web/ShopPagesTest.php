@@ -92,7 +92,11 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame(['Boutique', 'Conventions', 'À propos', 'Contact'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
         self::assertSame('Aller au contenu', $crawler->filter('#shop a[href="#main"]')->text());
         self::assertSame('Aperçu du brouillon', $crawler->filter('#shop aside[data-draft]')->attr('aria-label'));
-        self::assertSame([['Boutique', '/beta/fr/'], ['Page complète', '/beta/'], ['Note « en construction »', '/beta/note/'], ['Retour à l’admin', '/admin']], self::links($crawler->filter('#shop aside[data-draft] a')));
+        self::assertSame('Brouillon Seuls les admins voient cette page. Les textes, liens, images et pages légales attendent « Publier » ; les produits, conventions et frais de port sont déjà en ligne.', $crawler->filter('#shop aside[data-draft] p')->text());
+        self::assertSame(['shop' => '/beta/fr/', 'note' => '/beta/note/', 'admin' => '/admin'], Json::array($props, 'layout', 'draft'));
+        self::assertSame([['Boutique', '/beta/fr/'], ['Note « en construction »', '/beta/note/'], ['Retour à l’admin', '/admin']], self::links($crawler->filter('#shop aside[data-draft] a')));
+        self::assertSame(['page', null, null], $crawler->filter('#shop aside[data-draft] a')->each(static fn (Crawler $link): ?string => $link->attr('aria-current')));
+        self::assertSame('Aperçu du brouillon', $crawler->filter('#shop aside[data-draft] nav')->attr('aria-label'));
         self::assertSame(['id', 'title', 'url'], array_keys(Json::array($props, 'layout', 'footer', 'links', 0)));
         self::assertSame('Des bestioles à la main.', $crawler->filter('meta[name="description"]')->attr('content'));
         self::assertSame('fr_FR', $crawler->filter('meta[property="og:locale"]')->attr('content'));
@@ -320,11 +324,11 @@ final class ShopPagesTest extends WebTestCase
         $snapshots = self::getContainer()->get(SiteSnapshots::class);
         $expected = $snapshots->encode(self::getContainer()->get(ContentQueries::class)->site());
 
-        foreach (['/' => 'note', '/beta/' => 'full', '/beta/note/' => 'note'] as $url => $page) {
+        foreach (['/', '/beta/note/'] as $url) {
             $crawler = $client->request('GET', $url);
 
             self::assertResponseStatusCodeSame(200, $url);
-            self::assertSame($page, $crawler->filter('#site')->attr('data-page'), $url);
+            self::assertSame('note', $crawler->filter('#site')->attr('data-page'), $url);
             self::assertSame($expected, $crawler->filter('#site-content')->text(), $url);
             self::assertSame('en', $crawler->filter('html')->attr('lang'), $url);
         }

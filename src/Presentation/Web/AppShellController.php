@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class AppShellController extends AbstractController
 {
     private const string PUBLICATION = '/api/admin/publication';
+    private const string READINESS = '/api/admin/shop/readiness';
 
     public function __construct(private readonly ApiPreload $preload)
     {
@@ -21,7 +22,7 @@ final class AppShellController extends AbstractController
     public function __invoke(string $path): Response
     {
         return $this->render('app.html.twig', [
-            'preloaded' => $this->preload->json([self::PUBLICATION, ...$this->pageUrls(trim($path, '/'))]),
+            'preloaded' => $this->preload->json([self::PUBLICATION, self::READINESS, ...$this->pageUrls(trim($path, '/'))]),
         ]);
     }
 

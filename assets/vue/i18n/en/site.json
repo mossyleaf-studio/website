@@ -138,9 +138,8 @@
     "draft": {
         "region": "Draft preview",
         "title": "Draft",
-        "text": "Only admins see this page. Visitors keep the published version until you publish.",
+        "text": "Only admins see this page. Texts, links, images and legal pages wait for “Publish”; products, conventions and shipping are already live.",
         "shop": "Shop",
-        "full": "Full page",
         "note": "Growing note",
         "admin": "Back to the admin"
     },

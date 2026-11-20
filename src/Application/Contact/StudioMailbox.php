@@ -10,5 +10,7 @@ interface StudioMailbox
 {
     public function isOpen(): bool;
 
+    public function hasTransport(): bool;
+
     public function deliver(SendContactMessage $message): void;
 }

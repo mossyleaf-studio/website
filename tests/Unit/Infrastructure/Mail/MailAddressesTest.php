@@ -34,4 +34,22 @@ final class MailAddressesTest extends TestCase
         self::assertTrue($addresses->isOpen());
         self::assertSame(['shop@mossyleaf.test', 'studio@mossyleaf.test'], [$addresses->from, $addresses->studio]);
     }
+
+    /** @return iterable<string, array{?string, bool}> */
+    public static function transports(): iterable
+    {
+        yield 'unset' => [null, false];
+        yield 'empty' => ['', false];
+        yield 'blank' => ['  ', false];
+        yield 'the null transport' => ['null://null', false];
+        yield 'the null transport in capitals' => [' NULL://default ', false];
+        yield 'smtp' => ['smtp://user:secret@smtp.resend.com:587', true];
+        yield 'mailpit' => ['smtp://mailpit:1025', true];
+    }
+
+    #[DataProvider('transports')]
+    public function testOnlyARealTransportCarriesTheMails(?string $dsn, bool $real): void
+    {
+        self::assertSame($real, new MailAddresses('shop@mossyleaf.test', 'studio@mossyleaf.test', $dsn)->hasTransport());
+    }
 }

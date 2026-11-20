@@ -79,7 +79,7 @@
 
 {% block body %}
     <script type="application/json" id="site-content">{{ content|raw }}</script>
-    <div id="site" data-page="{{ page }}"{% if draft %} data-draft{% endif %}>
+    <div id="site" data-page="note"{% if draft %} data-draft data-shop="{{ draft.shop }}" data-note="{{ draft.note }}" data-admin="{{ draft.admin }}"{% endif %}>
         {% include 'site/_prerender.html.twig' %}
     </div>
 {% endblock %}

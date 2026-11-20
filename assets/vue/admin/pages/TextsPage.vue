@@ -6,17 +6,19 @@ import FontSection from '../components/FontSection.vue';
 import LogoSection from '../components/LogoSection.vue';
 import TextSection from '../components/TextSection.vue';
 import { LIMITS } from '../limits.js';
-import { useTexts } from '../useContent.js';
+import { usePreview, useTexts } from '../useContent.js';
 
 const { t } = useI18n();
 const { texts, load } = useTexts();
+const { shop, about, note } = usePreview();
+const previewOf = (href, label) => (href.value ? { href: href.value, label: t(label) } : null);
 load();
 
 const sections = computed(() => [
     {
         section: 'identity',
         title: t('admin.texts.identity.title'),
-        preview: { href: '/beta/', label: t('admin.texts.seeBeta') },
+        preview: previewOf(shop, 'admin.texts.seeShop'),
         fields: [
             { name: 'studioName', source: 'studioName', label: t('admin.texts.identity.studioName'), max: LIMITS.studioName },
             { name: 'intro', source: 'intro', label: t('admin.texts.identity.intro'), max: LIMITS.intro, rows: 2, localized: true },
@@ -27,7 +29,7 @@ const sections = computed(() => [
     {
         section: 'home-note',
         title: t('admin.texts.homeNote.title'),
-        preview: { href: '/beta/note/', label: t('admin.texts.seeHome') },
+        preview: previewOf(note, 'admin.texts.seeHome'),
         fields: [
             { name: 'title', source: 'homeNoteTitle', label: t('admin.texts.homeNote.noteTitle'), max: LIMITS.title },
             { name: 'text', source: 'homeNoteText', label: t('admin.texts.homeNote.text'), max: LIMITS.homeNote, rows: 5, hint: t('admin.texts.linksHint') },
@@ -36,7 +38,7 @@ const sections = computed(() => [
     {
         section: 'about',
         title: t('admin.texts.about.title'),
-        preview: { href: '/beta/', label: t('admin.texts.seeBeta') },
+        preview: previewOf(about, 'admin.texts.seeShop'),
         fields: [
             { name: 'title', source: 'aboutTitle', label: t('admin.texts.about.aboutTitle'), max: LIMITS.title, localized: true },
             { name: 'text', source: 'aboutText', label: t('admin.texts.about.text'), max: LIMITS.about, rows: 8, hint: `${t('admin.texts.paragraphsHint')} ${t('admin.texts.linksHint')}`, localized: true },
@@ -45,7 +47,7 @@ const sections = computed(() => [
     {
         section: 'gallery',
         title: t('admin.texts.gallery.title'),
-        preview: { href: '/beta/', label: t('admin.texts.seeBeta') },
+        preview: previewOf(about, 'admin.texts.seeShop'),
         fields: [
             { name: 'title', source: 'galleryTitle', label: t('admin.texts.gallery.galleryTitle'), max: LIMITS.title, localized: true },
         ],

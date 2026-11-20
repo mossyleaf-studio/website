@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Site;
 
 use App\Application\Content\ContentQueries;
-use App\Domain\Content\PublicPage;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -23,6 +22,6 @@ final readonly class BetaNoteController
 
     public function __invoke(Request $request): Response
     {
-        return $this->page->render($request, $this->queries->draft(PublicPage::Note), true);
+        return $this->page->render($request, $this->queries->draft(), true);
     }
 }

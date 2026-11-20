@@ -13,15 +13,16 @@ final readonly class PublicationView
         public ?string $publishedAt,
         public ?string $publishedBy,
         public bool $pendingChanges,
+        public bool $open,
     ) {
     }
 
     public static function of(?PublishedSite $site, string $draft, string $shopDraft): self
     {
         if (null === $site) {
-            return new self(null, null, null, true);
+            return new self(null, null, null, true, false);
         }
 
-        return new self($site->page()->value, $site->publishedAt()->format(\DATE_ATOM), $site->publishedBy(), $site->content() !== $draft || $site->shopContent() !== $shopDraft);
+        return new self($site->page()->value, $site->publishedAt()->format(\DATE_ATOM), $site->publishedBy(), $site->content() !== $draft || $site->shopContent() !== $shopDraft, $site->opensShop());
     }
 }

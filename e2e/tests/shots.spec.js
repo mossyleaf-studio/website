@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
+import { placePaidOrder } from './support/orders.js';
 import { LOGO, PNG, signIn } from './support/session.js';
 
 const VIEWPORTS = { phone: { width: 390, height: 844 }, desktop: { width: 1440, height: 900 } };
-const PUBLIC = { home: '/', beta: '/beta/' };
+const PUBLIC = { home: '/', 'beta-note': '/beta/note/' };
 const SHOP = {
     'shop-home-fr': '/beta/fr/',
     'shop-home-en': '/beta/en/',
@@ -22,6 +23,21 @@ const SHOP = {
     'shop-conventions-en': '/beta/en/conventions',
     'shop-legal-fr': '/beta/fr/legal/terms',
 };
+const OPEN_SHOP = {
+    home: '',
+    listing: 'shop',
+    'listing-category': 'shop?category=stickers',
+    'product-variants': 'shop/washi-tape-set',
+    'product-sold-out': 'shop/meadow-sticker-sheet',
+    'product-hidden': 'shop/dew-greeting-card',
+    conventions: 'conventions',
+    about: 'about',
+    contact: 'contact',
+    'legal-terms': 'legal/terms',
+    'legal-privacy': 'legal/privacy',
+    'not-found': 'no-such-page',
+};
+const ZONES = { france: { price: 450, freeFrom: 4000, enabled: true }, eu: { price: 900, freeFrom: null, enabled: true }, world: { price: 1500, freeFrom: null, enabled: true } };
 const ADMIN = { texts: '/admin/texts', links: '/admin/links', images: '/admin/images', products: '/admin/products', conventions: '/admin/conventions', legal: '/admin/legal', settings: '/admin/settings' };
 
 async function send(request, method, url, data) {
@@ -238,6 +254,82 @@ async function shootTheAdminOrders(page) {
     }
 }
 
+async function setZones(request, enabled) {
+    for (const [code, body] of Object.entries(ZONES)) await send(request, 'PUT', `/api/admin/shipping-zones/${code}`, { ...body, enabled });
+}
+
+async function shootThePublishBar(page) {
+    const states = [['blocked', () => setZones(page.request, false)], ['ready', () => setZones(page.request, true)], ['open', () => send(page.request, 'POST', '/api/admin/publication', { page: 'full' })]];
+    for (const [state, prepare] of states) {
+        await prepare();
+        for (const [size, viewport] of Object.entries(VIEWPORTS)) {
+            await page.setViewportSize(viewport);
+            await page.goto('/admin/texts');
+            const bar = page.getByTestId('publish-bar');
+            await expect(bar.getByTestId('publish-state')).toHaveAttribute('data-open', state === 'open' ? 'true' : 'false');
+            if (state !== 'open') await expect(bar.getByTestId('publish-ready-count')).toBeVisible();
+            if (state === 'blocked') await expect(bar.getByTestId('readiness-shipping')).toHaveAttribute('data-state', 'blocker');
+            if (state === 'ready') await expect(bar.getByTestId('readiness-shipping')).toHaveCount(0);
+            await bar.screenshot({ path: `shots/admin-publish-${state}-${size}.png`, animations: 'disabled' });
+        }
+    }
+}
+
+async function shootTheOpenShop(browser) {
+    const visitors = {};
+    let orderUrl;
+    for (const [size, viewport] of Object.entries(VIEWPORTS)) {
+        const context = await browser.newContext({ viewport });
+        const visitor = await context.newPage();
+        visitors[size] = visitor;
+        for (const locale of ['fr', 'en']) {
+            for (const [name, path] of Object.entries(OPEN_SHOP)) {
+                const response = await visitor.goto(`/${locale}/${path}`);
+                expect(response.status(), `${locale} ${name}`).toBe('not-found' === name || 'product-hidden' === name ? 404 : 200);
+                await expect(visitor.getByRole('complementary')).toHaveCount(0);
+                await visitor.waitForLoadState('networkidle');
+                await visitor.screenshot({ path: `shots/open-${name}-${locale}-${size}.png`, fullPage: true, animations: 'disabled' });
+            }
+        }
+
+        const { url } = await placePaidOrder(visitor, [{ sku: 'CRD-001', quantity: 2 }, { sku: 'PRT-001-A4', quantity: 1 }], '');
+        orderUrl = url;
+        await expect(visitor.getByTestId('order-test')).toHaveCount(0);
+        await visitor.screenshot({ path: `shots/open-order-paid-en-${size}.png`, fullPage: true, animations: 'disabled' });
+        await visitor.goto(url.replace('/en/order/', '/fr/order/'));
+        await expect(visitor.getByTestId('order-status')).toHaveAttribute('data-state', 'paid');
+        await visitor.screenshot({ path: `shots/open-order-paid-fr-${size}.png`, fullPage: true, animations: 'disabled' });
+
+        await visitor.goto('/en/shop');
+        await visitor.evaluate(([key, value]) => localStorage.setItem(key, value), [CART, JSON.stringify({ lines: [line('CRD-001', 2), line('PRT-001-A4', 1)], country: 'FR' })]);
+        for (const [name, locale] of [['cart', 'fr'], ['cart', 'en'], ['checkout', 'fr'], ['checkout', 'en']]) {
+            await visitor.goto(`/${locale}/${name}`);
+            await expect(visitor.getByTestId(name === 'cart' ? 'cart-line' : 'checkout-pay').first()).toBeVisible();
+            await expect(visitor.getByTestId('order-summary')).not.toHaveAttribute('aria-busy', 'true');
+            await visitor.screenshot({ path: `shots/open-${name}-${locale}-${size}.png`, fullPage: true, animations: 'disabled' });
+        }
+        await visitor.evaluate((key) => localStorage.removeItem(key), CART);
+        await visitor.goto('/fr/cart');
+        await expect(visitor.getByTestId('cart-empty')).toBeVisible();
+        await visitor.screenshot({ path: `shots/open-cart-empty-fr-${size}.png`, fullPage: true, animations: 'disabled' });
+        await visitor.goto('/fr/shop/moss-print');
+        await visitor.getByTestId('add-to-cart').click();
+        await expect(visitor.getByTestId('cart-added')).toBeVisible();
+        await visitor.evaluate(() => window.scrollTo(0, 0));
+        await visitor.screenshot({ path: `shots/open-product-added-fr-${size}.png`, fullPage: true, animations: 'disabled' });
+        await visitor.evaluate((key) => localStorage.removeItem(key), CART);
+    }
+
+    const crawler = await (await browser.newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.phone })).newPage();
+    for (const [name, path, marker] of [['home', '/fr/', '#shop main h1'], ['listing', '/fr/shop', '#shop main h1'], ['product', '/fr/shop/moss-print', '#shop main h1'], ['legal', '/en/legal/terms', '#shop main [data-blocks]'], ['contact', '/fr/contact', '#shop main [data-noscript]'], ['checkout', '/fr/checkout', '#shop main [data-noscript]'], ['order', new URL(orderUrl).pathname, '#shop main [data-order]']]) {
+        await crawler.goto(path);
+        await expect(crawler.locator(marker).first(), name).toBeVisible();
+        await crawler.screenshot({ path: `shots/open-${name}-without-javascript.png`, fullPage: true });
+    }
+    await crawler.context().close();
+    for (const visitor of Object.values(visitors)) await visitor.context().close();
+}
+
 test('screenshots of the site and the admin', async ({ page }) => {
     test.setTimeout(240_000);
     await signIn(page);
@@ -310,6 +402,14 @@ test('screenshots of the site and the admin', async ({ page }) => {
     await expect(editorWithoutScript.locator('#shop main [data-order]')).toBeVisible();
     await editorWithoutScript.screenshot({ path: 'shots/shop-order-without-javascript.png', fullPage: true });
     await editorWithoutScript.context().close();
+
+    try {
+        await shootThePublishBar(page);
+        await shootTheOpenShop(page.context().browser());
+    } finally {
+        await setZones(page.request, true);
+        await send(page.request, 'POST', '/api/admin/publication', { page: 'note' });
+    }
 
     await page.goto('/admin/images');
     for (let count = 3; count > 0; count -= 1) {

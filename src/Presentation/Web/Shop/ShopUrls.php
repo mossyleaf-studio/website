@@ -47,6 +47,22 @@ final readonly class ShopUrls implements OrderUrls
         return $this->router->generate('home');
     }
 
+    public function note(): string
+    {
+        return $this->router->generate('beta_note');
+    }
+
+    /** @return array{shop: string, note: string, admin: string} */
+    public function draft(Locale $locale): array
+    {
+        return ['shop' => $this->to('shop_home', $locale, true), 'note' => $this->note(), 'admin' => $this->router->generate('app')];
+    }
+
+    public static function preferredLocale(Request $request): Locale
+    {
+        return Locale::tryFrom((string) $request->getPreferredLanguage(array_map(static fn (Locale $locale): string => $locale->value, Locale::cases()))) ?? Locale::En;
+    }
+
     public static function isShop(Request $request): bool
     {
         return str_starts_with(self::route($request), self::SHOP);

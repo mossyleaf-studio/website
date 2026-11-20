@@ -28,21 +28,105 @@
         }
     },
     "publish": {
-        "never": "Pas encore publié : les visiteurs voient la note « en construction »",
-        "fullSince": "Page complète publiée le {when} par {by}",
-        "noteSince": "Note « en construction » publiée le {when} par {by}",
+        "state": {
+            "closed": "La boutique est fermée : les visiteurs voient la note",
+            "open": "La boutique est ouverte. Dernière publication le {when} par {by}"
+        },
         "pending": "Vos modifications sont dans le brouillon et pas encore visibles par les visiteurs.",
         "upToDate": "Les visiteurs voient le même contenu que le brouillon.",
+        "effect": {
+            "opens": "« Publier » ouvre la boutique à tout le monde, avec les textes du brouillon.",
+            "updates": "« Publier » met en ligne les textes, liens, images et pages légales en attente. La boutique reste ouverte.",
+            "nothing": "Rien n’attend « Publier ».",
+            "closes": "« Afficher la note » ferme la boutique : les visiteurs revoient la note.",
+            "refreshesNote": "« Afficher la note » met les textes du brouillon dans la note ; les visiteurs voient toujours la note."
+        },
         "preview": "Aperçu du brouillon",
         "publish": "Publier",
-        "showNote": "Afficher la note « en construction »",
-        "confirmFullTitle": "Publier la page complète ?",
-        "confirmFull": "Les visiteurs verront la page complète exactement comme dans l’aperçu du brouillon.",
-        "confirmNoteTitle": "Afficher la note « en construction » ?",
-        "confirmNote": "Les visiteurs verront la note « en construction » à la place de la page complète, avec les textes du brouillon.",
-        "fullDone": "Publié : les visiteurs voient la page complète.",
+        "showNote": "Afficher la note",
+        "confirmFullTitle": "Ouvrir la boutique ?",
+        "confirmFull": "La boutique s’ouvre à tout le monde : les visiteurs pourront parcourir et commander, et l’adresse d’accueil y mène. Vérifiez l’aperçu d’abord si ce n’est pas fait.",
+        "confirmUpdateTitle": "Publier les modifications en attente ?",
+        "confirmUpdate": "Les visiteurs verront les textes, liens, images et pages légales du brouillon. La boutique reste ouverte.",
+        "confirmNoteTitle": "Fermer la boutique et afficher la note ?",
+        "confirmNote": "La boutique se ferme et les visiteurs revoient la note « en construction », avec les textes du brouillon. Les clients qui ont déjà commandé peuvent toujours ouvrir la page de leur commande.",
+        "confirmNoteRefreshTitle": "Mettre à jour la note ?",
+        "confirmNoteRefresh": "Les visiteurs continuent de voir la note « en construction », désormais avec les textes du brouillon.",
+        "fullDone": "Publié : la boutique est ouverte.",
+        "updateDone": "Publié : les visiteurs voient les nouveaux textes.",
         "noteDone": "Publié : les visiteurs voient la note « en construction ».",
-        "scope": "Les textes, liens, images et pages légales attendent « Publier » ; les produits, les conventions et la livraison sont en ligne tout de suite."
+        "scope": "Les textes, liens, images et pages légales attendent « Publier » ; les produits, les conventions et la livraison sont en ligne tout de suite.",
+        "beforeOpening": "Avant que la boutique puisse ouvrir",
+        "readyCount": "{ready} sur {total} prêts",
+        "attention": "À surveiller",
+        "blocked": "« Publier » reste indisponible tant que le point bloquant n’est pas réglé. | « Publier » reste indisponible tant que les {count} points bloquants ne sont pas réglés.",
+        "states": {
+            "ok": "Prêt",
+            "blocker": "Bloquant",
+            "warning": "À vérifier"
+        },
+        "items": {
+            "identity": {
+                "label": "Nom du studio",
+                "problem": "Le studio n’a pas encore de nom.",
+                "fix": "À écrire dans Textes"
+            },
+            "payment": {
+                "label": "Paiement",
+                "problem": "Le paiement en ligne n’est pas connecté.",
+                "server": "Le serveur doit être configuré : SUMUP_API_KEY et SUMUP_MERCHANT_CODE."
+            },
+            "mail": {
+                "label": "E-mails de commande",
+                "problem": "Les e-mails de commande ne peuvent pas partir.",
+                "server": "Le serveur doit être configuré : STUDIO_EMAIL, MAILER_FROM et MAILER_DSN (un vrai serveur de mail)."
+            },
+            "shipping": {
+                "label": "Livraison",
+                "problem": "Aucune zone de livraison n’est activée : personne ne pourrait commander.",
+                "fix": "Activer une zone"
+            },
+            "products": {
+                "label": "Produits en vente",
+                "problem": "Aucun produit n’est en vente : un produit doit être visible et avoir un prix.",
+                "fix": "Ouvrir les produits"
+            },
+            "terms": {
+                "label": "Conditions de vente",
+                "problem": "Les conditions de vente n’ont pas de texte.",
+                "fix": "À écrire dans Pages légales"
+            },
+            "legalNotice": {
+                "label": "Mentions légales",
+                "problem": "Les mentions légales n’ont pas de texte.",
+                "fix": "À écrire dans Pages légales"
+            },
+            "privacy": {
+                "label": "Politique de confidentialité",
+                "problem": "La politique de confidentialité n’a pas de texte.",
+                "fix": "À écrire dans Pages légales"
+            },
+            "shippingReturns": {
+                "label": "Livraison et retours",
+                "problem": "La page livraison et retours n’a pas de texte. La boutique peut ouvrir sans.",
+                "fix": "À écrire dans Pages légales"
+            },
+            "photos": {
+                "label": "Photos des produits",
+                "problem": "{count} produit en vente n’a pas de photo. | {count} produits en vente n’ont pas de photo.",
+                "fix": "Ajouter des photos"
+            },
+            "mossytrunk": {
+                "label": "Stock suivi par mossytrunk",
+                "problem": "Le stock ne suivra pas mossytrunk : la connexion n’est pas configurée.",
+                "server": "Le serveur doit être configuré : MOSSYTRUNK_TOKEN (32 caractères au moins)."
+            },
+            "testOrders": {
+                "label": "Commandes de test",
+                "problem": "{count} commande de test retient encore du stock. | {count} commandes de test retiennent encore du stock.",
+                "fix": "À annuler ou supprimer dans Commandes"
+            }
+        }
     },
     "moveUp": "Monter",
     "moveDown": "Descendre",
@@ -52,7 +136,7 @@
         "linksHint": "Écrivez [Etsy](https://www.etsy.com/…) pour transformer un mot en lien.",
         "paragraphsHint": "Laissez une ligne vide entre deux paragraphes.",
         "seeHome": "Aperçu de la note",
-        "seeBeta": "Aperçu de la page complète",
+        "seeShop": "Aperçu dans la boutique",
         "logo": {
             "title": "Logo",
             "hint": "Affiché à côté du nom du studio en haut du site. Un PNG à fond transparent rend le mieux ; il est réduit à 800 pixels.",

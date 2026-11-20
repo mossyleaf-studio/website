@@ -16,7 +16,10 @@ final readonly class ShopPage
 {
     public const int SAFE_IN_HTML = \JSON_HEX_TAG | \JSON_HEX_AMP | \JSON_HEX_APOS | \JSON_HEX_QUOT | \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES;
     private const array NAVIGATION = ['home' => 'shop_home', 'shop' => 'shop_listing', 'conventions' => 'shop_conventions', 'about' => 'shop_about', 'contact' => 'shop_contact'];
+    private const array CURRENT = ['shop_product' => 'shop_listing'];
+    private const array KEPT_QUERY = ['shop_listing' => ['category']];
     private const array OPEN_GRAPH_LOCALES = ['en' => 'en_GB', 'fr' => 'fr_FR'];
+    private const string INDEXABLE = 'index';
 
     public function __construct(
         private Environment $twig,
@@ -33,48 +36,72 @@ final readonly class ShopPage
         $locale = ShopUrls::locale($request);
         $route = ShopUrls::route($request);
         $parameters = ShopUrls::parameters($request);
-        $layout = $this->layout($content, $locale, $preview, $route, $parameters);
+        $layout = $this->layout($content, $locale, $preview, $route, $parameters, self::keptQuery($request, $route));
+        $seo = [...$this->seo($content, $locale, $preview, $route, $parameters, $title, Response::HTTP_OK === $status), ...$seo];
+        $props = json_encode(['layout' => $layout, 'data' => $data], self::SAFE_IN_HTML | \JSON_THROW_ON_ERROR);
 
-        $response = new Response(status: $status);
+        $response = new Response($this->twig->render('shop.html.twig', [
+            'props' => $props,
+            'layout' => $layout,
+            'data' => $data,
+            'seo' => $seo,
+        ]), $status);
         if ($preview) {
             $response->setPrivate();
             $response->headers->addCacheControlDirective('no-store');
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
-        } else {
-            $response->setPublic();
-            $response->setMaxAge(0);
-            $response->headers->addCacheControlDirective('must-revalidate');
+
+            return $response;
+        }
+        $response->setPublic();
+        $response->setMaxAge(0);
+        $response->headers->addCacheControlDirective('must-revalidate');
+        if (\is_string($seo['robots'] ?? null) && str_starts_with($seo['robots'], self::INDEXABLE)) {
+            $response->setEtag(hash('xxh128', (string) $response->getContent()));
+            $response->isNotModified($request);
         }
 
-        return $response->setContent($this->twig->render('shop.html.twig', [
-            'props' => json_encode(['layout' => $layout, 'data' => $data], self::SAFE_IN_HTML | \JSON_THROW_ON_ERROR),
-            'layout' => $layout,
-            'data' => $data,
-            'seo' => [...$this->seo($content, $locale, $preview, $route, $parameters, $title, Response::HTTP_OK === $status), ...$seo],
-        ]));
+        return $response;
+    }
+
+    /** @return array<string, string> */
+    private static function keptQuery(Request $request, string $route): array
+    {
+        $kept = [];
+        foreach (self::KEPT_QUERY[$route] ?? [] as $name) {
+            $value = $request->query->all()[$name] ?? null;
+            if (\is_string($value) && '' !== $value) {
+                $kept[$name] = $value;
+            }
+        }
+
+        return $kept;
     }
 
     /**
      * @param array<string, string> $parameters
+     * @param array<string, string> $query
      *
      * @return array<string, mixed>
      */
-    private function layout(ShopContentView $content, Locale $locale, bool $preview, string $route, array $parameters): array
+    private function layout(ShopContentView $content, Locale $locale, bool $preview, string $route, array $parameters, array $query): array
     {
+        $current = self::CURRENT[$route] ?? $route;
+
         return [
             'locale' => $locale->value,
-            'preview' => $preview,
+            ...($preview ? ['preview' => true, 'draft' => $this->urls->draft($locale)] : []),
             'studioName' => $content->studioName,
             'intro' => $content->intro->in($locale),
             'logo' => $content->logo,
             'announcement' => $content->announcement->in($locale),
             'navigation' => array_map(
-                fn (string $key, string $target): array => ['key' => $key, 'url' => $this->urls->to($target, $locale, $preview), 'current' => $target === $route],
+                fn (string $key, string $target): array => ['key' => $key, 'url' => $this->urls->to($target, $locale, $preview), 'current' => $target === $current],
                 array_keys(self::NAVIGATION),
                 self::NAVIGATION,
             ),
             'languages' => array_map(
-                fn (Locale $language): array => ['locale' => $language->value, 'url' => $this->urls->to($route, $language, $preview, $parameters), 'current' => $language === $locale],
+                fn (Locale $language): array => ['locale' => $language->value, 'url' => $this->urls->to($route, $language, $preview, [...$parameters, ...$query]), 'current' => $language === $locale],
                 Locale::cases(),
             ),
             'cartUrl' => $this->urls->to('shop_cart', $locale, $preview),

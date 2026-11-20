@@ -50,7 +50,7 @@ final readonly class ShopProductController
             'photos' => array_map(static fn (PhotoView $photo): array => CatalogueProps::image($photo, $title), $product->photos),
             'variants' => $product->variants,
             'soldOut' => $product->soldOut,
-            'hidden' => $product->hidden,
+            ...($preview ? ['hidden' => $product->hidden] : []),
             'related' => $this->props->cards($this->catalogue->related($product, $preview), $locale, $preview),
         ], $title, seo: $this->seo->of($product, $locale, $request));
     }
