@@ -88,6 +88,11 @@ final class DescribeProductHandlerTest extends TestCase
                 return $this->products;
             }
 
+            public function variantsWithSkus(array $skus): array
+            {
+                return [];
+            }
+
             public function photoFiles(): array
             {
                 return [];

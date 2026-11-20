@@ -20,9 +20,9 @@ final readonly class ShopVariantView
     ) {
     }
 
-    public static function of(ProductVariant $variant, bool $amongSeveral): self
+    public static function of(ProductVariant $variant, bool $amongSeveral, int $held): self
     {
-        $available = min(max(0, $variant->stock()), self::MAX_AVAILABLE);
+        $available = min(max(0, $variant->stock() - $held), self::MAX_AVAILABLE);
 
         return new self(
             $variant->sku(),

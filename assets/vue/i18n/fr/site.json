@@ -161,5 +161,87 @@
             "privacy": "Confidentialité",
             "shipping-returns": "Livraison et retours"
         }
+    },
+    "checkout": {
+        "title": "Commande",
+        "noscript": "La commande a besoin de JavaScript pour calculer le total et ouvrir le paiement.",
+        "backToCart": "Retour au panier",
+        "contact": "Vos coordonnées",
+        "delivery": "Adresse de livraison",
+        "email": "E-mail",
+        "emailHint": "La confirmation et le suivi d’envoi arrivent à cette adresse.",
+        "name": "Nom et prénom",
+        "phone": "Téléphone (facultatif)",
+        "phoneHint": "Transmis au transporteur seulement si le colis en a besoin.",
+        "line1": "Adresse",
+        "line2": "Appartement, bâtiment, étage (facultatif)",
+        "postalCode": "Code postal",
+        "city": "Ville",
+        "country": "Pays",
+        "region": "État, province ou région",
+        "regionHint": "Nécessaire pour les livraisons hors d’Europe.",
+        "terms": "J’ai lu et j’accepte les {terms}.",
+        "termsLink": "conditions générales de vente",
+        "termsMissing": "Le paiement s’ouvre dès que les conditions générales de vente ont un texte.",
+        "pay": "Payer {amount}",
+        "paying": "Ouverture du paiement…",
+        "payNote": "Vous payez sur la page sécurisée de SumUp, puis vous revenez ici pour suivre votre commande.",
+        "showSummary": "Voir le récapitulatif",
+        "hideSummary": "Masquer le récapitulatif",
+        "loading": "Calcul du total…",
+        "errors": {
+            "terms": "Acceptez les conditions générales de vente pour commander.",
+            "country": "Choisissez le pays de livraison."
+        },
+        "failure": {
+            "outdated": "Le total est maintenant de {amount}. Vérifiez le récapitulatif, puis payez à nouveau.",
+            "payment": "La page de paiement n’a pas pu s’ouvrir. Rien n’a été débité : réessayez dans un instant.",
+            "tooMany": "Trop de tentatives depuis cette connexion. Réessayez dans quelques minutes : ce que vous avez saisi est conservé."
+        },
+        "placed": {
+            "title": "Une commande attend son paiement",
+            "text": "Rien n’est débité tant que vous ne payez pas sur SumUp. Payez à nouveau ci-dessous pour passer une nouvelle commande.",
+            "link": "Suivre cette commande"
+        },
+        "newTab": "s’ouvre dans un nouvel onglet"
+    },
+    "order": {
+        "title": "Votre commande",
+        "reference": "Commande {reference}",
+        "test": "Commande de test",
+        "pay": "Revenir au paiement",
+        "backToCart": "Retour au panier",
+        "reload": "Recharger la page",
+        "lines": "Articles commandés",
+        "state": {
+            "pending": {
+                "title": "Paiement pas encore confirmé",
+                "text": "Si vous avez payé sur SumUp, la confirmation arrive dans un instant, suivie d’un e-mail. Si vous n’avez pas payé, rien n’a été débité."
+            },
+            "stalled": {
+                "title": "Confirmation toujours en attente",
+                "text": "La confirmation prend plus de temps que d’habitude. Si vous avez payé, un e-mail suivra : rechargez cette page dans quelques minutes."
+            },
+            "paid": {
+                "title": "Merci pour votre commande",
+                "text": "Le paiement est confirmé et un e-mail de confirmation est en route. Le studio emballe votre commande à la main et vous écrit dès l’envoi."
+            },
+            "failed": {
+                "title": "Le paiement n’est pas passé",
+                "text": "Rien n’a été débité. Votre panier est conservé : retournez-y pour réessayer."
+            },
+            "expired": {
+                "title": "Le délai de paiement est dépassé",
+                "text": "Rien n’a été débité. Votre panier est conservé : retournez-y pour commander à nouveau."
+            },
+            "shipped": {
+                "title": "Votre commande est en route",
+                "text": "Le studio a envoyé votre colis."
+            },
+            "cancelled": {
+                "title": "Cette commande est annulée",
+                "text": "Écrivez au studio pour toute question à son sujet."
+            }
+        }
     }
 }

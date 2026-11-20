@@ -1,0 +1,34 @@
+{% set order = data.order %}
+{% set state = 'order.state.' ~ order.status %}
+<h1>{{ data.title }}</h1>
+<section class="shop-prerender__sheet" aria-live="polite" data-order>
+    {% if order.test %}
+        <p data-test-order>{{ 'order.test'|site_t }}</p>
+    {% endif %}
+    <p data-reference>{{ 'order.reference'|site_t({reference: order.reference}) }}</p>
+    <h2 data-status>{{ (state ~ '.title')|site_t }}</h2>
+    <p data-status-text>{{ (state ~ '.text')|site_t }}</p>
+    {% if order.status == 'pending' and order.paymentUrl %}
+        <p><a href="{{ order.paymentUrl }}" data-pay>{{ 'order.pay'|site_t }}</a></p>
+    {% endif %}
+    {% if order.status in ['failed', 'expired'] %}
+        <p><a href="{{ layout.cartUrl }}" data-cart-back>{{ 'order.backToCart'|site_t }}</a></p>
+    {% endif %}
+    {% if order.status == 'pending' %}
+        <p><a href="{{ app.request.pathInfo }}" data-reload>{{ 'order.reload'|site_t }}</a></p>
+    {% endif %}
+    <h3>{{ 'order.lines'|site_t }}</h3>
+    <ul data-lines>
+        {% for line in order.lines %}
+            <li>{{ line.quantity }} × {{ line.title }}{% if line.variant %} ({{ line.variant }}){% endif %} – {{ line.lineTotal|money }}</li>
+        {% endfor %}
+    </ul>
+    <dl>
+        <dt>{{ 'cart.summary.goods'|site_t }}</dt>
+        <dd data-goods>{{ order.goods|money }}</dd>
+        <dt>{{ 'cart.summary.shipping'|site_t }}</dt>
+        <dd data-shipping>{{ order.shipping > 0 ? order.shipping|money : 'cart.summary.free'|site_t }}</dd>
+        <dt>{{ 'cart.summary.total'|site_t }}</dt>
+        <dd data-total>{{ order.total|money }}</dd>
+    </dl>
+</section>

@@ -13,7 +13,7 @@ final class ShopContactPageTest extends WebTestCase
 {
     use SignsInClient;
 
-    private const array UNSET = ['MAILER_DSN', 'STUDIO_EMAIL'];
+    private const array UNSET = ['MAILER_DSN', 'STUDIO_EMAIL', 'MAILER_FROM'];
 
     /** @var array<string, mixed> */
     private array $saved = [];
@@ -112,6 +112,16 @@ final class ShopContactPageTest extends WebTestCase
         self::assertCount(0, $crawler->filter('#shop main [data-noscript]'));
         self::assertNotEmpty(Json::array($data, 'links'));
         self::assertCount(\count(Json::array($data, 'links')), $crawler->filter('#shop main [data-links] li'));
+    }
+
+    public function testWithoutASenderAddressThePageOffersNoForm(): void
+    {
+        $_ENV['MAILER_FROM'] = '';
+        $crawler = self::signedInClient()->request('GET', '/beta/en/contact');
+
+        self::assertResponseIsSuccessful();
+        self::assertNull(Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data')['endpoint']);
+        self::assertCount(0, $crawler->filter('#shop main [data-noscript]'));
     }
 
     public function testTheApplicationBootsWithTheMailSettingsUnset(): void

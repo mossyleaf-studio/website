@@ -32,7 +32,7 @@ test('a message sent from the preview reaches the studio mailbox with the visito
     await expect.poll(async () => (await messages(request)).length).toBe(1);
     const mail = await (await request.get(`${MAILPIT}/api/v1/message/latest`)).json();
     expect(mail.To.map((address) => address.Address)).toEqual([STUDIO]);
-    expect(mail.From.Address).toBe(STUDIO);
+    expect(mail.From.Address).toBe('shop@mossyleaf.test');
     expect(mail.ReplyTo.map((address) => address.Address)).toEqual(['camille@example.test']);
     expect(mail.Subject).toContain('Camille Martin');
     expect(mail.Text).toContain('une question sur vos cartes.');

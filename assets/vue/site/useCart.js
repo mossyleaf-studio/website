@@ -1,5 +1,5 @@
 import { computed, onScopeDispose, readonly, shallowRef } from 'vue';
-import { CART_KEY, addLine, cartUnits, emptyCart, readCart, removeLine, setCountry, setQuantity, settle } from './cart.js';
+import { CART_KEY, PLACED_KEY, addLine, cartUnits, emptyCart, readCart, removeLine, setCountry, setQuantity, settle } from './cart.js';
 
 function stored() {
     try {
@@ -37,5 +37,22 @@ export function useCart() {
         remove: (sku) => write(removeLine(cart.value, sku)),
         setCountry: (country) => write(setCountry(cart.value, country)),
         settle: (quote) => write(settle(cart.value, quote)),
+        placed: (reference) => {
+            try {
+                window.localStorage.setItem(PLACED_KEY, reference);
+            } catch {
+                return false;
+            }
+            return true;
+        },
+        paid: (reference) => {
+            try {
+                if (window.localStorage.getItem(PLACED_KEY) !== reference) return false;
+                window.localStorage.removeItem(PLACED_KEY);
+            } catch {
+                return false;
+            }
+            return write({ ...cart.value, lines: [] });
+        },
     };
 }

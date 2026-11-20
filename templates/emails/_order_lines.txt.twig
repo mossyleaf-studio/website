@@ -1,0 +1,8 @@
+{% for line in order.lines %}
+{% set label = ((with_names ?? false) ? line.name : line.title) ~ (line.variant ? ' (' ~ line.variant ~ ')' : '') ~ ((with_names ?? false) ? ' [' ~ line.sku ~ ']' : '') %}
+{{ 'order.line'|trans({quantity: line.quantity, title: label, unitPrice: line.unitPrice / 100, total: line.total / 100}, 'emails') }}
+{% endfor %}
+
+{{ 'order.goods'|trans({amount: order.goods / 100}, 'emails') }}
+{{ 'order.shipping'|trans({amount: order.shipping / 100}, 'emails') }}
+{{ 'order.total'|trans({amount: order.total / 100}, 'emails') }}

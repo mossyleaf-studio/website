@@ -10,6 +10,7 @@ final readonly class QuoteLine
 {
     public function __construct(
         public string $sku,
+        public string $name,
         public string $title,
         public ?string $variant,
         public int $unitPrice,

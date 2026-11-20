@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Shop;
 
 use App\Application\Content\ContentQueries;
+use App\Application\Sales\PaymentGateway;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +25,7 @@ final readonly class ShopCartController
         private CartCountries $countries,
         private SiteLabels $labels,
         private ShopPage $page,
+        private PaymentGateway $gateway,
     ) {
     }
 
@@ -44,7 +46,7 @@ final readonly class ShopCartController
             'countries' => $this->countries->deliverable($locale),
             'defaultCountry' => self::DEFAULT_COUNTRY,
             'shopUrl' => $this->urls->to('shop_listing', $locale, $preview),
-            'checkoutUrl' => null,
+            'checkoutUrl' => $this->gateway->isReady() ? $this->urls->to('shop_checkout', $locale, $preview) : null,
         ], $title, seo: ['robots' => $robots, 'canonical' => null, 'alternates' => []]);
         $response->headers->set('X-Robots-Tag', $robots);
 

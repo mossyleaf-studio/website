@@ -142,8 +142,68 @@ async function shootTheContactForm(page, size) {
     await closed.close();
 }
 
+async function fillTheCheckout(page) {
+    await page.getByLabel('E-mail').fill('lou@example.com');
+    await page.getByLabel('Nom et prénom').fill('Lou Martin');
+    await page.getByLabel('Adresse', { exact: true }).fill('12 rue des Fougères');
+    await page.getByLabel('Code postal').fill('69001');
+    await page.getByLabel('Ville').fill('Lyon');
+    await page.getByTestId('checkout-terms').check();
+}
+
+async function placeAnOrder(page) {
+    await fillTheCart(page, [line('CRD-002', 2), line('STK-002', 3), line('PRT-002', 1)]);
+    await page.goto('/beta/fr/checkout');
+    await expect(page.getByTestId('checkout-pay')).toBeEnabled();
+    await fillTheCheckout(page);
+    await page.getByTestId('checkout-pay').click();
+    await page.waitForURL(/\/_fake\/sumup\//);
+}
+
+async function shootTheCheckout(page, size) {
+    await page.goto('/beta/fr/shop');
+    await fillTheCart(page, [line('CRD-002', 2), line('STK-002', 3), line('PRT-002', 1)]);
+    for (const [locale, pay] of [['fr', /^Payer \d/], ['en', /^Pay €\d/]]) {
+        await page.goto(`/beta/${locale}/checkout`);
+        await expect(page.getByTestId('checkout-pay')).toHaveText(pay);
+        await expect(page.getByTestId('checkout-pay')).toBeEnabled();
+        await page.screenshot({ path: `shots/shop-checkout-${locale}-${size}.png`, fullPage: true, animations: 'disabled' });
+    }
+    if (size === 'phone') {
+        await page.getByTestId('checkout-summary-toggle').click();
+        await expect(page.getByTestId('order-summary')).toBeVisible();
+        await page.screenshot({ path: 'shots/shop-checkout-summary-open-phone.png', fullPage: true, animations: 'disabled' });
+    }
+
+    await page.goto('/beta/fr/checkout');
+    await expect(page.getByTestId('checkout-pay')).toBeEnabled();
+    await page.getByTestId('checkout-pay').click();
+    await expect(page.getByTestId('field-error')).toHaveCount(6);
+    await expect(page.getByLabel('E-mail')).toBeFocused();
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: `shots/shop-checkout-errors-${size}.png`, fullPage: true, animations: 'disabled' });
+
+    await placeAnOrder(page);
+    await page.getByTestId('fake-sumup-back').click();
+    await expect(page.getByTestId('order-status')).toHaveAttribute('data-state', 'pending');
+    await expect(page.getByTestId('order-test')).toBeVisible();
+    await page.screenshot({ path: `shots/shop-order-pending-${size}.png`, fullPage: true, animations: 'disabled' });
+    await page.getByTestId('order-pay').click();
+    await page.getByTestId('fake-sumup-pay').click();
+    await expect(page.getByTestId('order-status')).toHaveAttribute('data-state', 'paid');
+    await expect(page.getByTestId('cart-count')).toHaveText('0');
+    await page.screenshot({ path: `shots/shop-order-paid-${size}.png`, fullPage: true, animations: 'disabled' });
+
+    await placeAnOrder(page);
+    await page.getByTestId('fake-sumup-decline').click();
+    await expect(page.getByTestId('order-status')).toHaveAttribute('data-state', 'failed');
+    await page.screenshot({ path: `shots/shop-order-failed-${size}.png`, fullPage: true, animations: 'disabled' });
+    await fillTheCart(page, null);
+    return page.url();
+}
+
 test('screenshots of the site and the admin', async ({ page }) => {
-    test.setTimeout(120_000);
+    test.setTimeout(240_000);
     await signIn(page);
     await page.setViewportSize(VIEWPORTS.phone);
     await page.goto(SHOP['shop-home-fr']);
@@ -178,10 +238,12 @@ test('screenshots of the site and the admin', async ({ page }) => {
         await page.screenshot({ path: `shots/admin-link-editor-${size}.png`, animations: 'disabled' });
     }
 
+    let order = null;
     for (const [size, viewport] of Object.entries(VIEWPORTS)) {
         await page.setViewportSize(viewport);
         await shootTheContactForm(page, size);
         await shootTheCart(page, size);
+        order = await shootTheCheckout(page, size);
     }
 
     const crawler = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.desktop })).newPage();
@@ -204,6 +266,12 @@ test('screenshots of the site and the admin', async ({ page }) => {
     await editorWithoutScript.goto('/beta/fr/contact');
     await expect(editorWithoutScript.locator('#shop main [data-noscript]')).toBeVisible();
     await editorWithoutScript.screenshot({ path: 'shots/shop-contact-without-javascript.png', fullPage: true });
+    await editorWithoutScript.goto('/beta/fr/checkout');
+    await expect(editorWithoutScript.locator('#shop main [data-noscript]')).toBeVisible();
+    await editorWithoutScript.screenshot({ path: 'shots/shop-checkout-without-javascript.png', fullPage: true });
+    await editorWithoutScript.goto(new URL(order).pathname);
+    await expect(editorWithoutScript.locator('#shop main [data-order]')).toBeVisible();
+    await editorWithoutScript.screenshot({ path: 'shots/shop-order-without-javascript.png', fullPage: true });
     await editorWithoutScript.context().close();
 
     await page.goto('/admin/images');

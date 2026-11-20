@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\Api;
 
+use App\Domain\Sales\Exception\CartOutdated;
+use App\Domain\Sales\Exception\PaymentUnavailable;
 use App\Domain\Shared\Exception\DomainException;
 use App\Domain\Shared\Exception\NotFound;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -27,7 +29,12 @@ final readonly class DomainExceptionListener
             return;
         }
 
-        $status = $exception instanceof NotFound ? Response::HTTP_NOT_FOUND : Response::HTTP_UNPROCESSABLE_ENTITY;
+        $status = match (true) {
+            $exception instanceof NotFound => Response::HTTP_NOT_FOUND,
+            $exception instanceof CartOutdated => Response::HTTP_CONFLICT,
+            $exception instanceof PaymentUnavailable => Response::HTTP_SERVICE_UNAVAILABLE,
+            default => Response::HTTP_UNPROCESSABLE_ENTITY,
+        };
 
         $event->setResponse(new ProblemResponse(
             $this->translator->trans('problem.business_rule'),

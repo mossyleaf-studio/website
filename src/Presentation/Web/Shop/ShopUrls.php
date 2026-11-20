@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Shop;
 
+use App\Application\Sales\OrderUrls;
 use App\Domain\Shared\Locale;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-final readonly class ShopUrls
+final readonly class ShopUrls implements OrderUrls
 {
+    public const string WEBHOOK = 'webhook_sumup';
+
     private const string PREVIEW = 'beta_';
     private const string SHOP = 'shop_';
 
@@ -27,6 +30,16 @@ final readonly class ShopUrls
     public function canonical(string $route, Locale $locale, array $parameters = []): string
     {
         return $this->router->generate($route, [...$parameters, '_locale' => $locale->value], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+
+    public function statusPage(string $token, Locale $locale, bool $test): string
+    {
+        return $this->router->generate(($test ? self::PREVIEW : '').'shop_order', ['token' => $token, '_locale' => $locale->value], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+
+    public function webhook(): string
+    {
+        return $this->router->generate(self::WEBHOOK, [], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
     public function closed(): string

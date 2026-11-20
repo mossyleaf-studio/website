@@ -15,3 +15,18 @@ framework:
             limit: 60
             interval: '1 minute'
             lock_factory: null
+        checkout:
+            policy: fixed_window
+            limit: 10
+            interval: '10 minutes'
+            lock_factory: null
+        order_status:
+            policy: fixed_window
+            limit: 20
+            interval: '1 minute'
+            lock_factory: null
+        webhook:
+            policy: fixed_window
+            limit: 60
+            interval: '1 minute'
+            lock_factory: null

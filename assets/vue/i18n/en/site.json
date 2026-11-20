@@ -161,5 +161,87 @@
             "privacy": "Privacy",
             "shipping-returns": "Shipping and returns"
         }
+    },
+    "checkout": {
+        "title": "Checkout",
+        "noscript": "The checkout needs JavaScript to work out the total and open the payment.",
+        "backToCart": "Back to the cart",
+        "contact": "Contact details",
+        "delivery": "Delivery address",
+        "email": "Email",
+        "emailHint": "The confirmation and the shipping news go to this address.",
+        "name": "Full name",
+        "phone": "Phone (optional)",
+        "phoneHint": "Only given to the carrier if the parcel needs it.",
+        "line1": "Address",
+        "line2": "Apartment, building, floor (optional)",
+        "postalCode": "Postal code",
+        "city": "City",
+        "country": "Country",
+        "region": "State, province or region",
+        "regionHint": "Needed for deliveries outside Europe.",
+        "terms": "I have read and accept the {terms}.",
+        "termsLink": "terms of sale",
+        "termsMissing": "The payment opens once the terms of sale have a text.",
+        "pay": "Pay {amount}",
+        "paying": "Opening the payment…",
+        "payNote": "You pay on the secure page of SumUp, then come back here to follow your order.",
+        "showSummary": "Show the summary",
+        "hideSummary": "Hide the summary",
+        "loading": "Working out the total…",
+        "errors": {
+            "terms": "Accept the terms of sale to order.",
+            "country": "Choose the delivery country."
+        },
+        "failure": {
+            "outdated": "The total is now {amount}. Check the summary, then pay again.",
+            "payment": "The payment page could not be opened. Nothing was charged: try again in a moment.",
+            "tooMany": "Too many attempts from this connection. Try again in a few minutes: what you typed is still here."
+        },
+        "placed": {
+            "title": "An order is waiting for its payment",
+            "text": "Nothing is charged until you pay on SumUp. Pay again below to place a new order.",
+            "link": "Follow this order"
+        },
+        "newTab": "opens in a new tab"
+    },
+    "order": {
+        "title": "Your order",
+        "reference": "Order {reference}",
+        "test": "Test order",
+        "pay": "Back to the payment page",
+        "backToCart": "Back to the cart",
+        "reload": "Reload the page",
+        "lines": "Products ordered",
+        "state": {
+            "pending": {
+                "title": "Payment not confirmed yet",
+                "text": "If you paid on SumUp, the confirmation arrives in a moment, followed by an email. If you have not paid, nothing has been charged."
+            },
+            "stalled": {
+                "title": "Still waiting for the confirmation",
+                "text": "The confirmation is taking longer than usual. If you paid, an email will follow: reload this page in a few minutes."
+            },
+            "paid": {
+                "title": "Thank you for your order",
+                "text": "The payment is confirmed and a confirmation email is on its way. The studio packs your order by hand and writes to you when it ships."
+            },
+            "failed": {
+                "title": "The payment did not go through",
+                "text": "Nothing was charged. Your cart is kept: go back to it to try again."
+            },
+            "expired": {
+                "title": "The time to pay ran out",
+                "text": "Nothing was charged. Your cart is kept: go back to it to order again."
+            },
+            "shipped": {
+                "title": "Your order is on its way",
+                "text": "The studio has sent your parcel."
+            },
+            "cancelled": {
+                "title": "This order is cancelled",
+                "text": "Write to the studio if you have a question about it."
+            }
+        }
     }
 }

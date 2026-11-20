@@ -1,0 +1,126 @@
+import { expect, test } from '@playwright/test';
+import { signIn } from './support/session.js';
+
+const MAILPIT = process.env.MAILPIT_URL ?? 'http://mailpit:8025';
+const REFERENCE = /ML-[0-9A-Z]{4}-[0-9A-Z]{4}/;
+const CART = 'mossyleaf.cart';
+
+const messages = async (request) => (await (await request.get(`${MAILPIT}/api/v1/messages`)).json()).messages;
+const stockOf = async (page, sku) => {
+    const products = await (await page.request.get('/api/admin/products')).json();
+    return products.flatMap((product) => product.variants).find((variant) => variant.sku === sku).stock;
+};
+
+async function fillCart(page, lines) {
+    await page.goto('/beta/en/shop');
+    await page.evaluate(([key, value]) => localStorage.setItem(key, JSON.stringify({ lines: value, country: 'FR' })), [CART, lines]);
+}
+
+async function fillForm(page) {
+    await page.getByLabel('Email', { exact: true }).fill('camille@example.test');
+    await page.getByLabel('Full name').fill('Camille Martin');
+    await page.getByLabel('Address', { exact: true }).fill('12 rue des Mousses');
+    await page.getByLabel('Postal code').fill('69001');
+    await page.getByLabel('City').fill('Lyon');
+}
+
+async function openCheckout(page, lines) {
+    await fillCart(page, lines);
+    await page.goto('/beta/en/checkout');
+    await expect(page.getByTestId('checkout-pay')).toBeEnabled();
+}
+
+async function pay(page) {
+    await page.getByRole('checkbox').check();
+    await page.getByTestId('checkout-pay').click();
+    await page.waitForURL(/\/_fake\/sumup\//);
+}
+
+test.beforeEach(async ({ page, request }) => {
+    await request.delete(`${MAILPIT}/api/v1/messages`);
+    await signIn(page);
+});
+
+test('a paid order says so, is mailed to the customer and the studio, takes the stock and empties the cart', async ({ page, request }) => {
+    const before = await stockOf(page, 'STK-002');
+    await openCheckout(page, [{ sku: 'STK-002', quantity: 2 }]);
+    await fillForm(page);
+    await pay(page);
+    await page.getByTestId('fake-sumup-pay').click();
+
+    await expect(page).toHaveURL(/\/beta\/en\/order\//);
+    await expect(page.getByTestId('order-status')).toHaveAttribute('data-state', 'paid');
+    await expect(page.getByTestId('order-test')).toBeVisible();
+    const reference = (await page.getByTestId('order-reference').textContent()).match(REFERENCE)[0];
+
+    await expect.poll(async () => (await messages(request)).length).toBe(2);
+    const mails = await messages(request);
+    const confirmation = mails.find((mail) => mail.To.some((address) => address.Address === 'camille@example.test'));
+    const notice = mails.find((mail) => mail.To.some((address) => address.Address === 'studio@mossyleaf.test'));
+    expect(confirmation.Subject).toContain('[TEST]');
+    expect(confirmation.Subject).toContain(reference);
+    expect(notice.Subject).toContain(reference);
+    expect(notice.ReplyTo.map((address) => address.Address)).toEqual(['camille@example.test']);
+
+    expect(await stockOf(page, 'STK-002')).toBe(before - 2);
+    await page.goto('/beta/en/cart');
+    await expect(page.getByTestId('cart-empty')).toBeVisible();
+});
+
+test('a declined payment says nothing was charged, keeps the cart and sends no mail', async ({ page, request }) => {
+    const before = await stockOf(page, 'STK-002');
+    await openCheckout(page, [{ sku: 'STK-002', quantity: 1 }]);
+    await fillForm(page);
+    await pay(page);
+    await page.getByTestId('fake-sumup-decline').click();
+
+    await expect(page.getByTestId('order-status')).toHaveAttribute('data-state', 'failed');
+    await expect(page.getByTestId('order-state')).toContainText('did not go through');
+    expect(await messages(request)).toHaveLength(0);
+    expect(await stockOf(page, 'STK-002')).toBe(before);
+    await page.getByTestId('order-cart').click();
+    await expect(page.getByTestId('cart-line')).toHaveCount(1);
+});
+
+test('a payment whose webhook never arrives is settled by the order page alone', async ({ page }) => {
+    await openCheckout(page, [{ sku: 'STK-002', quantity: 1 }]);
+    await fillForm(page);
+    await pay(page);
+    await page.goto(`${page.url()}?webhook=0`);
+    await page.getByTestId('fake-sumup-pay').click();
+
+    await expect(page.getByTestId('order-status')).toHaveAttribute('data-state', 'paid', { timeout: 20000 });
+});
+
+test('the form refuses an empty address and a missing terms tick', async ({ page }) => {
+    await openCheckout(page, [{ sku: 'STK-002', quantity: 1 }]);
+    await page.getByTestId('checkout-pay').click();
+    await expect(page.getByTestId('field-error').first()).toBeVisible();
+    await expect(page).toHaveURL(/\/beta\/en\/checkout$/);
+
+    await fillForm(page);
+    await page.getByTestId('checkout-pay').click();
+    await expect(page.getByTestId('field-error')).toHaveCount(1);
+    await expect(page).toHaveURL(/\/beta\/en\/checkout$/);
+});
+
+test('a second buyer of the last unit is told the cart changed', async ({ page, browser }) => {
+    await openCheckout(page, [{ sku: 'STK-003-B', quantity: 2 }]);
+    await fillForm(page);
+
+    const other = await browser.newContext();
+    const rival = await other.newPage();
+    await signIn(rival);
+    await openCheckout(rival, [{ sku: 'STK-003-B', quantity: 1 }]);
+    await fillForm(rival);
+    await pay(rival);
+
+    await page.getByRole('checkbox').check();
+    await page.getByTestId('checkout-pay').click();
+    await expect(page.getByTestId('checkout-outdated')).toBeVisible();
+    await expect(page).toHaveURL(/\/beta\/en\/checkout$/);
+
+    await rival.getByTestId('fake-sumup-decline').click();
+    await expect(rival.getByTestId('order-status')).toHaveAttribute('data-state', 'failed');
+    await other.close();
+});

@@ -1,0 +1,18 @@
+{% if order.test %}
+{{ 'order.test_notice'|trans({}, 'emails') }}
+
+{% endif %}
+{{ 'order_notice.intro'|trans({reference: order.reference}, 'emails') }}
+
+{{ 'order_notice.customer'|trans({}, 'emails') }}
+{{ order.name }} <{{ order.email }}>
+{% if order.phone %}
+{{ order.phone }}
+{% endif %}
+
+{{ 'order_notice.address'|trans({}, 'emails') }}
+{% include 'emails/_order_address.txt.twig' %}
+
+{% include 'emails/_order_lines.txt.twig' with {with_names: true} %}
+
+{{ 'order_notice.reply'|trans({}, 'emails') }}

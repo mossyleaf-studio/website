@@ -2,7 +2,7 @@ export const CONTACT_LIMITS = { name: 100, email: 254, message: 4000 };
 
 const FIELDS = Object.keys(CONTACT_LIMITS);
 const SINGLE_LINE = ['name', 'email'];
-const EMAIL = /^(?=[^@]{1,64}@)(?!\.)(?!.*\.\.)[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(?<!\.)@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+export const EMAIL = /^(?=[^@]{1,64}@)(?!\.)(?!.*\.\.)[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(?<!\.)@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
 export const characters = (text) => [...text].length;
 

@@ -29,3 +29,22 @@ when@test:
         App\Tests\Support\FakeGoogleFonts:
             decorates: http_client
             arguments: ['@.inner']
+
+        App\Tests\Support\FakeSumUp:
+            decorates: http_client
+            arguments:
+                $client: '@.inner'
+                $directory: '%kernel.share_dir%/fake-sumup'
+
+        App\Infrastructure\Payment\SumUpGateway:
+            autowire: true
+            arguments:
+                $hostedCheckout: '#^/_fake/sumup/[a-z0-9-]+$#'
+
+        App\Tests\Support\FakeSumUpPageController:
+            autowire: true
+            autoconfigure: true
+
+        App\Tests\Support\FakeSumUpSettleController:
+            autowire: true
+            autoconfigure: true

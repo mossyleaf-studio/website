@@ -30,3 +30,8 @@ sales:
     negative_amount: '{field, select, price {A shipping price cannot be negative.} other {A free shipping threshold cannot be negative.}}'
     amount_too_large: '{field, select, price {A shipping price} other {A free shipping threshold}} is €{max, number} at most.'
     cart_too_large: 'A cart holds {max} different items at most.'
+    cart_outdated: 'Your cart changed in the meantime: check the new total and try again.'
+    payment_unavailable: 'The payment could not be opened, nothing was charged: try again in a moment.'
+    empty_cart: 'Your cart is empty.'
+    region_required: 'Give the state, province or region of the address.'
+    order_move_refused: 'This order is {from, select, pending {awaiting payment} paid {paid} shipped {shipped} failed {unpaid} expired {expired} other {cancelled}}, so it cannot be {to, select, pending {awaiting payment} paid {paid} shipped {shipped} failed {marked unpaid} expired {expired} other {cancelled}}.'

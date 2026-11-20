@@ -48,7 +48,7 @@ final class ShopCartPageTest extends WebTestCase
         $props = Json::decode($crawler->filter('#site-content')->text());
         self::assertSame('/beta/fr/cart', Json::string($props, 'layout', 'cartUrl'));
         self::assertSame(
-            ['page' => 'cart', 'title' => 'Panier', 'quoteUrl' => '/beta/api/shop/fr/quote', 'countries' => [], 'defaultCountry' => 'FR', 'shopUrl' => '/beta/fr/shop', 'checkoutUrl' => null],
+            ['page' => 'cart', 'title' => 'Panier', 'quoteUrl' => '/beta/api/shop/fr/quote', 'countries' => [], 'defaultCountry' => 'FR', 'shopUrl' => '/beta/fr/shop', 'checkoutUrl' => '/beta/fr/checkout'],
             Json::array($props, 'data'),
         );
 

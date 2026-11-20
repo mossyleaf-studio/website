@@ -3,7 +3,7 @@ import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } fr
 import { useI18n } from 'vue-i18n';
 import { ApiError } from '../../composables/apiError.js';
 import { postJson } from '../api.js';
-import { issueNames, pricedLines } from '../cart.js';
+import { issueNotices, pricedLines } from '../cart.js';
 import { chosenCountry } from '../shipping.js';
 import CartLine from '../components/CartLine.vue';
 import Notice from '../components/Notice.vue';
@@ -36,12 +36,7 @@ const empty = computed(() => stored.value.lines.length === 0);
 const lines = computed(() => (quote.value ? pricedLines(stored.value, quote.value) : []));
 const units = computed(() => cart.units.value);
 
-const listed = (type) => {
-    const { titles, unnamed } = issueNames(issues.value, type);
-    const names = unnamed ? [...titles, t('cart.issues.unnamed', { count: unnamed }, unnamed)] : titles;
-    return names.length ? t(`cart.issues.${type}`, { products: new Intl.ListFormat(locale.value, { type: 'conjunction' }).format(names) }) : null;
-};
-const notices = computed(() => ['removed', 'reduced'].map(listed).filter(Boolean));
+const notices = computed(() => issueNotices(issues.value, t, locale.value));
 
 async function ask() {
     clearTimeout(timer);

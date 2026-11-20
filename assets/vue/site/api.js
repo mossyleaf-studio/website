@@ -1,12 +1,6 @@
 import { ApiError } from '../composables/apiError.js';
 
-export async function postJson(url, body) {
-    const response = await fetch(url, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-    });
+async function answer(response) {
     const payload = response.status === 204 ? null : await response.json().catch(() => null);
 
     if (!response.ok) {
@@ -15,3 +9,8 @@ export async function postJson(url, body) {
 
     return payload;
 }
+
+export const postJson = async (url, body) =>
+    answer(await fetch(url, { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }));
+
+export const getJson = async (url) => answer(await fetch(url, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } }));

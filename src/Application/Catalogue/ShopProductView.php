@@ -18,6 +18,7 @@ final readonly class ShopProductView
     private function __construct(
         public string $id,
         public string $slug,
+        public string $displayName,
         public LocalizedText $title,
         public LocalizedText $description,
         public int $price,
@@ -29,14 +30,16 @@ final readonly class ShopProductView
     ) {
     }
 
-    public static function of(Product $product, ShopCategoryView $category): self
+    /** @param array<string, int> $held */
+    public static function of(Product $product, ShopCategoryView $category, array $held): self
     {
         $several = \count($product->variants()) > 1;
-        $variants = array_map(static fn (ProductVariant $variant): ShopVariantView => ShopVariantView::of($variant, $several), $product->variants());
+        $variants = array_map(static fn (ProductVariant $variant): ShopVariantView => ShopVariantView::of($variant, $several, $held[$variant->sku()] ?? 0), $product->variants());
 
         return new self(
             (string) $product->id(),
             $product->slug(),
+            $product->displayName(),
             new LocalizedText(self::titleIn($product, Locale::En), self::titleIn($product, Locale::Fr)),
             new LocalizedText($product->description()->in(Locale::En), $product->description()->in(Locale::Fr)),
             $product->price(),

@@ -9,6 +9,8 @@ use App\Domain\Catalogue\Category;
 use App\Domain\Catalogue\CategoryRepository;
 use App\Domain\Catalogue\Product;
 use App\Domain\Catalogue\ProductRepository;
+use App\Domain\Sales\OrderRepository;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 final readonly class CatalogueQueries
@@ -19,6 +21,8 @@ final readonly class CatalogueQueries
         private ProductRepository $products,
         private CategoryRepository $categories,
         private SluggerInterface $slugger,
+        private OrderRepository $orders,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -38,15 +42,16 @@ final readonly class CatalogueQueries
     public function shop(bool $preview): array
     {
         $keys = $this->categoryKeys();
+        $held = $this->held();
 
-        return array_map(fn (Product $product): ShopProductView => $this->shopView($product, $keys), $this->products->forSale($preview));
+        return array_map(fn (Product $product): ShopProductView => $this->shopView($product, $keys, $held), $this->products->forSale($preview));
     }
 
     public function shopProduct(string $slug, bool $preview): ?ShopProductView
     {
         $product = $this->products->withSlug($slug);
 
-        return null !== $product && self::shows($product, $preview) ? $this->shopView($product, $this->categoryKeys()) : null;
+        return null !== $product && self::shows($product, $preview) ? $this->shopView($product, $this->categoryKeys(), $this->held()) : null;
     }
 
     /** @return list<ShopProductView> */
@@ -63,12 +68,21 @@ final readonly class CatalogueQueries
         return !$product->isRetired() && $product->price() > 0 && ($preview || $product->isVisible());
     }
 
-    /** @param array<string, string> $keys */
-    private function shopView(Product $product, array $keys): ShopProductView
+    /**
+     * @param array<string, string> $keys
+     * @param array<string, int>    $held
+     */
+    private function shopView(Product $product, array $keys, array $held): ShopProductView
     {
         $category = $product->category();
 
-        return ShopProductView::of($product, ShopCategoryView::of($category, $keys[(string) $category->id()]));
+        return ShopProductView::of($product, ShopCategoryView::of($category, $keys[(string) $category->id()]), $held);
+    }
+
+    /** @return array<string, int> */
+    private function held(): array
+    {
+        return $this->orders->heldUnits($this->clock->now());
     }
 
     /** @return array<string, string> */

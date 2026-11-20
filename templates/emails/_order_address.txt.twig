@@ -1,0 +1,10 @@
+{{ order.name }}
+{{ order.line1 }}
+{% if order.line2 %}
+{{ order.line2 }}
+{% endif %}
+{{ order.postalCode }} {{ order.city }}
+{% if order.region %}
+{{ order.region }}
+{% endif %}
+{{ country }}

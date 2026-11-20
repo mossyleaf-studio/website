@@ -69,6 +69,11 @@ class ProductVariant
         $this->position = $position;
     }
 
+    public function take(int $quantity): void
+    {
+        $this->stock = max(0, $this->stock - $quantity);
+    }
+
     public function id(): Ulid
     {
         return $this->id;

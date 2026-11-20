@@ -30,3 +30,8 @@ sales:
     negative_amount: '{field, select, price {Un prix de livraison ne peut pas être négatif.} other {Un seuil de livraison offerte ne peut pas être négatif.}}'
     amount_too_large: '{field, select, price {Un prix de livraison} other {Un seuil de livraison offerte}} ne dépasse pas {max, number} €.'
     cart_too_large: 'Un panier contient {max} articles différents au maximum.'
+    cart_outdated: 'Votre panier a changé entre-temps : vérifiez le nouveau total et réessayez.'
+    payment_unavailable: 'Le paiement n’a pas pu s’ouvrir, rien n’a été débité : réessayez dans un instant.'
+    empty_cart: 'Votre panier est vide.'
+    region_required: 'Indiquez l’État, la province ou la région de l’adresse.'
+    order_move_refused: 'Cette commande est {from, select, pending {en attente de paiement} paid {payée} shipped {expédiée} failed {impayée} expired {expirée} other {annulée}}, elle ne peut pas être {to, select, pending {remise en attente} paid {payée} shipped {expédiée} failed {marquée impayée} expired {expirée} other {annulée}}.'

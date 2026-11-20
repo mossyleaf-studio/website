@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>SumUp checkout (fake)</title>
+</head>
+<body>
+    <main data-fake-sumup>
+        <h1>SumUp checkout (fake)</h1>
+        <p data-description>{{ checkout.description }}</p>
+        <p data-amount>{{ '%.2f'|format(checkout.amount) }} {{ checkout.currency }}</p>
+        <p data-status>{{ checkout.status }}</p>
+        <form method="post" action="{{ path('fake_sumup_settle', settle) }}">
+            <button type="submit" name="outcome" value="pay" data-test="fake-sumup-pay">Pay</button>
+            <button type="submit" name="outcome" value="decline" data-test="fake-sumup-decline">Decline</button>
+        </form>
+        <a href="{{ checkout.redirect_url }}" data-test="fake-sumup-back">Back to the shop</a>
+    </main>
+</body>
+</html>

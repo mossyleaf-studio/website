@@ -22,6 +22,13 @@ interface ProductRepository
     /** @return list<Product> */
     public function forSale(bool $hiddenToo): array;
 
+    /**
+     * @param list<string> $skus
+     *
+     * @return list<ProductVariant>
+     */
+    public function variantsWithSkus(array $skus): array;
+
     /** @return list<string> */
     public function photoFiles(): array;
 }

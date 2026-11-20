@@ -2,3 +2,22 @@ contact:
     subject: 'Message de {name} sur le site'
     intro: '{name} <{email}> a écrit depuis la page contact de la boutique :'
     reply: 'Répondez à cet e-mail pour écrire à {name}.'
+order:
+    test_subject: '[TEST] {subject}'
+    test_notice: 'COMMANDE DE TEST : rien n’a été débité et rien ne sera expédié.'
+    line: '{quantity} × {title} : {unitPrice, number, ::currency/EUR} l’unité, {total, number, ::currency/EUR}'
+    goods: 'Articles : {amount, number, ::currency/EUR}'
+    shipping: 'Livraison : {amount, number, ::currency/EUR}'
+    total: 'Total : {amount, number, ::currency/EUR}'
+order_confirmation:
+    subject: 'Votre commande {reference} sur mossyleaf.studio'
+    intro: 'Bonjour {name}, merci pour votre commande {reference} : votre paiement est confirmé.'
+    address: 'Adresse de livraison :'
+    follow: 'Suivez votre commande ici :'
+    reply: 'Une question ? Répondez à cet e-mail.'
+order_notice:
+    subject: 'Nouvelle commande {reference} : {total, number, ::currency/EUR}'
+    intro: 'La commande {reference} est payée.'
+    customer: 'Client :'
+    address: 'Adresse de livraison :'
+    reply: 'Répondez à cet e-mail pour écrire au client.'

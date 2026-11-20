@@ -25,7 +25,7 @@ final readonly class ShopApiDoor
     {
         $request = $event->getRequest();
 
-        if (self::isShopApi($request) && !$this->door->admits($request->attributes->getBoolean('preview'))) {
+        if (self::isShopApi($request) && !ShopDoor::exempts($request) && !$this->door->admits($request->attributes->getBoolean('preview'))) {
             throw new NotFoundHttpException();
         }
     }

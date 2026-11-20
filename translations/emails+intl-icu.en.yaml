@@ -2,3 +2,22 @@ contact:
     subject: 'Message from {name} on the website'
     intro: '{name} <{email}> wrote through the contact page of the shop:'
     reply: 'Reply to this email to answer {name}.'
+order:
+    test_subject: '[TEST] {subject}'
+    test_notice: 'TEST ORDER: nothing was charged and nothing will be shipped.'
+    line: '{quantity} × {title}: {unitPrice, number, ::currency/EUR} each, {total, number, ::currency/EUR}'
+    goods: 'Goods: {amount, number, ::currency/EUR}'
+    shipping: 'Shipping: {amount, number, ::currency/EUR}'
+    total: 'Total: {amount, number, ::currency/EUR}'
+order_confirmation:
+    subject: 'Your order {reference} on mossyleaf.studio'
+    intro: 'Hello {name}, thank you for your order {reference}: your payment is confirmed.'
+    address: 'Delivery address:'
+    follow: 'Follow your order here:'
+    reply: 'Any question? Reply to this email.'
+order_notice:
+    subject: 'New order {reference}: {total, number, ::currency/EUR}'
+    intro: 'Order {reference} is paid.'
+    customer: 'Customer:'
+    address: 'Delivery address:'
+    reply: 'Reply to this email to write to the customer.'

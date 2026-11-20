@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../composables/apiError.js';
-import { postJson } from './api.js';
+import { getJson, postJson } from './api.js';
 
 const answer = (status, body = null, type = 'application/problem+json') =>
     new Response(body === null ? null : JSON.stringify(body), { status, headers: body === null ? {} : { 'Content-Type': type } });
@@ -70,5 +70,20 @@ describe('postJson', () => {
         vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Failed to fetch'); }));
 
         await expect(postJson('/api/shop/en/contact', {})).rejects.toThrow(TypeError);
+    });
+});
+
+describe('getJson', () => {
+    it('asks for JSON with the cookies of the site, never from the cache', async () => {
+        const fetch = fakeFetch(answer(200, { status: 'paid' }, 'application/json'));
+
+        await expect(getJson('/beta/api/shop/fr/orders/token')).resolves.toEqual({ status: 'paid' });
+        expect(fetch).toHaveBeenCalledWith('/beta/api/shop/fr/orders/token', { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } });
+    });
+
+    it('throws the status and the code of a problem', async () => {
+        fakeFetch(answer(404, { title: 'Not found', status: 404, code: 'problem.not_found' }));
+
+        await expect(getJson('/api/shop/fr/orders/token')).rejects.toMatchObject({ status: 404, code: 'problem.not_found' });
     });
 });

@@ -22,8 +22,11 @@ Fill `.env`:
 | `POSTGRES_PASSWORD` | `openssl rand -hex 24` |
 | `OIDC_CLIENT_SECRET` | Secret of the `mossyleaf-studio` provider in mossyleaf accounts (Authentik) |
 | `MOSSYTRUNK_TOKEN` | `openssl rand -hex 32`, the same value as the token of the « Site web » service in mossytrunk. Empty or shorter than 32 characters: `/integrations/…` answers 404 and mossytrunk cannot push the catalogue |
-| `MAILER_DSN` | SMTP of the mailbox that sends the site's emails, such as `smtp://user:password@smtp.example.com:587`. Empty: nothing is sent, so set it together with `STUDIO_EMAIL`, or the contact form accepts messages and drops them |
-| `STUDIO_EMAIL` | Address of the studio: the contact form writes to it, from it, with the visitor as Reply-To. Empty: the shop offers no contact form and `/api/shop/…/contact` answers 404 |
+| `MAILER_DSN` | SMTP of the mailbox that sends the site's emails, such as `smtp://user:password@smtp.example.com:587`. Empty: nothing is sent, so set it together with `MAILER_FROM` and `STUDIO_EMAIL`, or the contact form accepts messages and drops them |
+| `MAILER_FROM` | Sender of every mail of the site, an address of a domain the SMTP account has verified (`shop@mossyleaf.studio`), never the inbox of the studio. Empty: no mail leaves, the shop offers no contact form and order mails are skipped |
+| `STUDIO_EMAIL` | Inbox of the studio: it receives the contact messages (the visitor as Reply-To) and the notice of each paid order, and it is the Reply-To of the mails to customers. Empty: same as an empty `MAILER_FROM` |
+| `SUMUP_API_KEY` | Secret API key of the SumUp account (`sup_sk_…`), with online payments enabled by SumUp. Empty: the shop offers no checkout |
+| `SUMUP_MERCHANT_CODE` | Merchant code of the same SumUp account (profile, `M…`). Empty: the shop offers no checkout |
 
 Then `docker compose up -d`. The entrypoint waits for the database and runs the migrations: the site starts with the texts and links of the former static site.
 

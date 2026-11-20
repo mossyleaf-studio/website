@@ -19,11 +19,13 @@ final class ShopContactApiTest extends WebTestCase
     use SignsInClient;
 
     private const string STUDIO = 'studio@mossyleaf.test';
+    private const string SENDER = 'shop@mossyleaf.test';
     private const string URL = '/beta/api/shop/fr/contact';
 
     protected function tearDown(): void
     {
         $_ENV['STUDIO_EMAIL'] = self::STUDIO;
+        $_ENV['MAILER_FROM'] = self::SENDER;
         Request::setTrustedProxies([], 0);
         parent::tearDown();
     }
@@ -39,7 +41,7 @@ final class ShopContactApiTest extends WebTestCase
         $email = self::getMailerMessage();
         self::assertInstanceOf(Email::class, $email);
         self::assertSame([self::STUDIO], array_map(static fn (Address $address): string => $address->getAddress(), $email->getTo()));
-        self::assertSame([self::STUDIO], array_map(static fn (Address $address): string => $address->getAddress(), $email->getFrom()));
+        self::assertSame([self::SENDER], array_map(static fn (Address $address): string => $address->getAddress(), $email->getFrom()));
         self::assertSame(['"Lou Fern" <lou@example.test>'], array_map(static fn (Address $address): string => $address->toString(), $email->getReplyTo()));
         self::assertSame('Message de Lou Fern sur le site', $email->getSubject());
         self::assertNull($email->getHtmlBody());
@@ -162,6 +164,18 @@ final class ShopContactApiTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(404);
         self::assertResponseHeaderSame('Content-Type', 'application/problem+json');
+        self::assertSame('problem.not_found', Json::string(self::body($client), 'code'));
+        self::assertEmailCount(0);
+    }
+
+    public function testWithoutASenderAddressTheRouteIsNotFound(): void
+    {
+        $_ENV['MAILER_FROM'] = '';
+        $client = self::signedInClient();
+
+        $client->jsonRequest('POST', self::URL, self::message());
+
+        self::assertResponseStatusCodeSame(404);
         self::assertSame('problem.not_found', Json::string(self::body($client), 'code'));
         self::assertEmailCount(0);
     }

@@ -49,7 +49,7 @@ final readonly class CartPricer
             if ($allowed < $quantity) {
                 $issues[] = QuoteIssue::reduced($sku, $title);
             }
-            $kept[] = new QuoteLine($sku, $title, $variant->name, $product->price, $allowed, $product->price * $allowed, $product->slug, $product->photos[0] ?? null, $variant->available);
+            $kept[] = new QuoteLine($sku, $product->displayName, $title, $variant->name, $product->price, $allowed, $product->price * $allowed, $product->slug, $product->photos[0] ?? null, $variant->available);
         }
 
         $goods = array_sum(array_map(static fn (QuoteLine $line): int => $line->lineTotal, $kept));

@@ -1,4 +1,5 @@
 export const CART_KEY = 'mossyleaf.cart';
+export const PLACED_KEY = 'mossyleaf.placed';
 export const MAX_QUANTITY = 10;
 export const MAX_LINES = 30;
 
@@ -54,4 +55,14 @@ export function issueNames(issues, type) {
     const mine = issues.filter((issue) => issue.type === type);
 
     return { titles: [...new Set(mine.map((issue) => issue.title).filter(Boolean))], unnamed: mine.filter((issue) => !issue.title).length };
+}
+
+export function issueNotices(issues, t, locale) {
+    const listed = (type) => {
+        const { titles, unnamed } = issueNames(issues, type);
+        const names = unnamed ? [...titles, t('cart.issues.unnamed', { count: unnamed }, unnamed)] : titles;
+        return names.length ? t(`cart.issues.${type}`, { products: new Intl.ListFormat(locale, { type: 'conjunction' }).format(names) }) : null;
+    };
+
+    return ['removed', 'reduced'].map(listed).filter(Boolean);
 }

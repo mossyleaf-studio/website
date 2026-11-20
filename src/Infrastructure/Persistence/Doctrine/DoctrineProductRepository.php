@@ -7,6 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Domain\Catalogue\Product;
 use App\Domain\Catalogue\ProductPhoto;
 use App\Domain\Catalogue\ProductRepository;
+use App\Domain\Catalogue\ProductVariant;
 use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
@@ -49,6 +50,11 @@ final readonly class DoctrineProductRepository implements ProductRepository
         return $this->entityManager
             ->createQuery('SELECT p, c, v, ph FROM '.Product::class.' p JOIN p.category c LEFT JOIN p.variants v LEFT JOIN p.photos ph WHERE p.retiredAt IS NULL AND p.price > 0'.($hiddenToo ? '' : ' AND p.visible = true').' ORDER BY p.position ASC, p.id ASC')
             ->getResult();
+    }
+
+    public function variantsWithSkus(array $skus): array
+    {
+        return [] === $skus ? [] : $this->entityManager->getRepository(ProductVariant::class)->findBy(['sku' => $skus]);
     }
 
     public function photoFiles(): array

@@ -12,6 +12,7 @@ const props = defineProps({
     countries: { type: Array, required: true },
     checkoutUrl: { type: String, default: null },
     busy: { type: Boolean, default: false },
+    chooseCountry: { type: Boolean, default: true },
 });
 
 const country = defineModel('country', { type: String, default: null });
@@ -29,7 +30,8 @@ const note = computed(() => {
 <template>
     <PaperSheet tag="section" tape="leaf" class="order-summary" aria-labelledby="order-summary-title" :aria-busy="busy ? 'true' : undefined" data-test="order-summary">
         <h2 id="order-summary-title" class="order-summary__title">{{ $t('cart.summary.title') }}</h2>
-        <SiteField v-if="countries.length" v-slot="{ control }" id="cart-country" :label="$t('cart.summary.country')">
+        <slot />
+        <SiteField v-if="chooseCountry && countries.length" v-slot="{ control }" id="cart-country" :label="$t('cart.summary.country')">
             <select v-bind="control" v-model="country" autocomplete="country" data-test="cart-country">
                 <option v-if="country === null" :value="null" disabled>{{ $t('cart.summary.chooseCountry') }}</option>
                 <option v-for="entry in countries" :key="entry.code" :value="entry.code">{{ entry.name }}</option>
