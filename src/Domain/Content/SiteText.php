@@ -270,7 +270,13 @@ class SiteText
     /** @return list<string> */
     public function aboutParagraphs(): array
     {
-        return array_values(array_filter(array_map(trim(...), preg_split('/\n\s*\n/', $this->aboutText) ?: []), static fn (string $paragraph): bool => '' !== $paragraph));
+        return self::paragraphs($this->aboutText);
+    }
+
+    /** @return list<string> */
+    public static function paragraphs(string $text): array
+    {
+        return array_values(array_filter(array_map(trim(...), preg_split('/\n\s*\n/', $text) ?: []), static fn (string $paragraph): bool => '' !== $paragraph));
     }
 
     public function galleryTitle(): string

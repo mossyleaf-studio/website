@@ -9,3 +9,12 @@
 
 controllers:
     resource: routing.controllers
+
+shop_preview:
+    resource: ../src/Presentation/Web/Shop/
+    type: attribute
+    prefix: /beta
+    name_prefix: beta_
+    defaults:
+        preview: true
+    stateless: false

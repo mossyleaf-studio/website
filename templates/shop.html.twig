@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block lang %}{{ layout.locale }}{% endblock %}
+
+{% block html_attributes %} data-layout="shop"
+    {%- set heading = layout.fonts.heading -%}
+    {%- set body = layout.fonts.body -%}
+    {%- if heading or body %} style="
+        {{- heading ? "--font-display: '" ~ heading.family ~ "', cursive; --font-display-weight: " ~ heading.weight ~ ';' -}}
+        {{- body ? "--font-body: '" ~ body.family ~ "', cursive; --font-body-weight: " ~ body.weight ~ ';' -}}
+    "{% endif -%}
+{% endblock %}
+
+{% block head %}
+    <title>{{ seo.title }}</title>
+    <meta name="description" content="{{ seo.description }}">
+    <meta name="theme-color" content="#fef9e7">
+    <meta name="robots" content="{{ seo.robots }}">
+    {% if seo.canonical %}
+        <link rel="canonical" href="{{ seo.canonical }}">
+    {% endif %}
+    {% for alternate in seo.alternates %}
+        <link rel="alternate" hreflang="{{ alternate.hreflang }}" href="{{ alternate.href }}">
+    {% endfor %}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ layout.studioName }}">
+    <meta property="og:locale" content="{{ seo.locale }}">
+    <meta property="og:title" content="{{ seo.title }}">
+    <meta property="og:description" content="{{ seo.description }}">
+    <meta property="og:url" content="{{ seo.canonical ?? app.request.uri }}">
+    <meta name="twitter:card" content="{{ seo.image ? 'summary_large_image' : 'summary' }}">
+    <meta name="twitter:title" content="{{ seo.title }}">
+    <meta name="twitter:description" content="{{ seo.description }}">
+    {% if seo.image %}
+        <meta property="og:image" content="{{ absolute_url(seo.image.url) }}">
+        <meta property="og:image:type" content="image/webp">
+        <meta property="og:image:width" content="{{ seo.image.width }}">
+        <meta property="og:image:height" content="{{ seo.image.height }}">
+        <meta property="og:image:alt" content="{{ seo.image.alt }}">
+        <meta name="twitter:image" content="{{ absolute_url(seo.image.url) }}">
+    {% endif %}
+    {% for font in [layout.fonts.heading, layout.fonts.body] %}
+        {% if font %}
+            <link rel="stylesheet" href="{{ font.stylesheet }}">
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+{% block stylesheets %}{{ vite_entry_link_tags('shop') }}{% endblock %}
+{% block javascripts %}{{ vite_entry_script_tags('shop') }}{% endblock %}
+
+{% block body %}
+    <script type="application/json" id="site-content">{{ props|raw }}</script>
+    <div id="shop" data-page="{{ data.page }}"{% if layout.preview %} data-preview{% endif %}>
+        {% include 'shop/_prerender.html.twig' %}
+    </div>
+{% endblock %}

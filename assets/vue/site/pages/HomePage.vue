@@ -1,59 +1,94 @@
 <script setup>
 import FeaturedArt from '../components/FeaturedArt.vue';
+import PaperSheet from '../components/PaperSheet.vue';
+import PillButton from '../components/PillButton.vue';
 import RichText from '../components/RichText.vue';
-import SketchbookPage from '../components/SketchbookPage.vue';
-import StudioHeader from '../components/StudioHeader.vue';
-import WashiTape from '../components/WashiTape.vue';
 
 defineProps({
-    site: { type: Object, required: true },
+    data: { type: Object, required: true },
 });
 </script>
 
 <template>
-    <SketchbookPage>
-        <StudioHeader :name="site.studioName" :intro="site.intro" :logo="site.logo" />
+    <div class="home">
+        <div :class="['home__hero', { 'home__hero--solo': !data.featured }]">
+            <h1 class="home__title">{{ data.intro }}</h1>
+            <FeaturedArt v-if="data.featured" class="home__art" :artwork="data.featured" />
+        </div>
 
-        <FeaturedArt v-if="site.featured" :artwork="site.featured" />
-
-        <section class="note" aria-labelledby="note-title">
-            <WashiTape class="note__tape" tone="blossom" />
-            <h2 id="note-title" class="note__title">{{ site.homeNote.title }}</h2>
-            <p class="note__text"><RichText :text="site.homeNote.text" /></p>
-        </section>
-    </SketchbookPage>
+        <PaperSheet tag="section" tape="blossom" class="home__about" aria-labelledby="about-title">
+            <h2 id="about-title" class="home__about-title">{{ data.about.title }}</h2>
+            <p class="home__about-text"><RichText :text="data.about.text" /></p>
+            <p class="home__about-more">
+                <PillButton :href="data.about.url" tone="paper">{{ $t('home.aboutLink') }}</PillButton>
+            </p>
+        </PaperSheet>
+    </div>
 </template>
 
 <style scoped>
-.note {
-    position: relative;
+.home {
     display: grid;
-    gap: var(--space-3);
-    padding: var(--space-6) var(--space-5) var(--space-5);
-    background: var(--color-card);
-    border: 0.0625rem solid var(--color-line);
-    border-radius: 0.1875rem;
-    box-shadow: 0 0.0625rem 0.125rem var(--color-shadow), 0 0.75rem 1.5rem -0.75rem var(--color-shadow);
+    gap: var(--space-9);
 }
 
-.note__tape {
-    position: absolute;
-    top: -0.75rem;
-    left: 50%;
-    translate: -50% 0;
-    rotate: 2deg;
+.home__hero {
+    display: grid;
+    gap: var(--space-7);
+    align-items: center;
 }
 
-.note__title {
+.home__title {
+    max-width: 20ch;
     font-family: var(--font-display);
     font-weight: var(--font-display-weight);
-    font-size: var(--font-size-xl);
-    line-height: 1.2;
-    color: var(--color-ink);
+    font-size: clamp(2rem, 1.25rem + 2.75vw, 3.375rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
 }
 
-.note__text {
-    color: var(--color-muted);
-    white-space: pre-line;
+.home__hero--solo .home__title {
+    max-width: 22ch;
+    margin-inline: auto;
+    text-align: center;
+}
+
+.home__art {
+    width: min(100%, 40rem);
+    justify-self: center;
+    rotate: 1.5deg;
+}
+
+.home__about {
+    width: min(100%, 44rem);
+    justify-self: center;
+}
+
+.home__about-title {
+    font-family: var(--font-display);
+    font-weight: var(--font-display-weight);
+    font-size: var(--font-size-2xl);
+    line-height: 1.15;
+}
+
+.home__about-text {
+    max-width: var(--measure);
+}
+
+.home__art :deep(img) {
+    border-radius: var(--radius-photo);
+}
+
+@media (min-width: 56rem) {
+    .home__hero {
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        gap: var(--space-8);
+    }
+
+    .home__hero--solo {
+        grid-template-columns: none;
+        padding-block: var(--space-8);
+    }
 }
 </style>

@@ -1,0 +1,8 @@
+{% set landmark = landmark ?? true %}
+<{{ landmark ? 'nav' : 'div' }} class="shop-prerender__languages"{% if landmark %} aria-label="{{ 'layout.languages'|site_t }}"{% endif %} data-languages>
+    <ul>
+        {% for language in layout.languages %}
+            <li><a href="{{ language.url }}" hreflang="{{ language.locale }}" lang="{{ language.locale }}"{% if language.current %} aria-current="true"{% endif %}><span aria-hidden="true">{{ ('language.code.' ~ language.locale)|site_t }}</span> <span class="visually-hidden">{{ ('language.name.' ~ language.locale)|site_t }}</span></a></li>
+        {% endfor %}
+    </ul>
+</{{ landmark ? 'nav' : 'div' }}>

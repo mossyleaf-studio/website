@@ -1,0 +1,42 @@
+{
+    "layout": {
+        "skip": "Aller au contenu",
+        "navigation": "Principale",
+        "menu": "Menu",
+        "languages": "Langue"
+    },
+    "nav": {
+        "about": "À propos"
+    },
+    "language": {
+        "code": {
+            "en": "EN",
+            "fr": "FR"
+        },
+        "name": {
+            "en": "English",
+            "fr": "Français"
+        }
+    },
+    "home": {
+        "aboutLink": "En savoir plus sur le studio"
+    },
+    "notFound": {
+        "title": "Page introuvable",
+        "text": "Cette page n’existe pas, ou plus.",
+        "home": "Retour à l’accueil"
+    },
+    "footer": {
+        "links": "Retrouver le studio",
+        "copyright": "© {year} {studio}"
+    },
+    "draft": {
+        "region": "Aperçu du brouillon",
+        "title": "Brouillon",
+        "text": "Seuls les admins voient cette page. Les visiteurs gardent la version publiée jusqu’à ce que vous publiiez.",
+        "shop": "Boutique",
+        "full": "Page complète",
+        "note": "Note « en construction »",
+        "admin": "Retour à l’admin"
+    }
+}

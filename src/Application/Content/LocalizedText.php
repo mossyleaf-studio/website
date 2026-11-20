@@ -21,4 +21,9 @@ final readonly class LocalizedText
 
         return new self($text->in(Locale::En), $text->in(Locale::Fr));
     }
+
+    public function in(Locale $locale): string
+    {
+        return Locale::Fr === $locale ? $this->fr : $this->en;
+    }
 }

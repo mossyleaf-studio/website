@@ -23,6 +23,7 @@ export default defineConfig({
                 site: './assets/site.js',
                 admin: './assets/admin.js',
                 auth: './assets/auth.js',
+                shop: './assets/shop.js',
             },
         },
     },

@@ -25,7 +25,8 @@ final readonly class LocaleListener
         }
 
         $request = $event->getRequest();
-        $locale = $request->getPreferredLanguage(self::LOCALES) ?? self::LOCALES[0];
+        $route = $request->attributes->get('_locale');
+        $locale = \in_array($route, self::LOCALES, true) ? $route : $request->getPreferredLanguage(self::LOCALES) ?? self::LOCALES[0];
         $request->setLocale($locale);
         $this->locales->setLocale($locale);
     }

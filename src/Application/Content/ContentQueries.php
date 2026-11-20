@@ -38,14 +38,19 @@ final readonly class ContentQueries
         return null === $site ? $this->draft(PublicPage::Note) : new PublicSnapshot($site->page(), $site->content(), $site->publishedAt());
     }
 
-    public function shop(): ShopContentView
+    public function shop(bool $draft): ShopContentView
     {
-        return ShopContentView::of($this->texts->current(), $this->links->all(), $this->artworks->all());
+        if ($draft) {
+            return ShopContentView::of($this->texts->current(), $this->links->all(), $this->artworks->all());
+        }
+        $frozen = $this->published->current()?->shopContent();
+
+        return null === $frozen ? new ShopContentView() : $this->snapshots->decodeShop($frozen);
     }
 
     public function publication(): PublicationView
     {
-        return PublicationView::of($this->published->current(), $this->snapshots->encode($this->site()), $this->snapshots->encodeShop($this->shop()));
+        return PublicationView::of($this->published->current(), $this->snapshots->encode($this->site()), $this->snapshots->encodeShop($this->shop(true)));
     }
 
     public function texts(): SiteTextView

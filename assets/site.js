@@ -6,9 +6,9 @@ import './styles/site/tokens.css';
 import './styles/site/base.css';
 import DraftBanner from './vue/site/components/DraftBanner.vue';
 import BetaPage from './vue/site/pages/BetaPage.vue';
-import HomePage from './vue/site/pages/HomePage.vue';
+import NotePage from './vue/site/pages/NotePage.vue';
 
-const PAGES = { note: HomePage, full: BetaPage };
+const PAGES = { note: NotePage, full: BetaPage };
 
 const root = document.getElementById('site');
 const site = JSON.parse(document.getElementById('site-content').textContent);

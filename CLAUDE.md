@@ -1,6 +1,6 @@
 # mossyleaf.studio — project guide for Claude
 
-Showcase site of the mossyleaf.studio illustration studio (sketchbook look: watercolor leaves, washi tape, paper cards) with an admin to edit every section. Public site in **English only**; admin UI in **English and French**. URLs, code, commits: **English**.
+Showcase site of the mossyleaf.studio illustration studio (sketchbook look: watercolor leaves, washi tape, paper cards) with an admin to edit every section. The public note at `/` is English only; the shop (in progress, previewed under `/beta/{fr,en}/`) is in **English and French**; admin UI in **English and French**. URLs, code, commits: **English**.
 
 Architecture and conventions mirror `~/Sites/mossyleaf-studio/mossydew` (read its `CLAUDE.md` when in doubt).
 
@@ -35,6 +35,7 @@ Contexts: `Identity` (accounts) and `Content` (`SiteText` single row, `Link`, `A
 - **Draft and publication**: every admin edit changes the draft. `BetaController` (`/beta/`, full page) and `BetaNoteController` (`/beta/note/`, growing note) preview it for admins (noindex, no-store, draft banner). `PublishSite` freezes the draft `SiteView` as JSON in `PublishedSite` (single row, with the page shown and the media files it uses); `HomeController` (`/`) only serves that snapshot, or the draft growing note until the first publication. `MediaSweeper` deletes an image file only when neither the draft nor the published snapshot uses it: never delete media files directly.
 - `templates/site.html.twig` writes the SEO head (title from `pageTitle`, canonical, Open Graph, Twitter card, JSON-LD) and `site/_prerender.html.twig` the content as plain HTML for crawlers; Vue replaces it on load, so both must show the same content. `robots.txt` and `sitemap.xml` are controllers. Uploaded images are served by `MediaController` (`/media/artworks/{ulid}.webp`, immutable cache).
 - Admin API under `/api/admin/…` (texts per section, links, artworks), `MapRequestPayload` DTOs, domain exceptions → 422 `problem+json`.
+- **Shop preview**: `src/Presentation/Web/Shop/` holds one controller per page, routes `shop_*` at `/{_locale}/…` (`en|fr`), imported a second time under `/beta` as `beta_shop_*` with `preview: true` (editors only). `ShopDoor` decides if a shop URL is open (preview only for now); closed means 302 to `/`. `ShopUrls` is the only place that builds shop URLs: Twig and Vue get every link through the props. `ShopPage::render()` writes `{layout, data}` into `#site-content` and the `seo` variable for `templates/shop.html.twig` (prerender in `templates/shop/`). `ContentQueries::shop(bool $draft)` reads the draft, or the frozen `shop_content`. Interface labels live in `assets/vue/i18n/{en,fr}/site.json`, read by Vue (`vue/site/i18n.js`) and by Twig (`site_t`).
 - Inline links in texts are written `[label](https://…)` and rendered by `assets/vue/site/richText.js` (never `v-html`).
 - Text limits live on the entities (`SiteText::MAX_*`, `Link::MAX_*`, `Artwork::MAX_ALT`) and are mirrored in `assets/vue/admin/limits.js`.
 - Fonts: the admin types any Google Fonts family per `FontRole` (heading, body); empty means the bundled Gaegu / Kalam. `ChooseFont` asks `FontLibrary` (`GoogleFontLibrary`: CSS2 API for the faces, `fonts.google.com/metadata/fonts` cached a day for the names and autocomplete) for the closest weight in latin + latin-ext, and `LocalFontStorage` self-hosts it (`var/share/fonts`, `/media/fonts/{ulid}.css` + woff2, swept like the images): visitors never contact Google. `site.html.twig` links the stylesheets and sets `--font-display(-weight)` / `--font-body(-weight)` on `<html>`. Tests fake Google with `Tests\Support\FakeGoogleFonts`.
@@ -47,6 +48,7 @@ Contexts: `Identity` (accounts) and `Content` (`SiteText` single row, `Link`, `A
 
 ## Frontend — `assets/`
 
+- `shop.js` is the Vite entry of the shop (`ShopApp.vue`, `styles/site/shop.css` scoped to `html[data-layout="shop"]`); `site.js` stays the note and `base.css` is never edited.
 - `vue/site/`: public components fed by props from `#site-content`; tokens in `styles/site/`. The sketchbook design is deliberate: keep it, no drawn animals or illustrations (images come from the studio's own artworks).
 - `vue/admin/`: pages Texts, Links, Images; `useContent.js` over `composables/useApi.js` (FormData uploads supported). Shared UI in `vue/components/ui/` (Reka UI, Lucide), MossyDew look and tokens in `styles/`.
 - Never hardcode a user-visible admin string: `vue/i18n/<locale>/admin.json`.

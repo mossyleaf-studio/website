@@ -1,0 +1,42 @@
+{
+    "layout": {
+        "skip": "Skip to content",
+        "navigation": "Main",
+        "menu": "Menu",
+        "languages": "Language"
+    },
+    "nav": {
+        "about": "About"
+    },
+    "language": {
+        "code": {
+            "en": "EN",
+            "fr": "FR"
+        },
+        "name": {
+            "en": "English",
+            "fr": "Français"
+        }
+    },
+    "home": {
+        "aboutLink": "More about the studio"
+    },
+    "notFound": {
+        "title": "Page not found",
+        "text": "This page does not exist, or no longer does.",
+        "home": "Back to the home page"
+    },
+    "footer": {
+        "links": "Find the studio",
+        "copyright": "© {year} {studio}"
+    },
+    "draft": {
+        "region": "Draft preview",
+        "title": "Draft",
+        "text": "Only admins see this page. Visitors keep the published version until you publish.",
+        "shop": "Shop",
+        "full": "Full page",
+        "note": "Growing note",
+        "admin": "Back to the admin"
+    }
+}

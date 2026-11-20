@@ -1,0 +1,5 @@
+<div class="shop-prerender__sheet shop-prerender__sheet--centred">
+    <h1>{{ 'notFound.title'|site_t }}</h1>
+    <p>{{ 'notFound.text'|site_t }}</p>
+    <p><a href="{{ (layout.navigation|filter(entry => entry.key == 'home')|first).url }}">{{ 'notFound.home'|site_t }}</a></p>
+</div>

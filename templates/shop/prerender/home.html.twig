@@ -1,0 +1,13 @@
+<div class="shop-prerender__hero">
+    <h1>{{ data.intro }}</h1>
+    {% if data.featured %}
+        <figure>
+            <img src="{{ data.featured.url }}" alt="{{ data.featured.alt }}" width="{{ data.featured.width }}" height="{{ data.featured.height }}" fetchpriority="high">
+        </figure>
+    {% endif %}
+</div>
+<section class="shop-prerender__sheet" aria-labelledby="about-title">
+    <h2 id="about-title">{{ data.about.title }}</h2>
+    <p>{{ data.about.text|rich_text }}</p>
+    <p><a href="{{ data.about.url }}">{{ 'home.aboutLink'|site_t }}</a></p>
+</section>

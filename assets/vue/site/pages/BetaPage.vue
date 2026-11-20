@@ -5,16 +5,11 @@ import LinkCard from '../components/LinkCard.vue';
 import RichText from '../components/RichText.vue';
 import SketchbookPage from '../components/SketchbookPage.vue';
 import StudioHeader from '../components/StudioHeader.vue';
+import { relOf } from '../links.js';
 
 defineProps({
     site: { type: Object, required: true },
 });
-
-const SOCIAL_HOSTS = ['instagram.com', 'www.instagram.com'];
-
-function relOf(url) {
-    return SOCIAL_HOSTS.includes(new URL(url).hostname) ? 'me' : undefined;
-}
 </script>
 
 <template>

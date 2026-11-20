@@ -1,16 +1,30 @@
 <script setup>
 defineProps({
     page: { type: String, required: true },
+    shop: { type: String, default: null },
+    labels: {
+        type: Object,
+        default: () => ({
+            region: 'Draft preview',
+            title: 'Draft',
+            text: 'Only admins see this page. Visitors keep the published version until you publish.',
+            shop: 'Shop',
+            full: 'Full page',
+            note: 'Growing note',
+            admin: 'Back to the admin',
+        }),
+    },
 });
 </script>
 
 <template>
-    <aside class="draft-banner" aria-label="Draft preview">
-        <p class="draft-banner__text"><strong>Draft</strong> Only admins see this page. Visitors keep the published version until you publish.</p>
+    <aside class="draft-banner" :aria-label="labels.region">
+        <p class="draft-banner__text"><strong>{{ labels.title }}</strong> {{ labels.text }}</p>
         <nav class="draft-banner__links">
-            <a :class="['draft-banner__link', { 'draft-banner__link--current': page === 'full' }]" href="/beta/" :aria-current="page === 'full' ? 'page' : undefined">Full page</a>
-            <a :class="['draft-banner__link', { 'draft-banner__link--current': page === 'note' }]" href="/beta/note/" :aria-current="page === 'note' ? 'page' : undefined">Growing note</a>
-            <a class="draft-banner__link draft-banner__link--admin" href="/admin/">Back to the admin</a>
+            <a v-if="shop" :class="['draft-banner__link', { 'draft-banner__link--current': page === 'shop' }]" :href="shop">{{ labels.shop }}</a>
+            <a :class="['draft-banner__link', { 'draft-banner__link--current': page === 'full' }]" href="/beta/" :aria-current="page === 'full' ? 'page' : undefined">{{ labels.full }}</a>
+            <a :class="['draft-banner__link', { 'draft-banner__link--current': page === 'note' }]" href="/beta/note/" :aria-current="page === 'note' ? 'page' : undefined">{{ labels.note }}</a>
+            <a class="draft-banner__link draft-banner__link--admin" href="/admin/">{{ labels.admin }}</a>
         </nav>
     </aside>
 </template>

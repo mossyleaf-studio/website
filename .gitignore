@@ -44,3 +44,5 @@ phpstan.neon
 /.claude/
 
 /.deploy.env
+
+.DS_Store

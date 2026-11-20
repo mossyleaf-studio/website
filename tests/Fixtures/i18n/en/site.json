@@ -1,0 +1,8 @@
+{
+    "cart": {
+        "count": "{count} item | {count} items"
+    },
+    "footer": {
+        "copyright": "© {year} {studio}"
+    }
+}

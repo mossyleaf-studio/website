@@ -5,7 +5,10 @@
         "links": "Liens",
         "images": "Images",
         "site": "Site public",
-        "signOut": "Se déconnecter"
+        "signOut": "Se déconnecter",
+        "groups": {
+            "site": "Site"
+        }
     },
     "count": "{count} / {max}",
     "saved": "Enregistré.",

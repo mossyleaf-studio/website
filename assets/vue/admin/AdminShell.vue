@@ -10,10 +10,15 @@ import { intlLocale } from '../i18n/locale.js';
 const { t } = useI18n();
 const session = useSession();
 
-const SECTIONS = [
-    { name: 'texts', icon: Type },
-    { name: 'links', icon: Link2 },
-    { name: 'images', icon: Image },
+const GROUPS = [
+    {
+        name: 'site',
+        sections: [
+            { name: 'texts', icon: Type },
+            { name: 'links', icon: Link2 },
+            { name: 'images', icon: Image },
+        ],
+    },
 ];
 </script>
 
@@ -23,12 +28,6 @@ const SECTIONS = [
         <div class="admin">
             <header class="admin__bar">
                 <a class="admin__brand" href="/" target="_blank" rel="noopener">mossyleaf.studio</a>
-                <nav class="admin__nav" :aria-label="t('admin.nav.label')">
-                    <RouterLink v-for="section in SECTIONS" :key="section.name" :to="{ name: section.name }" class="admin__tab">
-                        <component :is="section.icon" size="1rem" aria-hidden="true" />
-                        {{ t(`admin.nav.${section.name}`) }}
-                    </RouterLink>
-                </nav>
                 <div class="admin__account">
                     <a class="admin__site" href="/" target="_blank" rel="noopener">
                         <ExternalLink size="0.9rem" aria-hidden="true" />{{ t('admin.nav.site') }}
@@ -42,9 +41,24 @@ const SECTIONS = [
                 </div>
             </header>
             <PublishBar />
-            <main id="main" class="admin__main">
-                <RouterView />
-            </main>
+            <div class="admin__body">
+                <nav class="admin__rail" :aria-label="t('admin.nav.label')">
+                    <div v-for="group in GROUPS" :key="group.name" class="admin__group">
+                        <p :id="`admin-group-${group.name}`" class="eyebrow admin__group-name">{{ t(`admin.nav.groups.${group.name}`) }}</p>
+                        <ul class="admin__sections" :aria-labelledby="`admin-group-${group.name}`">
+                            <li v-for="section in group.sections" :key="section.name">
+                                <RouterLink :to="{ name: section.name }" class="admin__tab">
+                                    <component :is="section.icon" size="1rem" aria-hidden="true" />
+                                    {{ t(`admin.nav.${section.name}`) }}
+                                </RouterLink>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                <main id="main" class="admin__main">
+                    <RouterView />
+                </main>
+            </div>
         </div>
         <ToastHost />
         </TooltipProvider>
@@ -74,10 +88,29 @@ const SECTIONS = [
     text-decoration: none;
 }
 
-.admin__nav { display: flex; gap: var(--space-1); }
+.admin__rail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-3) var(--space-5);
+    border-bottom: 0.0625rem solid var(--color-border);
+}
+
+.admin__group-name { display: none; }
+
+.admin__sections {
+    display: flex;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin__sections li { flex: 1; }
 
 .admin__tab {
-    display: inline-flex;
+    display: flex;
+    justify-content: center;
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-3);
@@ -117,8 +150,32 @@ const SECTIONS = [
 
 @media (max-width: 40rem) {
     .admin__bar { padding-inline: var(--space-4); }
-    .admin__nav { order: 3; width: 100%; }
-    .admin__tab { flex: 1; justify-content: center; }
+    .admin__rail { padding-inline: var(--space-4); }
     .admin__main { padding-inline: var(--space-4); }
+}
+
+@media (min-width: 56rem) {
+    .admin__body {
+        display: grid;
+        grid-template-columns: 14rem minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .admin__rail {
+        position: sticky;
+        top: 4rem;
+        padding: var(--space-6) var(--space-4);
+        border-bottom: none;
+    }
+
+    .admin__group-name {
+        display: block;
+        margin: 0 0 var(--space-2);
+        padding-inline: var(--space-3);
+    }
+
+    .admin__sections { flex-direction: column; }
+
+    .admin__tab { justify-content: flex-start; }
 }
 </style>

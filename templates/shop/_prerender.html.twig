@@ -1,0 +1,48 @@
+{% set home = (layout.navigation|filter(entry => entry.key == 'home')|first).url %}
+<div class="shop-prerender">
+    <a class="shop-prerender__skip" href="#main">{{ 'layout.skip'|site_t }}</a>
+    {% if layout.preview %}
+        {% include 'shop/prerender/_draft.html.twig' %}
+    {% endif %}
+    {% if layout.announcement %}
+        <p class="shop-prerender__announcement" data-announcement>{{ layout.announcement }}</p>
+    {% endif %}
+
+    <header class="shop-prerender__header">
+        {% include 'shop/prerender/_languages.html.twig' %}
+        <a class="shop-prerender__home" href="{{ home }}" data-home>
+            {%- if layout.logo -%}
+                <img src="{{ layout.logo.url }}" alt="" width="{{ layout.logo.width }}" height="{{ layout.logo.height }}"><span class="visually-hidden">{{ layout.studioName }}</span>
+            {%- else -%}
+                {{ layout.studioName }}
+            {%- endif -%}
+        </a>
+        <nav class="shop-prerender__navigation" aria-label="{{ 'layout.navigation'|site_t }}" data-navigation>
+            <ul>
+                {% for entry in layout.navigation|filter(entry => entry.key != 'home') %}
+                    <li><a href="{{ entry.url }}"{% if entry.current %} aria-current="page"{% endif %}>{{ ('nav.' ~ entry.key)|site_t }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </header>
+
+    <main id="main" class="shop-prerender__main">
+        {% include 'shop/prerender/' ~ data.page ~ '.html.twig' %}
+    </main>
+
+    <footer class="shop-prerender__footer">
+        <h2>{{ layout.studioName }}</h2>
+        <p>{{ layout.intro }}</p>
+        {% if layout.footer.links is not empty %}
+            <nav aria-label="{{ 'footer.links'|site_t }}" data-links>
+                <ul>
+                    {% for link in layout.footer.links %}
+                        <li><a href="{{ link.url }}"{% if link.url matches '{^https://(www\\.)?instagram\\.com(/|$)}' %} rel="me"{% endif %}>{{ link.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        {% endif %}
+        {% include 'shop/prerender/_languages.html.twig' with {landmark: false} %}
+        <p>{{ 'footer.copyright'|site_t({year: 'now'|date('Y'), studio: layout.studioName}) }}</p>
+    </footer>
+</div>

@@ -30,7 +30,7 @@ final readonly class PublishSiteHandler
     public function __invoke(PublishSite $command): PublicationView
     {
         $content = $this->snapshots->encode($this->queries->site());
-        $shopContent = $this->snapshots->encodeShop($this->queries->shop());
+        $shopContent = $this->snapshots->encodeShop($this->queries->shop(true));
         $files = $this->media->draftFiles();
         $by = $this->currentUser->get()->displayName();
         $now = $this->clock->now();
