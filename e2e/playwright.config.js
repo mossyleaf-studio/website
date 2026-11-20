@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
     testDir: './tests',
+    snapshotPathTemplate: '{testDir}/snapshots/{arg}{ext}',
     workers: 1,
     reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
     use: {

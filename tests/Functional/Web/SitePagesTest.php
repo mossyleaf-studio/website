@@ -26,7 +26,19 @@ final class SitePagesTest extends WebTestCase
         self::assertNull($crawler->filter('#site')->attr('data-draft'));
         $content = Json::decode($crawler->filter('#site-content')->text());
         self::assertSame('The website is still growing', Json::string($content, 'homeNote', 'title'));
-        self::assertNull($client->getCookieJar()->get('PHPSESSID'));
+    }
+
+    public function testPublicPagesStartNoSession(): void
+    {
+        $client = self::createClient();
+
+        foreach (['/', '/robots.txt', '/sitemap.xml'] as $url) {
+            $client->request('GET', $url);
+
+            self::assertResponseIsSuccessful($url);
+            self::assertResponseNotHasHeader('Set-Cookie', $url);
+            self::assertTrue($client->getResponse()->headers->hasCacheControlDirective('public'), $url);
+        }
     }
 
     public function testTheDraftPagesAreForAdminsOnly(): void
