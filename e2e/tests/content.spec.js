@@ -75,8 +75,10 @@ test('a link is added, moved to the top and shown on the full page', async ({ pa
     const row = page.getByTestId('link-row').filter({ hasText: title });
     await expect(row).toBeVisible();
     while ((await page.getByTestId('link-row').first().textContent()).includes(title) === false) {
-        await row.getByRole('button', { name: 'Move up' }).click();
-        await page.waitForLoadState('networkidle');
+        await Promise.all([
+            page.waitForResponse((response) => response.url().endsWith('/api/admin/links/order') && response.ok()),
+            row.getByRole('button', { name: 'Move up' }).click(),
+        ]);
     }
 
     await page.goto('/beta/');
