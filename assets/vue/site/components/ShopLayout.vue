@@ -24,7 +24,7 @@ const draft = computed(() => Object.fromEntries(['region', 'title', 'text', 'sho
         <main id="main" class="shop-layout__main" tabindex="-1">
             <slot />
         </main>
-        <SiteFooter :studio-name="layout.studioName" :intro="layout.intro" :links="layout.footer.links" :languages="layout.languages" />
+        <SiteFooter :studio-name="layout.studioName" :intro="layout.intro" :links="layout.footer.links" :legal="layout.footer.legal" :languages="layout.languages" />
     </div>
 </template>
 

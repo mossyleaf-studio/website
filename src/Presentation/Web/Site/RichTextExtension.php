@@ -8,7 +8,7 @@ use Twig\Attribute\AsTwigFilter;
 
 final class RichTextExtension
 {
-    private const string LINK = '/\[([^\]\n]+)\]\((https:\/\/[^\s)]+)\)/';
+    private const string LINK = '/\[([^\]\n]+)\]\((https:\/\/[^ \t\n\x0B\f\r)]+)\)/';
 
     #[AsTwigFilter('rich_text', isSafe: ['html'])]
     public function richText(string $text): string

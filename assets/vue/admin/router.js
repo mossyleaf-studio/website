@@ -18,6 +18,8 @@ export const router = createRouter({
                 { path: ':id', name: 'product', component: () => import('./pages/ProductPage.vue'), props: true },
             ],
         },
+        { path: '/conventions', name: 'conventions', component: () => import('./pages/ConventionsPage.vue') },
+        { path: '/legal', name: 'legal', component: () => import('./pages/LegalPage.vue') },
         { path: '/:path(.*)*', name: 'not-found', component: NotFoundPage },
     ],
 });

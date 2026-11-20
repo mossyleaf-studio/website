@@ -16,8 +16,11 @@ const SHOP = {
     'shop-product-variants-en': '/beta/en/shop/washi-tape-set',
     'shop-product-sold-out': '/beta/fr/shop/meadow-sticker-sheet',
     'shop-product-hidden': '/beta/en/shop/dew-greeting-card',
+    'shop-conventions-fr': '/beta/fr/conventions',
+    'shop-conventions-en': '/beta/en/conventions',
+    'shop-legal-fr': '/beta/fr/legal/terms',
 };
-const ADMIN = { texts: '/admin/texts', links: '/admin/links', images: '/admin/images', products: '/admin/products' };
+const ADMIN = { texts: '/admin/texts', links: '/admin/links', images: '/admin/images', products: '/admin/products', conventions: '/admin/conventions', legal: '/admin/legal' };
 
 async function send(request, method, url, data) {
     const response = await request.fetch(url, { method, data });
@@ -41,6 +44,18 @@ async function writeTheFrenchTexts(request) {
     await send(request, 'PUT', '/api/admin/texts/shop-notes', { announcement: 'Free shipping in France from €40', announcementFr: 'Livraison offerte en France dès 40 €', priceNote: '', priceNoteFr: '' });
 }
 
+async function writeTheConventionsAndLegalPages(request) {
+    const year = new Date().getFullYear();
+    await send(request, 'POST', '/api/admin/conventions', { name: 'Salon du dessin de Lyon', place: 'Halle Tony Garnier, Lyon', startsOn: `${year + 1}-03-14`, endsOn: `${year + 1}-03-16`, url: 'https://example.com/salon', note: 'Stand 42, next to the windows. Prints, stickers and a few originals.', noteFr: 'Stand 42, près des fenêtres. Affiches, stickers et quelques originaux.' });
+    await send(request, 'POST', '/api/admin/conventions', { name: 'Fête des mousses', place: 'Parc de la Tête d’Or, Lyon', startsOn: `${year + 1}-05-30`, endsOn: `${year + 1}-06-01`, url: '', note: '', noteFr: 'Table ronde sous les arbres.' });
+    await send(request, 'POST', '/api/admin/conventions', { name: 'Marché d’hiver', place: 'Croix-Rousse, Lyon', startsOn: `${year + 1}-12-30`, endsOn: `${year + 2}-01-02`, url: 'https://example.com/hiver', note: 'Winter market under the lights.', noteFr: 'Marché d’hiver sous les lumières.' });
+    await send(request, 'PUT', '/api/admin/legal-pages/terms', {
+        text: '## Orders\nEvery order is confirmed by email once SumUp has taken the payment.\nPrices include VAT.\n\n## Delivery\n- France: 3 to 5 working days\n- European Union: 5 to 10 working days\n- Rest of the world: 10 to 20 working days\n\n## Questions\nWrite through [the contact page](https://mossyleaf.studio/en/contact).',
+        textFr: '## Commandes\nChaque commande est confirmée par e-mail une fois le paiement accepté par SumUp.\nLes prix sont TTC.\n\n## Livraison\n- France : 3 à 5 jours ouvrés\n- Union européenne : 5 à 10 jours ouvrés\n- Reste du monde : 10 à 20 jours ouvrés\n\n## Questions\nÉcrivez via [la page contact](https://mossyleaf.studio/fr/contact).',
+    });
+    await send(request, 'PUT', '/api/admin/legal-pages/privacy', { text: 'No tracker, no advertising cookie.', textFr: 'Aucun traceur, aucun cookie publicitaire.' });
+}
+
 test('screenshots of the site and the admin', async ({ page }) => {
     test.setTimeout(120_000);
     await signIn(page);
@@ -57,6 +72,7 @@ test('screenshots of the site and the admin', async ({ page }) => {
     await page.getByTestId('artwork-card').first().getByRole('button', { name: 'Feature' }).click();
     await expect(page.getByTestId('artwork-card').first().getByText('Featured', { exact: true })).toBeVisible();
     await writeTheFrenchTexts(page.request);
+    await writeTheConventionsAndLegalPages(page.request);
 
     for (const [size, viewport] of Object.entries(VIEWPORTS)) {
         await page.setViewportSize(viewport);
@@ -90,6 +106,9 @@ test('screenshots of the site and the admin', async ({ page }) => {
     await editorWithoutScript.setViewportSize(VIEWPORTS.desktop);
     await editorWithoutScript.goto(SHOP['shop-listing-fr']);
     await editorWithoutScript.screenshot({ path: 'shots/shop-listing-without-javascript.png', fullPage: true });
+    await editorWithoutScript.goto(SHOP['shop-legal-fr']);
+    await expect(editorWithoutScript.locator('#shop main [data-blocks]')).toBeVisible();
+    await editorWithoutScript.screenshot({ path: 'shots/shop-legal-without-javascript.png', fullPage: true });
     await editorWithoutScript.context().close();
 
     await page.goto('/admin/images');

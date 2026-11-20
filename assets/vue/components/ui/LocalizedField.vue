@@ -33,7 +33,7 @@ function missing(side) {
 </script>
 
 <template>
-    <FormField class="localized-field" :label="label" :hint="hint" as="div">
+    <FormField v-slot="{ describedBy }" class="localized-field" :label="label" :hint="hint" as="div">
         <div class="localized-field__sides">
             <label
                 v-for="side in SIDES"
@@ -54,6 +54,7 @@ function missing(side) {
                     :maxlength="max"
                     :required="mandatory(side)"
                     :aria-label="t('admin.localized.name', { label, language: t(`admin.localized.${side.language}`) })"
+                    :aria-describedby="describedBy"
                     :value="model[side.language]"
                     @input="model = { ...model, [side.language]: $event.target.value }"
                 />

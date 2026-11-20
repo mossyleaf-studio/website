@@ -83,13 +83,13 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame('Petites bêtes dessinées.', Json::string($props, 'data', 'intro'));
         self::assertSame('Une fougère', Json::string($props, 'data', 'featured', 'alt'));
         self::assertSame(['title' => 'Le studio', 'text' => 'A tiny studio.', 'url' => '/beta/fr/about'], Json::array($props, 'data', 'about'));
-        self::assertSame([['key' => 'home', 'url' => '/beta/fr/', 'current' => true], ['key' => 'shop', 'url' => '/beta/fr/shop', 'current' => false], ['key' => 'about', 'url' => '/beta/fr/about', 'current' => false]], Json::array($props, 'layout', 'navigation'));
+        self::assertSame([['key' => 'home', 'url' => '/beta/fr/', 'current' => true], ['key' => 'shop', 'url' => '/beta/fr/shop', 'current' => false], ['key' => 'conventions', 'url' => '/beta/fr/conventions', 'current' => false], ['key' => 'about', 'url' => '/beta/fr/about', 'current' => false]], Json::array($props, 'layout', 'navigation'));
         self::assertSame([['locale' => 'en', 'url' => '/beta/en/', 'current' => false], ['locale' => 'fr', 'url' => '/beta/fr/', 'current' => true]], Json::array($props, 'layout', 'languages'));
 
         self::assertSame('Petites bêtes dessinées.', $crawler->filter('#shop main h1')->text());
         self::assertSame('A tiny studio.', $crawler->filter('#shop main section p')->first()->text());
         self::assertSame('Livraison offerte', $crawler->filter('#shop [data-announcement]')->text());
-        self::assertSame(['Boutique', 'À propos'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
+        self::assertSame(['Boutique', 'Conventions', 'À propos'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
         self::assertSame('Aller au contenu', $crawler->filter('#shop a[href="#main"]')->text());
         self::assertSame('Aperçu du brouillon', $crawler->filter('#shop aside[data-draft]')->attr('aria-label'));
         self::assertSame([['Boutique', '/beta/fr/'], ['Page complète', '/beta/'], ['Note « en construction »', '/beta/note/'], ['Retour à l’admin', '/admin']], self::links($crawler->filter('#shop aside[data-draft] a')));

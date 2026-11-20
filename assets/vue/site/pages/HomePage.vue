@@ -1,5 +1,6 @@
 <script setup>
 import CategoryTiles from '../components/CategoryTiles.vue';
+import ConventionTeaser from '../components/ConventionTeaser.vue';
 import FeaturedArt from '../components/FeaturedArt.vue';
 import PaperSheet from '../components/PaperSheet.vue';
 import PillButton from '../components/PillButton.vue';
@@ -43,6 +44,8 @@ defineProps({
             <h2 id="categories-title" class="home__heading">{{ $t('home.categories') }}</h2>
             <CategoryTiles :categories="data.categories" />
         </section>
+
+        <ConventionTeaser :convention="data.nextConvention" />
     </div>
 </template>
 

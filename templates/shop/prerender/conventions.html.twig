@@ -1,0 +1,18 @@
+<h1>{{ data.title }}</h1>
+{% if data.conventions is empty %}
+    <div class="shop-prerender__sheet">
+        <p>{{ 'conventions.empty'|site_t }}</p>
+    </div>
+{% else %}
+    <ul class="shop-prerender__conventions" data-conventions>
+        {% for convention in data.conventions %}
+            <li>
+                {% if loop.first %}
+                    {% include 'shop/prerender/_convention.html.twig' with {label: 'conventions.soon'|site_t} %}
+                {% else %}
+                    {% include 'shop/prerender/_convention.html.twig' %}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

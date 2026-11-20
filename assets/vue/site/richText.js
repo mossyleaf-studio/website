@@ -1,4 +1,4 @@
-const LINK = /\[([^\]\n]+)\]\((https:\/\/[^\s)]+)\)/g;
+const LINK = /\[([^\]\n]+)\]\((https:\/\/[^ \t\n\v\f\r)]+)\)/g;
 
 export function parseRichText(text) {
     const segments = [];

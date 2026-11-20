@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Content;
 
-use App\Domain\Content\Exception\InvalidLinkUrl;
 use App\Domain\Shared\Exception\EmptyText;
 use App\Domain\Shared\Exception\TextTooLong;
 use App\Domain\Shared\Orderable;
@@ -65,7 +64,7 @@ class Link implements Orderable
         $this->description = self::text('link_description', $description, self::MAX_DESCRIPTION);
         $this->titleFr = self::optional('link_title_fr', $titleFr, self::MAX_TITLE, $this->titleFr);
         $this->descriptionFr = self::optional('link_description_fr', $descriptionFr, self::MAX_DESCRIPTION, $this->descriptionFr);
-        $this->url = self::validUrl($url);
+        $this->url = HttpsUrl::check($url, self::MAX_URL);
         $this->tape = $tape;
     }
 
@@ -138,15 +137,5 @@ class Link implements Orderable
         }
 
         return $value;
-    }
-
-    private static function validUrl(string $url): string
-    {
-        $url = trim($url);
-        if (mb_strlen($url) > self::MAX_URL || 'https' !== parse_url($url, \PHP_URL_SCHEME) || false === filter_var($url, \FILTER_VALIDATE_URL)) {
-            throw new InvalidLinkUrl($url);
-        }
-
-        return $url;
     }
 }

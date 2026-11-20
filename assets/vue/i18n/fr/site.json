@@ -7,8 +7,9 @@
         "breadcrumb": "Fil d’Ariane"
     },
     "nav": {
-        "about": "À propos",
-        "shop": "Boutique"
+        "shop": "Boutique",
+        "conventions": "Conventions",
+        "about": "À propos"
     },
     "language": {
         "code": {
@@ -64,5 +65,23 @@
         "full": "Page complète",
         "note": "Note « en construction »",
         "admin": "Retour à l’admin"
+    },
+    "conventions": {
+        "title": "Conventions",
+        "empty": "Aucune convention n’est prévue pour l’instant. Suivez le studio pour connaître la prochaine.",
+        "website": "Site de la convention",
+        "next": "Prochaine convention",
+        "soon": "Prochaine",
+        "all": "Toutes les conventions"
+    },
+    "legal": {
+        "updated": "Mis à jour le {date}",
+        "footer": "Informations légales",
+        "title": {
+            "terms": "Conditions générales de vente",
+            "legal-notice": "Mentions légales",
+            "privacy": "Confidentialité",
+            "shipping-returns": "Livraison et retours"
+        }
     }
 }

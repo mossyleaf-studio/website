@@ -1,0 +1,105 @@
+[
+    {
+        "name": "a heading, paragraphs and a list",
+        "text": "## Who we are\nmossyleaf.studio is a small studio.\nIt draws ferns.\n\nSecond paragraph.\n\n- First item\n- Second item",
+        "blocks": [
+            { "type": "heading", "segments": [{ "text": "Who we are" }] },
+            { "type": "paragraph", "segments": [{ "text": "mossyleaf.studio is a small studio.\nIt draws ferns." }] },
+            { "type": "paragraph", "segments": [{ "text": "Second paragraph." }] },
+            { "type": "list", "items": [[{ "text": "First item" }], [{ "text": "Second item" }]] }
+        ]
+    },
+    {
+        "name": "a heading or a list needs no blank line around it",
+        "text": "Before\n## Heading\nAfter\n- One\n- Two\nThe end",
+        "blocks": [
+            { "type": "paragraph", "segments": [{ "text": "Before" }] },
+            { "type": "heading", "segments": [{ "text": "Heading" }] },
+            { "type": "paragraph", "segments": [{ "text": "After" }] },
+            { "type": "list", "items": [[{ "text": "One" }], [{ "text": "Two" }]] },
+            { "type": "paragraph", "segments": [{ "text": "The end" }] }
+        ]
+    },
+    {
+        "name": "a blank line splits a list in two",
+        "text": "- One\n\n- Two",
+        "blocks": [
+            { "type": "list", "items": [[{ "text": "One" }]] },
+            { "type": "list", "items": [[{ "text": "Two" }]] }
+        ]
+    },
+    {
+        "name": "inline links in a paragraph, a heading and a list item",
+        "text": "## See [the studio](https://mossyleaf.studio/)\nWrite to [the studio](https://mossyleaf.studio/contact) today.\n- [Etsy](https://www.etsy.com/shop/mossyleafstudio)",
+        "blocks": [
+            { "type": "heading", "segments": [{ "text": "See " }, { "text": "the studio", "href": "https://mossyleaf.studio/" }] },
+            { "type": "paragraph", "segments": [{ "text": "Write to " }, { "text": "the studio", "href": "https://mossyleaf.studio/contact" }, { "text": " today." }] },
+            { "type": "list", "items": [[{ "text": "Etsy", "href": "https://www.etsy.com/shop/mossyleafstudio" }]] }
+        ]
+    },
+    {
+        "name": "a javascript or http link stays plain text",
+        "text": "[click](javascript:alert(1)) and [old](http://example.com)",
+        "blocks": [
+            { "type": "paragraph", "segments": [{ "text": "[click](javascript:alert(1)) and [old](http://example.com)" }] }
+        ]
+    },
+    {
+        "name": "HTML is never interpreted",
+        "text": "<script>alert(1)</script>\n\n## <b>Bold</b>\n- <img src=x onerror=alert(1)>",
+        "blocks": [
+            { "type": "paragraph", "segments": [{ "text": "<script>alert(1)</script>" }] },
+            { "type": "heading", "segments": [{ "text": "<b>Bold</b>" }] },
+            { "type": "list", "items": [[{ "text": "<img src=x onerror=alert(1)>" }]] }
+        ]
+    },
+    {
+        "name": "Windows line ends",
+        "text": "## Title\r\nLine one\r\nLine two\r\n\r\n- a\r\n- b\r\n",
+        "blocks": [
+            { "type": "heading", "segments": [{ "text": "Title" }] },
+            { "type": "paragraph", "segments": [{ "text": "Line one\nLine two" }] },
+            { "type": "list", "items": [[{ "text": "a" }], [{ "text": "b" }]] }
+        ]
+    },
+    {
+        "name": "spaces and tabs around a line are dropped",
+        "text": "  \t## Spaced heading  \n   indented line\t\n\t- tabbed item ",
+        "blocks": [
+            { "type": "heading", "segments": [{ "text": "Spaced heading" }] },
+            { "type": "paragraph", "segments": [{ "text": "indented line" }] },
+            { "type": "list", "items": [[{ "text": "tabbed item" }]] }
+        ]
+    },
+    {
+        "name": "a marker without its space is plain text",
+        "text": "##No heading\n-no item\n##\n-",
+        "blocks": [
+            { "type": "paragraph", "segments": [{ "text": "##No heading\n-no item\n##\n-" }] }
+        ]
+    },
+    {
+        "name": "a heading or an item without text is dropped",
+        "text": "##  \n-   \nText",
+        "blocks": [
+            { "type": "paragraph", "segments": [{ "text": "Text" }] }
+        ]
+    },
+    {
+        "name": "empty input",
+        "text": "",
+        "blocks": []
+    },
+    {
+        "name": "only blank lines",
+        "text": " \n\n\t\n",
+        "blocks": []
+    },
+    {
+        "name": "only ASCII whitespace ends a link target",
+        "text": "[contact](https://mossyleaf.studio/fr/contact\u00a0) [shop](https://mossyleaf.studio/\u202fshop\u00c5)",
+        "blocks": [
+            { "type": "paragraph", "segments": [{ "text": "contact", "href": "https://mossyleaf.studio/fr/contact\u00a0" }, { "text": " " }, { "text": "shop", "href": "https://mossyleaf.studio/\u202fshop\u00c5" }] }
+        ]
+    }
+]

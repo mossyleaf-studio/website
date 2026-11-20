@@ -10,7 +10,9 @@
             "shop": "Boutique",
             "site": "Site"
         },
-        "products": "Produits"
+        "products": "Produits",
+        "conventions": "Conventions",
+        "legal": "Pages légales"
     },
     "count": "{count} / {max}",
     "saved": "Enregistré.",
@@ -37,7 +39,8 @@
         "confirmNoteTitle": "Afficher la note « en construction » ?",
         "confirmNote": "Les visiteurs verront la note « en construction » à la place de la page complète, avec les textes du brouillon.",
         "fullDone": "Publié : les visiteurs voient la page complète.",
-        "noteDone": "Publié : les visiteurs voient la note « en construction »."
+        "noteDone": "Publié : les visiteurs voient la note « en construction ».",
+        "scope": "Les textes, liens, images et pages légales attendent « Publier » ; les produits et les conventions sont en ligne tout de suite."
     },
     "moveUp": "Monter",
     "moveDown": "Descendre",
@@ -235,5 +238,45 @@
         "emptyDetail": "Les catégories apparaissent dès que mossytrunk envoie son catalogue.",
         "save": "Enregistrer les noms"
     },
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "conventions": {
+        "title": "Conventions",
+        "subtitle": "Où le studio sera présent. Les changements apparaissent tout de suite dans la boutique, sans publier.",
+        "add": "Ajouter une convention",
+        "edit": "Modifier {name}",
+        "editTitle": "Modifier la convention",
+        "newTitle": "Nouvelle convention",
+        "delete": "Supprimer {name}",
+        "deleteMessage": "« {name} » disparaîtra tout de suite de la boutique.",
+        "deleted": "Convention supprimée.",
+        "upcoming": "À venir",
+        "past": "Passées",
+        "empty": "Aucune convention pour l’instant",
+        "emptyHint": "Ajoutez le prochain pour que les visiteurs sachent où trouver le studio.",
+        "urlHint": "Facultatif, doit commencer par https://.",
+        "fields": {
+            "name": "Nom",
+            "place": "Lieu",
+            "startsOn": "Premier jour",
+            "endsOn": "Dernier jour",
+            "url": "Site web",
+            "note": "Note"
+        }
+    },
+    "legal": {
+        "title": "Pages légales",
+        "subtitle": "Conditions, mentions et politiques affichées en bas de la boutique. Elles attendent « Publier » comme les textes.",
+        "pages": "Pages légales",
+        "kinds": {
+            "terms": "Conditions de vente",
+            "legal-notice": "Mentions légales",
+            "privacy": "Confidentialité",
+            "shipping-returns": "Livraison et retours"
+        },
+        "hidden": "Vide : non affichée dans la boutique",
+        "changed": "Dernière modification {when}",
+        "neverChanged": "Jamais écrite",
+        "preview": "Voir dans la boutique",
+        "hint": "Blocs : commencez une ligne par ## suivi d’une espace pour un titre, par - suivi d’une espace pour un élément de liste, laissez une ligne vide entre les paragraphes, et écrivez [libellé](https://…) pour un lien."
+    }
 }

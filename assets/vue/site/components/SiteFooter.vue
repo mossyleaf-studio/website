@@ -6,6 +6,7 @@ defineProps({
     studioName: { type: String, required: true },
     intro: { type: String, required: true },
     links: { type: Array, required: true },
+    legal: { type: Array, default: () => [] },
     languages: { type: Array, required: true },
 });
 
@@ -23,6 +24,13 @@ const year = new Date().getFullYear();
                 <ul class="site-footer__list">
                     <li v-for="link in links" :key="link.id">
                         <a class="site-footer__link" :href="link.url" :rel="relOf(link.url)">{{ link.title }}</a>
+                    </li>
+                </ul>
+            </nav>
+            <nav v-if="legal.length" class="site-footer__links" :aria-label="$t('legal.footer')" data-legal>
+                <ul class="site-footer__list">
+                    <li v-for="page in legal" :key="page.kind">
+                        <a class="site-footer__link" :href="page.url">{{ $t(`legal.title.${page.kind}`) }}</a>
                     </li>
                 </ul>
             </nav>
@@ -93,9 +101,13 @@ const year = new Date().getFullYear();
 
 @media (min-width: 56rem) {
     .site-footer__inner {
-        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
         align-items: start;
         column-gap: var(--space-8);
+    }
+
+    .site-footer__languages {
+        grid-column: -2;
     }
 
     .site-footer__copyright {

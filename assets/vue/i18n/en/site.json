@@ -7,8 +7,9 @@
         "breadcrumb": "Breadcrumb"
     },
     "nav": {
-        "about": "About",
-        "shop": "Shop"
+        "shop": "Shop",
+        "conventions": "Conventions",
+        "about": "About"
     },
     "language": {
         "code": {
@@ -64,5 +65,23 @@
         "full": "Full page",
         "note": "Growing note",
         "admin": "Back to the admin"
+    },
+    "conventions": {
+        "title": "Conventions",
+        "empty": "No convention is planned for now. Follow the studio to hear about the next one.",
+        "website": "Convention website",
+        "next": "Next convention",
+        "soon": "Next",
+        "all": "All the conventions"
+    },
+    "legal": {
+        "updated": "Last updated {date}",
+        "footer": "Legal information",
+        "title": {
+            "terms": "Terms of sale",
+            "legal-notice": "Legal notice",
+            "privacy": "Privacy",
+            "shipping-returns": "Shipping and returns"
+        }
     }
 }

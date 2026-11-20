@@ -16,4 +16,9 @@ export const LIMITS = {
     productDescription: 4000,
     productSlug: 80,
     categoryLabel: 60,
+    conventionName: 120,
+    conventionPlace: 120,
+    conventionUrl: 500,
+    conventionNote: 300,
+    legalText: 30000,
 };

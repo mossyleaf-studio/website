@@ -1,0 +1,12 @@
+<article class="shop-prerender__ticket">
+    {% if label is defined %}<p class="shop-prerender__tape">{{ label }}</p>{% endif %}
+    <h2>{{ convention.name }}</h2>
+    <p><time datetime="{{ convention.startsOn }}">{{ convention.startsOn|date_range(convention.endsOn) }}</time></p>
+    <p><strong>{{ convention.place }}</strong></p>
+    {% if convention.note %}
+        <p>{{ convention.note }}</p>
+    {% endif %}
+    {% if convention.url %}
+        <p class="shop-prerender__actions"><a href="{{ convention.url }}" rel="noopener">{{ 'conventions.website'|site_t }}</a></p>
+    {% endif %}
+</article>

@@ -3,6 +3,8 @@ import { useApi } from '../composables/useApi.js';
 
 const PRODUCTS = '/api/admin/products';
 const CATEGORIES = '/api/admin/categories';
+const CONVENTIONS = '/api/admin/conventions';
+const LEGAL_PAGES = '/api/admin/legal-pages';
 
 const api = useApi();
 
@@ -44,6 +46,32 @@ export function useCategories() {
         label: async (id, body) => {
             const saved = await api.put(`${CATEGORIES}/${id}`, body);
             categories.value = categories.value.map((category) => (category.id === saved.id ? saved : category));
+            return saved;
+        },
+    };
+}
+
+const conventions = ref([]);
+
+export function useConventions() {
+    return {
+        conventions,
+        load: () => api.load(CONVENTIONS, conventions),
+        create: (body) => api.post(CONVENTIONS, body),
+        edit: (id, body) => api.put(`${CONVENTIONS}/${id}`, body),
+        remove: (id) => api.del(`${CONVENTIONS}/${id}`),
+    };
+}
+
+const legalPages = ref([]);
+
+export function useLegalPages() {
+    return {
+        legalPages,
+        load: () => api.load(LEGAL_PAGES, legalPages),
+        save: async (kind, body) => {
+            const saved = await api.put(`${LEGAL_PAGES}/${kind}`, body);
+            legalPages.value = legalPages.value.map((page) => (page.kind === kind ? saved : page));
             return saved;
         },
     };

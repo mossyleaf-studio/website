@@ -1,0 +1,31 @@
+{% macro segments(segments) %}
+    {%- for segment in segments -%}
+        {%- if segment.href is defined -%}
+            <a href="{{ segment.href }}">{{ segment.text }}</a>
+        {%- else -%}
+            {{ segment.text }}
+        {%- endif -%}
+    {%- endfor -%}
+{% endmacro %}
+{% import _self as rich %}
+<article class="shop-prerender__sheet shop-prerender__legal">
+    <h1>{{ data.title }}</h1>
+    {% if data.updatedAt is defined and data.updatedAt %}
+        <p><time datetime="{{ data.updatedAt }}">{{ 'legal.updated'|site_t({date: data.updatedAt|date_range(data.updatedAt)}) }}</time></p>
+    {% endif %}
+    <div data-blocks>
+        {% for block in data.text|rich_blocks %}
+            {% if block.type == 'heading' %}
+                <h2>{{ rich.segments(block.segments) }}</h2>
+            {% elseif block.type == 'list' %}
+                <ul>
+                    {% for item in block.items %}
+                        <li>{{ rich.segments(item) }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>{{ rich.segments(block.segments) }}</p>
+            {% endif %}
+        {% endfor %}
+    </div>
+</article>

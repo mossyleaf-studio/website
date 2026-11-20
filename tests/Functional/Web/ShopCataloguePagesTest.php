@@ -87,7 +87,7 @@ final class ShopCataloguePagesTest extends WebTestCase
         ], $data['products']);
 
         self::assertContains(['key' => 'shop', 'url' => '/beta/fr/shop', 'current' => true], Json::array($props, 'layout', 'navigation'));
-        self::assertSame(['Boutique', 'À propos'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
+        self::assertSame(['Boutique', 'Conventions', 'À propos'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
         self::assertSame('Boutique · mossyleaf.studio', $crawler->filter('title')->text());
 
         $shop = $crawler->filter('#shop main');

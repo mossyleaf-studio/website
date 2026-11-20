@@ -6,6 +6,7 @@ namespace App\Presentation\Web\Shop;
 
 use App\Application\Catalogue\CatalogueQueries;
 use App\Application\Content\ContentQueries;
+use App\Application\Content\ConventionQueries;
 use App\Domain\Content\SiteText;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +27,7 @@ final readonly class ShopHomeController
         private CatalogueQueries $catalogue,
         private CatalogueProps $props,
         private ShopPage $page,
+        private ConventionQueries $conventions,
     ) {
     }
 
@@ -38,6 +40,7 @@ final readonly class ShopHomeController
         $locale = ShopUrls::locale($request);
         $content = $this->queries->shop($preview);
         $products = $this->catalogue->shop($preview);
+        $nextConvention = $this->conventions->upcoming()[0] ?? null;
 
         return $this->page->render($request, $preview, $content, [
             'page' => 'home',
@@ -51,6 +54,7 @@ final readonly class ShopHomeController
                 'url' => $this->urls->to('shop_about', $locale, $preview),
             ],
             ...([] === $products ? [] : ['categories' => $this->props->tiles($products, $locale, $preview)]),
+            ...(null === $nextConvention ? [] : ['nextConvention' => LocalizedConvention::of($nextConvention, $locale)]),
         ]);
     }
 }

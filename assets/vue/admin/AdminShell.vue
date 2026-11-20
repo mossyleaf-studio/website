@@ -1,5 +1,5 @@
 <script setup>
-import { ExternalLink, Image, Link2, LogOut, Package, Type } from '@lucide/vue';
+import { CalendarDays, ExternalLink, Image, Scale, Link2, LogOut, Package, Type } from '@lucide/vue';
 import { ConfigProvider, TooltipProvider } from 'reka-ui';
 import { nextTick, useTemplateRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -27,7 +27,10 @@ watch(
 const GROUPS = [
     {
         name: 'shop',
-        sections: [{ name: 'products', icon: Package }],
+        sections: [
+            { name: 'products', icon: Package },
+            { name: 'conventions', icon: CalendarDays },
+        ],
     },
     {
         name: 'site',
@@ -35,6 +38,7 @@ const GROUPS = [
             { name: 'texts', icon: Type },
             { name: 'links', icon: Link2 },
             { name: 'images', icon: Image },
+            { name: 'legal', icon: Scale },
         ],
     },
 ];

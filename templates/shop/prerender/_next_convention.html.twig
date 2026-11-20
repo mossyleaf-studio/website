@@ -1,0 +1,4 @@
+<section class="shop-prerender__teaser" aria-label="{{ 'conventions.next'|site_t }}" data-next-convention>
+    {% include 'shop/prerender/_convention.html.twig' with {convention: data.nextConvention, label: 'conventions.next'|site_t} %}
+    <p class="shop-prerender__actions"><a href="{{ (layout.navigation|filter(entry => entry.key == 'conventions')|first).url }}">{{ 'conventions.all'|site_t }}</a></p>
+</section>

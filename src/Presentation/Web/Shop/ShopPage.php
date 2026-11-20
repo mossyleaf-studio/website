@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Shop;
 
 use App\Application\Content\ShopContentView;
+use App\Application\Content\ShopLegalPageView;
 use App\Application\Content\ShopLinkView;
 use App\Domain\Shared\Locale;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +15,7 @@ use Twig\Environment;
 final readonly class ShopPage
 {
     public const int SAFE_IN_HTML = \JSON_HEX_TAG | \JSON_HEX_AMP | \JSON_HEX_APOS | \JSON_HEX_QUOT | \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES;
-    private const array NAVIGATION = ['home' => 'shop_home', 'shop' => 'shop_listing', 'about' => 'shop_about'];
+    private const array NAVIGATION = ['home' => 'shop_home', 'shop' => 'shop_listing', 'conventions' => 'shop_conventions', 'about' => 'shop_about'];
     private const array OPEN_GRAPH_LOCALES = ['en' => 'en_GB', 'fr' => 'fr_FR'];
 
     public function __construct(
@@ -81,6 +82,10 @@ final readonly class ShopPage
                     static fn (ShopLinkView $link): array => ['id' => $link->id, 'title' => $link->title->in($locale), 'url' => $link->url],
                     $content->links,
                 ),
+                'legal' => array_values(array_map(
+                    fn (ShopLegalPageView $page): array => ['kind' => $page->kind, 'url' => $this->urls->to('shop_legal', $locale, $preview, ['kind' => $page->kind])],
+                    array_filter($content->legal, static fn (ShopLegalPageView $page): bool => '' !== $page->text->in($locale)),
+                )),
             ],
             'fonts' => ['heading' => $content->headingFont, 'body' => $content->bodyFont],
         ];

@@ -1,5 +1,5 @@
 shared:
-    not_found: '{subject, select, link {Ce lien n’existe} artwork {Cette image n’existe} user {Ce compte n’existe} product {Ce produit n’existe} photo {Cette photo n’existe} category {Cette catégorie n’existe} other {Cet élément n’existe}} plus.'
+    not_found: '{subject, select, link {Ce lien n’existe} artwork {Cette image n’existe} user {Ce compte n’existe} product {Ce produit n’existe} photo {Cette photo n’existe} category {Cette catégorie n’existe} convention {Cette convention n’existe} other {Cet élément n’existe}} plus.'
 user:
     invalid_email: '« {email} » n’est pas une adresse email valide.'
     email_taken: 'Un compte utilise déjà {email}.'
@@ -15,6 +15,7 @@ content:
     unknown_font: 'Google Fonts n’a pas de police nommée « {family} » : copiez son nom depuis fonts.google.com.'
     font_without_latin: '« {family} » n’a pas de lettres latines, elle ne peut pas écrire les textes du site.'
     fonts_unreachable: 'Google Fonts ne répond pas, réessayez dans un instant.'
+    convention_ends_before_start: 'Une convention ne peut pas finir avant de commencer.'
 catalogue:
     too_large: '{subject, select, products {Un catalogue contient {max} produits au maximum.} megabytes {Un catalogue pèse {max} Mo au maximum.} other {Un produit contient {max} variantes au maximum.}}'
     product_refused: 'Le produit « {reference} » est refusé : {field, select, price {son prix est négatif} stock {un stock est négatif} other {{field, select, product_reference {sa référence} product_name {son nom} product_display_name {son nom affiché} category_name {sa catégorie} sku {un SKU} other {un nom de variante}} {max, plural, =0 {est vide} other {dépasse # caractères}}}}.'

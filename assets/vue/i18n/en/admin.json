@@ -10,7 +10,9 @@
             "shop": "Shop",
             "site": "Site"
         },
-        "products": "Products"
+        "products": "Products",
+        "conventions": "Conventions",
+        "legal": "Legal pages"
     },
     "count": "{count} / {max}",
     "saved": "Saved.",
@@ -37,7 +39,8 @@
         "confirmNoteTitle": "Show the growing note?",
         "confirmNote": "Visitors will see the “still growing” note instead of the full page, with the texts of the draft.",
         "fullDone": "Published: visitors see the full page.",
-        "noteDone": "Published: visitors see the growing note."
+        "noteDone": "Published: visitors see the growing note.",
+        "scope": "Texts, links, images and legal pages wait for “Publish”; products and conventions are live at once."
     },
     "moveUp": "Move up",
     "moveDown": "Move down",
@@ -235,5 +238,45 @@
         "emptyDetail": "Categories appear once mossytrunk pushes its catalogue.",
         "save": "Save the names"
     },
-    "retry": "Try again"
+    "retry": "Try again",
+    "conventions": {
+        "title": "Conventions",
+        "subtitle": "Where the studio will be. Changes show in the shop at once, no need to publish.",
+        "add": "Add a convention",
+        "edit": "Edit {name}",
+        "editTitle": "Edit the convention",
+        "newTitle": "New convention",
+        "delete": "Delete {name}",
+        "deleteMessage": "“{name}” will disappear from the shop at once.",
+        "deleted": "Convention deleted.",
+        "upcoming": "Upcoming",
+        "past": "Past",
+        "empty": "No convention yet",
+        "emptyHint": "Add the next one so visitors know where to find the studio.",
+        "urlHint": "Optional, must start with https://.",
+        "fields": {
+            "name": "Name",
+            "place": "Place",
+            "startsOn": "First day",
+            "endsOn": "Last day",
+            "url": "Website",
+            "note": "Note"
+        }
+    },
+    "legal": {
+        "title": "Legal pages",
+        "subtitle": "Terms, notices and policies shown in the shop footer. Waits for “Publish” like the texts.",
+        "pages": "Legal pages",
+        "kinds": {
+            "terms": "Terms of sale",
+            "legal-notice": "Legal notice",
+            "privacy": "Privacy",
+            "shipping-returns": "Shipping and returns"
+        },
+        "hidden": "Empty: not shown in the shop",
+        "changed": "Last changed {when}",
+        "neverChanged": "Never written",
+        "preview": "Preview in the shop",
+        "hint": "Blocks: start a line with “## ” for a heading, with “- ” for a list item, leave a blank line between paragraphs, and write [label](https://…) for a link."
+    }
 }

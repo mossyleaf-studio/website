@@ -13,7 +13,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../../components/ui/BaseButton.vue';
 import { useToast } from '../../composables/useToast.js';
-import { intlLocale } from '../../i18n/locale.js';
+import { dateFormat } from '../../i18n/locale.js';
 import { usePublication } from '../useContent.js';
 
 const { t } = useI18n();
@@ -28,7 +28,7 @@ const status = computed(() => {
     const current = publication.value;
     if (!current?.publishedAt) return t('admin.publish.never');
 
-    const when = new Intl.DateTimeFormat(intlLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(current.publishedAt));
+    const when = dateFormat({ dateStyle: 'medium', timeStyle: 'short' }).format(new Date(current.publishedAt));
     return t(current.page === 'note' ? 'admin.publish.noteSince' : 'admin.publish.fullSince', { when, by: current.publishedBy });
 });
 
@@ -48,6 +48,7 @@ async function confirm() {
             <p class="publish-bar__changes">
                 {{ publication.pendingChanges ? t('admin.publish.pending') : t('admin.publish.upToDate') }}
             </p>
+            <p class="publish-bar__changes" data-test="publish-scope">{{ t('admin.publish.scope') }}</p>
         </div>
         <div class="publish-bar__actions">
             <a class="publish-bar__preview" href="/beta/" target="_blank" rel="noopener"><Eye size="0.95rem" aria-hidden="true" />{{ t('admin.publish.preview') }}</a>

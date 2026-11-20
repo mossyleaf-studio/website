@@ -42,6 +42,15 @@
                 </ul>
             </nav>
         {% endif %}
+        {% if layout.footer.legal is not empty %}
+            <nav aria-label="{{ 'legal.footer'|site_t }}" data-legal>
+                <ul>
+                    {% for page in layout.footer.legal %}
+                        <li><a href="{{ page.url }}">{{ ('legal.title.' ~ page.kind)|site_t }}</a></li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        {% endif %}
         {% include 'shop/prerender/_languages.html.twig' with {landmark: false} %}
         <p>{{ 'footer.copyright'|site_t({year: 'now'|date('Y'), studio: layout.studioName}) }}</p>
     </footer>

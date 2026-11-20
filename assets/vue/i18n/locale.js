@@ -13,3 +13,7 @@ export function currentLanguage() {
 export function intlLocale() {
     return LANGUAGES.find((known) => known.value === currentLanguage()).intl;
 }
+
+export function dateFormat(options) {
+    return new Intl.DateTimeFormat(intlLocale(), options);
+}

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Content;
 
 use App\Domain\Content\ArtworkRepository;
+use App\Domain\Content\LegalPageRepository;
 use App\Domain\Content\LinkRepository;
 use App\Domain\Content\PublicPage;
 use App\Domain\Content\PublishedSiteRepository;
@@ -18,6 +19,7 @@ final readonly class ContentQueries
         private ArtworkRepository $artworks,
         private PublishedSiteRepository $published,
         private SiteSnapshots $snapshots,
+        private LegalPageRepository $legalPages,
     ) {
     }
 
@@ -41,7 +43,7 @@ final readonly class ContentQueries
     public function shop(bool $draft): ShopContentView
     {
         if ($draft) {
-            return ShopContentView::of($this->texts->current(), $this->links->all(), $this->artworks->all());
+            return ShopContentView::of($this->texts->current(), $this->links->all(), $this->artworks->all(), $this->legalPages->all());
         }
         $frozen = $this->published->current()?->shopContent();
 
@@ -68,5 +70,11 @@ final readonly class ContentQueries
     public function artworks(): array
     {
         return DraftArtworkView::list($this->artworks->all());
+    }
+
+    /** @return list<LegalPageView> */
+    public function legalPages(): array
+    {
+        return array_map(LegalPageView::of(...), $this->legalPages->all());
     }
 }

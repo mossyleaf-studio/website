@@ -6,14 +6,16 @@ namespace App\Application\Content;
 
 use App\Domain\Content\Artwork;
 use App\Domain\Content\FontRole;
+use App\Domain\Content\LegalPage;
 use App\Domain\Content\Link;
 use App\Domain\Content\SiteText;
 
 final readonly class ShopContentView
 {
     /**
-     * @param list<ShopLinkView>    $links
-     * @param list<ShopArtworkView> $artworks
+     * @param list<ShopLinkView>      $links
+     * @param list<ShopArtworkView>   $artworks
+     * @param list<ShopLegalPageView> $legal
      */
     public function __construct(
         public string $studioName = '',
@@ -30,14 +32,16 @@ final readonly class ShopContentView
         public ?ImageView $logo = null,
         public ?TypefaceView $headingFont = null,
         public ?TypefaceView $bodyFont = null,
+        public array $legal = [],
     ) {
     }
 
     /**
-     * @param list<Link>    $links
-     * @param list<Artwork> $artworks
+     * @param list<Link>      $links
+     * @param list<Artwork>   $artworks
+     * @param list<LegalPage> $legal
      */
-    public static function of(SiteText $text, array $links, array $artworks): self
+    public static function of(SiteText $text, array $links, array $artworks, array $legal = []): self
     {
         return new self(
             $text->studioName(),
@@ -54,6 +58,7 @@ final readonly class ShopContentView
             ImageView::ofLogo($text->logo()),
             TypefaceView::of($text->font(FontRole::Heading)),
             TypefaceView::of($text->font(FontRole::Body)),
+            array_map(ShopLegalPageView::of(...), $legal),
         );
     }
 }
