@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Content;
 
 use App\Domain\Content\Artwork;
-use App\Domain\Content\Exception\TextTooLong;
+use App\Domain\Shared\Exception\TextTooLong;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 

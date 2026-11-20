@@ -5,13 +5,20 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Catalogue;
 
 use App\Domain\Catalogue\Category;
+use App\Domain\Catalogue\Exception\InvalidSlug;
 use App\Domain\Catalogue\Exception\NegativeAmount;
+use App\Domain\Catalogue\Exception\ProductRetired;
+use App\Domain\Catalogue\PhotoFile;
 use App\Domain\Catalogue\Product;
+use App\Domain\Catalogue\ProductPhoto;
 use App\Domain\Catalogue\ProductVariant;
-use App\Domain\Content\Exception\EmptyText;
-use App\Domain\Content\Exception\TextTooLong;
+use App\Domain\Shared\Exception\EmptyText;
+use App\Domain\Shared\Exception\NotFound;
+use App\Domain\Shared\Exception\OrderMismatch;
+use App\Domain\Shared\Exception\TextTooLong;
 use App\Domain\Shared\Locale;
 use App\Domain\Shared\Translation;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
@@ -129,9 +136,120 @@ final class ProductTest extends TestCase
         self::product()->describe(Translation::of('Fox', str_repeat('é', Product::MAX_TITLE + 1)), Translation::none());
     }
 
+    public function testAProductIsShownAndHidden(): void
+    {
+        $product = self::product();
+
+        $product->show();
+        self::assertTrue($product->isVisible());
+
+        $product->hide();
+        self::assertFalse($product->isVisible());
+    }
+
+    public function testARetiredProductCannotBeShown(): void
+    {
+        $product = self::product();
+        $product->retire(new \DateTimeImmutable('2026-11-20 10:00'));
+
+        $this->expectException(ProductRetired::class);
+
+        $product->show();
+    }
+
+    public function testTheSlugIsEdited(): void
+    {
+        $product = self::product();
+
+        $product->useSlug(' fox-print-2 ');
+
+        self::assertSame('fox-print-2', $product->slug());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function invalidSlugs(): iterable
+    {
+        yield 'empty' => [' '];
+        yield 'capitals' => ['Fox-print'];
+        yield 'spaces' => ['fox print'];
+        yield 'accents' => ['affiche-renard-é'];
+        yield 'a leading dash' => ['-fox'];
+        yield 'two dashes in a row' => ['fox--print'];
+        yield 'longer than its limit' => [str_repeat('a', Product::MAX_SLUG + 1)];
+    }
+
+    #[DataProvider('invalidSlugs')]
+    public function testAnInvalidSlugIsRefused(string $slug): void
+    {
+        $this->expectException(InvalidSlug::class);
+
+        self::product()->useSlug($slug);
+    }
+
+    public function testADescriptionLongerThanItsLimitIsRefused(): void
+    {
+        $this->expectException(TextTooLong::class);
+
+        self::product()->describe(Translation::none(), Translation::of(str_repeat('a', Product::MAX_DESCRIPTION + 1), ''));
+    }
+
+    public function testPhotosAreAddedAfterTheLastOne(): void
+    {
+        $product = self::product();
+        $first = self::photo($product);
+        $second = self::photo($product);
+        $product->removePhoto($first->id());
+
+        $third = self::photo($product);
+
+        self::assertSame([$second, $third], $product->photos());
+        self::assertSame([1, 2], array_map(static fn (ProductPhoto $photo): int => $photo->position(), $product->photos()));
+        self::assertSame(['full.webp', 1600, 1200, 'thumb.webp', 600, 450], [$third->file(), $third->width(), $third->height(), $third->thumbFile(), $third->thumbWidth(), $third->thumbHeight()]);
+    }
+
+    public function testPhotosAreReordered(): void
+    {
+        $product = self::product();
+        $first = self::photo($product);
+        $second = self::photo($product);
+
+        $product->reorderPhotos([(string) $second->id(), (string) $first->id()]);
+
+        self::assertSame([$second, $first], $product->photos());
+    }
+
+    public function testAPhotoOfAnotherProductCannotBeRemoved(): void
+    {
+        $product = self::product();
+        self::photo($product);
+        $other = self::photo(self::product());
+
+        $this->expectException(NotFound::class);
+
+        $product->removePhoto($other->id());
+    }
+
+    public function testPhotosCannotBeReorderedWithAPhotoOfAnotherProduct(): void
+    {
+        $product = self::product();
+        $photo = self::photo($product);
+        $other = self::photo(self::product());
+
+        $this->expectException(OrderMismatch::class);
+
+        $product->reorderPhotos([(string) $photo->id(), (string) $other->id()]);
+    }
+
     public function testACategoryWithoutLabelShowsItsMossytrunkName(): void
     {
         self::assertSame('Prints', Category::named('Prints', 0)->labelIn(Locale::Fr));
+    }
+
+    private static function photo(Product $product): ProductPhoto
+    {
+        return $product->addPhoto(new Ulid(), new PhotoFile('full.webp', 1600, 1200), new PhotoFile('thumb.webp', 600, 450));
     }
 
     private static function product(): Product

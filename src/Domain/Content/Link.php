@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Domain\Content;
 
-use App\Domain\Content\Exception\EmptyText;
 use App\Domain\Content\Exception\InvalidLinkUrl;
-use App\Domain\Content\Exception\TextTooLong;
+use App\Domain\Shared\Exception\EmptyText;
+use App\Domain\Shared\Exception\TextTooLong;
+use App\Domain\Shared\Orderable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'link')]
-class Link
+class Link implements Orderable
 {
     public const int MAX_TITLE = 60;
     public const int MAX_DESCRIPTION = 120;

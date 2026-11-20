@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Catalogue;
 
 use App\Domain\Catalogue\Exception\NegativeAmount;
-use App\Domain\Content\Exception\EmptyText;
-use App\Domain\Content\Exception\TextTooLong;
+use App\Domain\Shared\Exception\EmptyText;
+use App\Domain\Shared\Exception\TextTooLong;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;

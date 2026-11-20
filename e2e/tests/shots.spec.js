@@ -10,7 +10,7 @@ const SHOP = {
     'shop-about-en': '/beta/en/about',
     'shop-not-found': '/beta/fr/no-such-page',
 };
-const ADMIN = { texts: '/admin/texts', links: '/admin/links', images: '/admin/images' };
+const ADMIN = { texts: '/admin/texts', links: '/admin/links', images: '/admin/images', products: '/admin/products' };
 
 async function send(request, method, url, data) {
     const response = await request.fetch(url, { method, data });
@@ -57,6 +57,11 @@ test('screenshots of the site and the admin', async ({ page }) => {
             await page.waitForLoadState('networkidle');
             await page.screenshot({ path: `shots/${name}-${size}.png`, fullPage: true });
         }
+        await page.goto('/admin/products');
+        await page.getByTestId('product-edit').first().click();
+        await expect(page.getByTestId('product-editor')).toBeVisible();
+        await page.waitForLoadState('networkidle');
+        await page.screenshot({ path: `shots/admin-product-editor-${size}.png`, fullPage: true, animations: 'disabled' });
         await page.goto('/admin/links');
         await page.getByTestId('link-row').first().getByRole('button', { name: 'Edit' }).click();
         await expect(page.getByTestId('link-editor')).toBeVisible();

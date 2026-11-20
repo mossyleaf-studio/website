@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Content;
 
 use App\Domain\Content\Exception\InvalidLinkUrl;
-use App\Domain\Content\Exception\TextTooLong;
 use App\Domain\Content\Link;
 use App\Domain\Content\TapeTone;
+use App\Domain\Shared\Exception\TextTooLong;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

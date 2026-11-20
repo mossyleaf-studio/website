@@ -12,4 +12,8 @@ export const LIMITS = {
     linkDescription: 120,
     linkUrl: 500,
     alt: 200,
+    productTitle: 120,
+    productDescription: 4000,
+    productSlug: 80,
+    categoryLabel: 60,
 };

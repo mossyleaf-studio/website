@@ -11,6 +11,13 @@ export const router = createRouter({
         { path: '/texts', name: 'texts', component: TextsPage },
         { path: '/links', name: 'links', component: LinksPage },
         { path: '/images', name: 'images', component: ImagesPage },
+        {
+            path: '/products',
+            children: [
+                { path: '', name: 'products', component: () => import('./pages/ProductsPage.vue') },
+                { path: ':id', name: 'product', component: () => import('./pages/ProductPage.vue'), props: true },
+            ],
+        },
         { path: '/:path(.*)*', name: 'not-found', component: NotFoundPage },
     ],
 });

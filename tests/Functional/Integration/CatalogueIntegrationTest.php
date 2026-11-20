@@ -9,7 +9,9 @@ use App\Application\Catalogue\ReplaceCatalogue\PushedVariant;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogue;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogueHandler;
 use App\Domain\Catalogue\Exception\ProductRefused;
+use App\Domain\Catalogue\PhotoFile;
 use App\Domain\Catalogue\Product;
+use App\Domain\Catalogue\ProductPhoto;
 use App\Domain\Catalogue\ProductVariant;
 use App\Domain\Shared\Locale;
 use App\Domain\Shared\Translation;
@@ -156,6 +158,8 @@ final class CatalogueIntegrationTest extends WebTestCase
         $fox->describe(Translation::of('Fox print', 'Affiche renard'), Translation::of('A fox among ferns.', 'Un renard dans les fougères.'));
         $fox->show();
         $fox->moveTo(5);
+        $fox->useSlug('fox-print');
+        $photo = $fox->addPhoto(new Ulid(), new PhotoFile('01JD3K7Q0000000000000000P0.webp', 1600, 1200), new PhotoFile('01JD3K7Q0000000000000000P1.webp', 600, 450));
         self::entityManager()->flush();
 
         self::push($client, [
@@ -172,8 +176,9 @@ final class CatalogueIntegrationTest extends WebTestCase
         $fox = self::product(self::FOX);
         self::assertSame(['STK-FOX', 'Sleeping fox', 'Stickers Sleeping fox', 400, 'Stickers'], [$fox->reference(), $fox->name(), $fox->displayName(), $fox->price(), $fox->category()->name()]);
         self::assertSame([['PRT-FOX-A5', 'A5', 7], ['STK-FOX-A3', 'A3', 2]], self::variants($fox));
-        self::assertSame(['prints-fox', 'Affiche renard', 'A fox among ferns.', 5], [$fox->slug(), $fox->title()->in(Locale::Fr), $fox->description()->in(Locale::En), $fox->position()]);
+        self::assertSame(['fox-print', 'Affiche renard', 'A fox among ferns.', 5], [$fox->slug(), $fox->title()->in(Locale::Fr), $fox->description()->in(Locale::En), $fox->position()]);
         self::assertTrue($fox->isVisible());
+        self::assertSame([[(string) $photo->id(), '01JD3K7Q0000000000000000P0.webp', '01JD3K7Q0000000000000000P1.webp']], array_map(static fn (ProductPhoto $kept): array => [(string) $kept->id(), $kept->file(), $kept->thumbFile()], $fox->photos()));
         self::assertSame(2, self::rows('category'));
     }
 

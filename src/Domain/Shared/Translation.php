@@ -12,9 +12,9 @@ final readonly class Translation
 {
     private function __construct(
         #[ORM\Column(type: Types::TEXT)]
-        private string $en,
+        public string $en,
         #[ORM\Column(type: Types::TEXT)]
-        private string $fr,
+        public string $fr,
     ) {
     }
 

@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Catalogue;
 
+use App\Domain\Catalogue\Exception\InvalidSlug;
 use App\Domain\Catalogue\Exception\NegativeAmount;
-use App\Domain\Content\Exception\EmptyText;
-use App\Domain\Content\Exception\TextTooLong;
+use App\Domain\Catalogue\Exception\ProductRetired;
+use App\Domain\Shared\Exception\EmptyText;
+use App\Domain\Shared\Exception\NotFound;
+use App\Domain\Shared\Exception\TextTooLong;
+use App\Domain\Shared\Orderable;
+use App\Domain\Shared\Ordering;
 use App\Domain\Shared\Translation;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -16,7 +21,7 @@ use Symfony\Component\Uid\Ulid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product')]
-class Product
+class Product implements Orderable
 {
     public const int MAX_REFERENCE = 64;
     public const int MAX_NAME = 255;
@@ -25,6 +30,7 @@ class Product
     public const int MAX_SLUG = 80;
     public const int MAX_TITLE = 120;
     public const int MAX_DESCRIPTION = 4000;
+    private const string SLUG_PATTERN = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
 
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
@@ -71,6 +77,10 @@ class Product
     #[ORM\OneToMany(targetEntity: ProductVariant::class, mappedBy: 'product', cascade: ['persist'], orphanRemoval: true)]
     private Collection $variants;
 
+    /** @var Collection<int, ProductPhoto> */
+    #[ORM\OneToMany(targetEntity: ProductPhoto::class, mappedBy: 'product', cascade: ['persist'], orphanRemoval: true)]
+    private Collection $photos;
+
     private function __construct(Ulid $sourceId, string $slug, int $position)
     {
         $this->id = new Ulid();
@@ -80,6 +90,7 @@ class Product
         $this->description = Translation::none();
         $this->position = $position;
         $this->variants = new ArrayCollection();
+        $this->photos = new ArrayCollection();
     }
 
     public static function pushed(Ulid $sourceId, string $reference, string $name, string $displayName, Category $category, int $price, string $slug, int $position): self
@@ -149,9 +160,51 @@ class Product
         $this->description = $description;
     }
 
+    public function useSlug(string $slug): void
+    {
+        $slug = trim($slug);
+        if (mb_strlen($slug) > self::MAX_SLUG || 1 !== preg_match(self::SLUG_PATTERN, $slug)) {
+            throw new InvalidSlug(self::MAX_SLUG);
+        }
+
+        $this->slug = $slug;
+    }
+
     public function show(): void
     {
+        if ($this->isRetired()) {
+            throw new ProductRetired($this->reference);
+        }
+
         $this->visible = true;
+    }
+
+    public function hide(): void
+    {
+        $this->visible = false;
+    }
+
+    public function addPhoto(Ulid $id, PhotoFile $full, PhotoFile $thumb): ProductPhoto
+    {
+        $last = array_last($this->photos());
+        $photo = new ProductPhoto($this, $id, $full, $thumb, null === $last ? 0 : $last->position() + 1);
+        $this->photos->add($photo);
+
+        return $photo;
+    }
+
+    public function removePhoto(Ulid $id): void
+    {
+        $photo = $this->photos->findFirst(static fn (int $key, ProductPhoto $photo): bool => $photo->id()->equals($id)) ?? throw new NotFound('photo', (string) $id);
+        $this->photos->removeElement($photo);
+    }
+
+    /**
+     * @param list<string> $orderedIds
+     */
+    public function reorderPhotos(array $orderedIds): void
+    {
+        Ordering::apply($this->photos(), $orderedIds);
     }
 
     public function moveTo(int $position): void
@@ -238,6 +291,17 @@ class Product
         usort($variants, static fn (ProductVariant $a, ProductVariant $b): int => $a->position() <=> $b->position());
 
         return $variants;
+    }
+
+    /**
+     * @return list<ProductPhoto>
+     */
+    public function photos(): array
+    {
+        $photos = array_values($this->photos->toArray());
+        usort($photos, static fn (ProductPhoto $a, ProductPhoto $b): int => $a->position() <=> $b->position());
+
+        return $photos;
     }
 
     private static function text(string $field, string $value, int $max): string

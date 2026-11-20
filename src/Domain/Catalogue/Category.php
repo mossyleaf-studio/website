@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Catalogue;
 
-use App\Domain\Content\Exception\EmptyText;
-use App\Domain\Content\Exception\TextTooLong;
+use App\Domain\Shared\Exception\EmptyText;
+use App\Domain\Shared\Exception\TextTooLong;
 use App\Domain\Shared\Locale;
+use App\Domain\Shared\Orderable;
 use App\Domain\Shared\Translation;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -14,9 +15,10 @@ use Symfony\Component\Uid\Ulid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'category')]
-class Category
+class Category implements Orderable
 {
     public const int MAX_NAME = 100;
+    public const int MAX_LABEL = 60;
 
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
@@ -50,6 +52,20 @@ class Category
         }
 
         return new self($name, $position);
+    }
+
+    public function relabel(Translation $label): void
+    {
+        if ($label->exceeds(self::MAX_LABEL)) {
+            throw new TextTooLong('category_label', self::MAX_LABEL);
+        }
+
+        $this->label = $label;
+    }
+
+    public function moveTo(int $position): void
+    {
+        $this->position = $position;
     }
 
     public function id(): Ulid

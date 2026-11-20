@@ -2,18 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Content;
+namespace App\Domain\Shared;
 
-use App\Domain\Content\Exception\OrderMismatch;
+use App\Domain\Shared\Exception\OrderMismatch;
 use Symfony\Component\Uid\Ulid;
 
 final class Ordering
 {
     /**
-     * @template T of Link|Artwork
-     *
-     * @param list<T>      $items
-     * @param list<string> $orderedIds
+     * @param list<Orderable> $items
+     * @param list<string>    $orderedIds
      */
     public static function apply(array $items, array $orderedIds): void
     {

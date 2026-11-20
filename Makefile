@@ -87,8 +87,8 @@ e2e-run: ## Playwright against already built assets (E2E_ASSETS_DIR, default bui
 	$(EXEC) php-e2e php bin/console doctrine:database:drop --force --if-exists --env=test
 	$(EXEC) php-e2e php bin/console doctrine:database:create --env=test
 	$(EXEC) php-e2e php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=test
-	$(EXEC) php-e2e php bin/console doctrine:fixtures:load --no-interaction --env=test
 	$(EXEC) php-e2e rm -rf var/share/e2e
+	$(EXEC) php-e2e php bin/console doctrine:fixtures:load --no-interaction --env=test
 	$(DC) --profile e2e run $(NO_TTY) --rm playwright sh -c "npm ci --no-audit --no-fund && ./node_modules/.bin/playwright test $(PLAYWRIGHT_ARGS)"
 
 shots: ## Screenshot the public pages and the admin at phone and desktop widths into e2e/shots/

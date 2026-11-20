@@ -8,7 +8,7 @@ use App\Application\Content\DraftArtworkView;
 use App\Application\Transaction;
 use App\Domain\Content\Artwork;
 use App\Domain\Content\ArtworkRepository;
-use App\Domain\Content\Ordering;
+use App\Domain\Shared\Ordering;
 
 final readonly class ReorderArtworksHandler
 {

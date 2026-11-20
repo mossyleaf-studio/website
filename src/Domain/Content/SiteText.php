@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Content;
 
-use App\Domain\Content\Exception\EmptyText;
-use App\Domain\Content\Exception\TextTooLong;
+use App\Domain\Shared\Exception\EmptyText;
+use App\Domain\Shared\Exception\TextTooLong;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]

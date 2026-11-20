@@ -8,7 +8,7 @@ use App\Application\Content\DraftLinkView;
 use App\Application\Transaction;
 use App\Domain\Content\Link;
 use App\Domain\Content\LinkRepository;
-use App\Domain\Content\Ordering;
+use App\Domain\Shared\Ordering;
 
 final readonly class ReorderLinksHandler
 {

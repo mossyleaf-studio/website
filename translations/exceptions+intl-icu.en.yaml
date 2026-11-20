@@ -1,5 +1,5 @@
 shared:
-    not_found: 'This {subject, select, link {link} artwork {image} user {account} other {item}} no longer exists.'
+    not_found: 'This {subject, select, link {link} artwork {image} user {account} product {product} photo {photo} category {category} other {item}} no longer exists.'
 user:
     invalid_email: '“{email}” is not a valid email address.'
     email_taken: 'An account already uses {email}.'
@@ -21,3 +21,6 @@ catalogue:
     empty: 'The catalogue is empty: send at least one product, an empty list would retire the whole shop.'
     duplicate_entry: '{field, select, id {The product {value} is sent twice.} reference {The reference “{value}” is sent for two products.} other {The SKU “{value}” is sent twice.}}'
     negative_amount: '{field, select, price {A price cannot be negative.} other {A stock cannot be negative.}}'
+    invalid_slug: 'The address of a product is written in lowercase letters, digits and single dashes, {max} characters at most, such as “fox-print”.'
+    slug_taken: 'Another product already uses the address “{slug}”.'
+    product_retired: 'The product “{reference}” is no longer in the mossytrunk catalogue, so it cannot be shown.'

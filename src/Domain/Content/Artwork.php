@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Content;
 
-use App\Domain\Content\Exception\TextTooLong;
+use App\Domain\Shared\Exception\TextTooLong;
+use App\Domain\Shared\Orderable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -12,7 +13,7 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\Entity]
 #[ORM\Table(name: 'artwork')]
 #[ORM\Index(name: 'artwork_featured', columns: ['featured'])]
-class Artwork
+class Artwork implements Orderable
 {
     public const int MAX_ALT = 200;
 

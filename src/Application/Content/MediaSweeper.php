@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Content;
 
+use App\Domain\Catalogue\ProductRepository;
 use App\Domain\Content\Artwork;
 use App\Domain\Content\ArtworkRepository;
 use App\Domain\Content\FontRole;
@@ -18,6 +19,7 @@ final readonly class MediaSweeper
         private PublishedSiteRepository $published,
         private ArtworkStorage $storage,
         private FontStorage $fonts,
+        private ProductRepository $products,
     ) {
     }
 
@@ -35,7 +37,7 @@ final readonly class MediaSweeper
 
     public function sweep(): void
     {
-        $kept = [...$this->draftFiles(), ...($this->published->current()?->files() ?? [])];
+        $kept = [...$this->draftFiles(), ...($this->published->current()?->files() ?? []), ...$this->products->photoFiles()];
 
         foreach (array_diff($this->storage->files(), $kept) as $file) {
             $this->storage->delete($file);

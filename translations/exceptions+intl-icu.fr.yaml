@@ -1,5 +1,5 @@
 shared:
-    not_found: '{subject, select, link {Ce lien n’existe} artwork {Cette image n’existe} user {Ce compte n’existe} other {Cet élément n’existe}} plus.'
+    not_found: '{subject, select, link {Ce lien n’existe} artwork {Cette image n’existe} user {Ce compte n’existe} product {Ce produit n’existe} photo {Cette photo n’existe} category {Cette catégorie n’existe} other {Cet élément n’existe}} plus.'
 user:
     invalid_email: '« {email} » n’est pas une adresse email valide.'
     email_taken: 'Un compte utilise déjà {email}.'
@@ -21,3 +21,6 @@ catalogue:
     empty: 'Le catalogue est vide : envoyez au moins un produit, une liste vide retirerait toute la boutique.'
     duplicate_entry: '{field, select, id {Le produit {value} est envoyé deux fois.} reference {La référence « {value} » est envoyée pour deux produits.} other {Le SKU « {value} » est envoyé deux fois.}}'
     negative_amount: '{field, select, price {Un prix ne peut pas être négatif.} other {Un stock ne peut pas être négatif.}}'
+    invalid_slug: 'L’adresse d’un produit s’écrit en minuscules sans accents, chiffres et tirets simples, {max} caractères au maximum, par exemple « affiche-renard ».'
+    slug_taken: 'Un autre produit utilise déjà l’adresse « {slug} ».'
+    product_retired: 'Le produit « {reference} » n’est plus dans le catalogue de mossytrunk, il ne peut pas être affiché.'

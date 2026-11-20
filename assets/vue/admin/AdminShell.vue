@@ -1,6 +1,8 @@
 <script setup>
-import { ExternalLink, Image, Link2, LogOut, Type } from '@lucide/vue';
+import { ExternalLink, Image, Link2, LogOut, Package, Type } from '@lucide/vue';
 import { ConfigProvider, TooltipProvider } from 'reka-ui';
+import { nextTick, useTemplateRef, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import ToastHost from '../components/ui/ToastHost.vue';
 import PublishBar from './components/PublishBar.vue';
@@ -10,7 +12,23 @@ import { intlLocale } from '../i18n/locale.js';
 const { t } = useI18n();
 const session = useSession();
 
+const rail = useTemplateRef('rail');
+const route = useRoute();
+
+watch(
+    () => route.name,
+    async () => {
+        await nextTick();
+        rail.value?.querySelector('.router-link-active')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+    },
+    { immediate: true, flush: 'post' },
+);
+
 const GROUPS = [
+    {
+        name: 'shop',
+        sections: [{ name: 'products', icon: Package }],
+    },
     {
         name: 'site',
         sections: [
@@ -42,7 +60,7 @@ const GROUPS = [
             </header>
             <PublishBar />
             <div class="admin__body">
-                <nav class="admin__rail" :aria-label="t('admin.nav.label')">
+                <nav ref="rail" class="admin__rail" :aria-label="t('admin.nav.label')">
                     <div v-for="group in GROUPS" :key="group.name" class="admin__group">
                         <p :id="`admin-group-${group.name}`" class="eyebrow admin__group-name">{{ t(`admin.nav.groups.${group.name}`) }}</p>
                         <ul class="admin__sections" :aria-labelledby="`admin-group-${group.name}`">
@@ -90,23 +108,28 @@ const GROUPS = [
 
 .admin__rail {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-5);
+    gap: var(--space-2);
     padding: var(--space-3) var(--space-5);
+    overflow-x: auto;
     border-bottom: 0.0625rem solid var(--color-border);
+    scrollbar-width: thin;
 }
+
+.admin__group { display: flex; flex: 1 0 auto; }
+.admin__group + .admin__group { padding-left: var(--space-2); border-left: 0.0625rem solid var(--color-border); }
 
 .admin__group-name { display: none; }
 
 .admin__sections {
     display: flex;
+    flex: 1 0 auto;
     gap: var(--space-1);
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.admin__sections li { flex: 1; }
+.admin__sections li { flex: 1 0 auto; }
 
 .admin__tab {
     display: flex;
@@ -119,6 +142,7 @@ const GROUPS = [
     font-weight: 600;
     font-size: var(--font-size-md);
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .admin__tab:hover { color: var(--color-ink); background: var(--color-hover); }
@@ -164,9 +188,15 @@ const GROUPS = [
     .admin__rail {
         position: sticky;
         top: 4rem;
+        flex-direction: column;
+        gap: var(--space-5);
         padding: var(--space-6) var(--space-4);
+        overflow-x: visible;
         border-bottom: none;
     }
+
+    .admin__group { flex: none; flex-direction: column; }
+    .admin__group + .admin__group { padding-left: 0; border-left: none; }
 
     .admin__group-name {
         display: block;
@@ -175,6 +205,7 @@ const GROUPS = [
     }
 
     .admin__sections { flex-direction: column; }
+    .admin__sections li { flex: none; }
 
     .admin__tab { justify-content: flex-start; }
 }

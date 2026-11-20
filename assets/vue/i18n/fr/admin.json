@@ -7,8 +7,10 @@
         "site": "Site public",
         "signOut": "Se déconnecter",
         "groups": {
+            "shop": "Boutique",
             "site": "Site"
-        }
+        },
+        "products": "Produits"
     },
     "count": "{count} / {max}",
     "saved": "Enregistré.",
@@ -140,5 +142,98 @@
         "move": "Déplacer l’image",
         "empty": "Aucune image pour l’instant",
         "emptyHint": "Ajoutez quelques dessins : celui que vous mettez en avant s’affiche en haut du site."
-    }
+    },
+    "products": {
+        "title": "Produits",
+        "subtitle": "Envoyés par mossytrunk. Ajoutez ici photos, titres et descriptions, et choisissez ce que la boutique affiche. Glissez les lignes pour changer l’ordre.",
+        "search": "Rechercher un produit",
+        "searchPlaceholder": "Nom, référence ou SKU",
+        "categoryFilter": "Filtrer par catégorie",
+        "allCategories": "Toutes les catégories",
+        "categoryNames": "Noms des catégories",
+        "filtering": "Le réordonnancement est désactivé pendant une recherche ou un filtre.",
+        "empty": "Aucun produit pour l’instant",
+        "emptyHint": "Les produits apparaissent ici dès que mossytrunk envoie son catalogue.",
+        "noMatch": "Aucun produit ne correspond",
+        "noMatchHint": "Essayez un autre mot ou une autre catégorie.",
+        "stock": "{count} en stock",
+        "soldOut": "Épuisé",
+        "edit": "Modifier « {title} »",
+        "move": "Déplacer « {title} »",
+        "visible": "Afficher « {title} » dans la boutique",
+        "retired": "Retiré",
+        "retiredHint": "mossytrunk a retiré ce produit : il ne peut pas être affiché dans la boutique.",
+        "chips": {
+            "noPhoto": "Pas de photo",
+            "frenchMissing": "Français manquant"
+        },
+        "moveUp": "Monter « {title} »",
+        "moveDown": "Descendre « {title} »",
+        "moved": "« {title} » est maintenant en position {position}.",
+        "loadFailed": "Les produits n’ont pas pu être chargés"
+    },
+    "product": {
+        "back": "Tous les produits",
+        "notFound": "Produit introuvable",
+        "notFoundHint": "Il a peut-être été retiré du catalogue.",
+        "mossytrunk": {
+            "title": "Depuis mossytrunk",
+            "hint": "Ces informations viennent de mossytrunk et ne se modifient pas ici.",
+            "reference": "Référence",
+            "name": "Nom",
+            "category": "Catégorie",
+            "price": "Prix",
+            "variants": "Variantes",
+            "sku": "SKU",
+            "variant": "Variante",
+            "stock": "Stock",
+            "noVariant": "Variante unique"
+        },
+        "photos": {
+            "title": "Photos",
+            "hint": "La première photo est la couverture. Les listes de la boutique la recadrent en carré : gardez le sujet au centre.",
+            "upload": "Ajouter des photos",
+            "uploading": "Envoi de {count} photo… | Envoi de {count} photos…",
+            "uploaded": "Photo ajoutée : {file}",
+            "uploadFailed": "{file} : {error}",
+            "formats": "JPEG, PNG, WebP ou AVIF, jusqu’à 20 Mo. Les grandes photos sont réduites à 1600 pixels.",
+            "cover": "Couverture",
+            "alt": "Photo {position} de « {title} »",
+            "move": "Déplacer la photo {position}",
+            "delete": "Supprimer la photo {position}",
+            "deleteMessage": "La photo disparaîtra de la page du produit.",
+            "deleted": "Photo supprimée.",
+            "empty": "Pas encore de photo",
+            "emptyHint": "Ajoutez au moins une photo : un produit sans photo fait vide dans la boutique.",
+            "moveUp": "Monter la photo {position}",
+            "moveDown": "Descendre la photo {position}",
+            "moved": "Photo déplacée en position {position}."
+        },
+        "texts": {
+            "title": "Textes de la boutique",
+            "name": "Titre",
+            "nameHint": "Vide : la boutique affiche le nom de mossytrunk, « {name} ».",
+            "description": "Description",
+            "slug": "Adresse",
+            "slugHint": "Lettres minuscules, chiffres et tirets, par exemple renard-print. Termine l’adresse de la page du produit.",
+            "save": "Enregistrer"
+        },
+        "visibility": {
+            "title": "Visibilité",
+            "label": "Afficher dans la boutique",
+            "on": "Les visiteurs voient ce produit.",
+            "off": "Masqué dans la boutique."
+        },
+        "loadFailed": "Le produit n’a pas pu être chargé",
+        "leave": "Quitter sans enregistrer ? Vos modifications des textes de la boutique seront perdues."
+    },
+    "categories": {
+        "title": "Noms des catégories",
+        "hint": "Le nom de chaque catégorie mossytrunk dans la boutique.",
+        "emptyHint": "Vide : la boutique utilise « {name} ».",
+        "empty": "Aucune catégorie pour l’instant",
+        "emptyDetail": "Les catégories apparaissent dès que mossytrunk envoie son catalogue.",
+        "save": "Enregistrer les noms"
+    },
+    "retry": "Réessayer"
 }

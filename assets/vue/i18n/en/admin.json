@@ -7,8 +7,10 @@
         "site": "Public site",
         "signOut": "Sign out",
         "groups": {
+            "shop": "Shop",
             "site": "Site"
-        }
+        },
+        "products": "Products"
     },
     "count": "{count} / {max}",
     "saved": "Saved.",
@@ -140,5 +142,98 @@
         "move": "Move the image",
         "empty": "No image yet",
         "emptyHint": "Add a few drawings: the first one you feature appears at the top of the site."
-    }
+    },
+    "products": {
+        "title": "Products",
+        "subtitle": "Pushed by mossytrunk. Add photos, titles and descriptions here, and choose what the shop shows. Drag rows to change the order.",
+        "search": "Search products",
+        "searchPlaceholder": "Name, reference or SKU",
+        "categoryFilter": "Filter by category",
+        "allCategories": "All categories",
+        "categoryNames": "Category names",
+        "filtering": "Reordering is off while a search or filter is active.",
+        "empty": "No product yet",
+        "emptyHint": "Products appear here once mossytrunk pushes its catalogue.",
+        "noMatch": "No product matches",
+        "noMatchHint": "Try another word or another category.",
+        "stock": "{count} in stock",
+        "soldOut": "Sold out",
+        "edit": "Edit “{title}”",
+        "move": "Move “{title}”",
+        "visible": "Show “{title}” in the shop",
+        "retired": "Retired",
+        "retiredHint": "mossytrunk retired this product: it cannot be shown in the shop.",
+        "chips": {
+            "noPhoto": "No photo",
+            "frenchMissing": "French missing"
+        },
+        "moveUp": "Move “{title}” up",
+        "moveDown": "Move “{title}” down",
+        "moved": "“{title}” is now at position {position}.",
+        "loadFailed": "The products could not be loaded"
+    },
+    "product": {
+        "back": "All products",
+        "notFound": "Product not found",
+        "notFoundHint": "It may have been removed from the catalogue.",
+        "mossytrunk": {
+            "title": "From mossytrunk",
+            "hint": "These come from mossytrunk and cannot be changed here.",
+            "reference": "Reference",
+            "name": "Name",
+            "category": "Category",
+            "price": "Price",
+            "variants": "Variants",
+            "sku": "SKU",
+            "variant": "Variant",
+            "stock": "Stock",
+            "noVariant": "Single variant"
+        },
+        "photos": {
+            "title": "Photos",
+            "hint": "The first photo is the cover. Shop lists crop it square, so keep the subject centred.",
+            "upload": "Add photos",
+            "uploading": "Sending {count} photo… | Sending {count} photos…",
+            "uploaded": "Photo added: {file}",
+            "uploadFailed": "{file}: {error}",
+            "formats": "JPEG, PNG, WebP or AVIF, up to 20 MB. Large photos are resized to 1600 pixels.",
+            "cover": "Cover",
+            "alt": "Photo {position} of “{title}”",
+            "move": "Move photo {position}",
+            "delete": "Delete photo {position}",
+            "deleteMessage": "The photo will disappear from the product page.",
+            "deleted": "Photo deleted.",
+            "empty": "No photo yet",
+            "emptyHint": "Add at least one photo: products without a photo look empty in the shop.",
+            "moveUp": "Move photo {position} up",
+            "moveDown": "Move photo {position} down",
+            "moved": "Photo moved to position {position}."
+        },
+        "texts": {
+            "title": "Shop texts",
+            "name": "Title",
+            "nameHint": "Empty: the shop shows the name from mossytrunk, “{name}”.",
+            "description": "Description",
+            "slug": "Address",
+            "slugHint": "Lowercase letters, digits and hyphens, e.g. fox-print. It ends the address of the product page.",
+            "save": "Save"
+        },
+        "visibility": {
+            "title": "Visibility",
+            "label": "Show in the shop",
+            "on": "Visitors can see this product.",
+            "off": "Hidden from the shop."
+        },
+        "loadFailed": "The product could not be loaded",
+        "leave": "Leave without saving? Your changes to the shop texts will be lost."
+    },
+    "categories": {
+        "title": "Category names",
+        "hint": "How each mossytrunk category is called in the shop.",
+        "emptyHint": "Empty: the shop uses “{name}”.",
+        "empty": "No category yet",
+        "emptyDetail": "Categories appear once mossytrunk pushes its catalogue.",
+        "save": "Save the names"
+    },
+    "retry": "Try again"
 }

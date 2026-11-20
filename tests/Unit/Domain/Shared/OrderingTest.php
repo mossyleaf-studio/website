@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\Content;
+namespace App\Tests\Unit\Domain\Shared;
 
-use App\Domain\Content\Exception\OrderMismatch;
 use App\Domain\Content\Link;
-use App\Domain\Content\Ordering;
 use App\Domain\Content\TapeTone;
+use App\Domain\Shared\Exception\OrderMismatch;
+use App\Domain\Shared\Ordering;
 use PHPUnit\Framework\TestCase;
 
 final class OrderingTest extends TestCase

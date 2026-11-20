@@ -22,6 +22,7 @@ defineProps({
     message: { type: String, default: undefined },
     icon: { type: [Object, Function], default: null },
     variant: { type: String, default: 'ghost' },
+    disabled: { type: Boolean, default: false },
 });
 const emit = defineEmits(['confirm']);
 
@@ -29,8 +30,8 @@ const open = ref(false);
 </script>
 
 <template>
-    <IconButton v-if="icon" :icon="icon" :label="label" variant="danger" aria-haspopup="dialog" @click="open = true" />
-    <BaseButton v-else :variant="variant" aria-haspopup="dialog" @click="open = true">{{ label }}</BaseButton>
+    <IconButton v-if="icon" :icon="icon" :label="label" variant="danger" :disabled="disabled" aria-haspopup="dialog" @click="open = true" />
+    <BaseButton v-else :variant="variant" :disabled="disabled" aria-haspopup="dialog" @click="open = true">{{ label }}</BaseButton>
     <AlertDialogRoot v-model:open="open">
         <AlertDialogPortal>
             <AlertDialogOverlay class="modal">
