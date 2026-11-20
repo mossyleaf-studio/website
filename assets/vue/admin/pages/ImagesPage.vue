@@ -1,5 +1,5 @@
 <script setup>
-import { ImagePlus } from '@lucide/vue';
+import { Image, ImagePlus } from '@lucide/vue';
 import { ref } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
@@ -69,7 +69,7 @@ function move(index, offset) {
         </PageHeader>
         <p class="images-page__formats">{{ t('admin.images.formats') }}</p>
 
-        <EmptyState v-if="!artworks.length && !sending" :title="t('admin.images.empty')" :hint="t('admin.images.emptyHint')" />
+        <EmptyState v-if="!artworks.length && !sending" :icon="Image" :title="t('admin.images.empty')" :hint="t('admin.images.emptyHint')" />
 
         <VueDraggable
             v-else

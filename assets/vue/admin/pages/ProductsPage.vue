@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowDown, ArrowUp, GripVertical, ImageOff, Pencil, Tags } from '@lucide/vue';
+import { ArrowDown, ArrowUp, CircleAlert, GripVertical, ImageOff, Package, Pencil, SearchX, Tags } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
@@ -67,11 +67,11 @@ function toggle(product, visible) {
             <BaseButton variant="secondary" data-test="category-names-open" @click="namesOpen = true"><Tags size="1rem" aria-hidden="true" />{{ t('admin.products.categoryNames') }}</BaseButton>
         </PageHeader>
 
-        <EmptyState v-if="failed && !products.length" :title="t('admin.products.loadFailed')" :hint="t('common.error')" data-test="products-failed">
+        <EmptyState v-if="failed && !products.length" :icon="CircleAlert" :title="t('admin.products.loadFailed')" :hint="t('common.error')" data-test="products-failed">
             <BaseButton variant="secondary" @click="fetchProducts">{{ t('admin.retry') }}</BaseButton>
         </EmptyState>
 
-        <EmptyState v-else-if="loaded && !products.length" :title="t('admin.products.empty')" :hint="t('admin.products.emptyHint')" data-test="products-empty" />
+        <EmptyState v-else-if="loaded && !products.length" :icon="Package" :title="t('admin.products.empty')" :hint="t('admin.products.emptyHint')" data-test="products-empty" />
 
         <template v-else-if="products.length">
             <div class="products-page__filters">
@@ -80,7 +80,7 @@ function toggle(product, visible) {
             </div>
             <p v-if="filtering" class="products-page__note">{{ t('admin.products.filtering') }}</p>
 
-            <EmptyState v-if="!rows.length" :title="t('admin.products.noMatch')" :hint="t('admin.products.noMatchHint')" data-test="products-no-match" />
+            <EmptyState v-if="!rows.length" :icon="SearchX" :title="t('admin.products.noMatch')" :hint="t('admin.products.noMatchHint')" data-test="products-no-match" />
 
             <VueDraggable
                 v-else

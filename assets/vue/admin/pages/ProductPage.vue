@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowLeft } from '@lucide/vue';
+import { ArrowLeft, CircleAlert, PackageX } from '@lucide/vue';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
@@ -91,11 +91,11 @@ function toggle(visible) {
     <div class="product-page" data-test="product-editor">
         <RouterLink class="product-page__back" :to="{ name: 'products' }"><ArrowLeft size="1rem" aria-hidden="true" />{{ t('admin.product.back') }}</RouterLink>
 
-        <EmptyState v-if="failed && !product" :title="t('admin.product.loadFailed')" :hint="t('common.error')" data-test="product-failed">
+        <EmptyState v-if="failed && !product" :icon="CircleAlert" :title="t('admin.product.loadFailed')" :hint="t('common.error')" data-test="product-failed">
             <BaseButton variant="secondary" @click="fetchProducts">{{ t('admin.retry') }}</BaseButton>
         </EmptyState>
 
-        <EmptyState v-else-if="loaded && !product" :title="t('admin.product.notFound')" :hint="t('admin.product.notFoundHint')" data-test="product-not-found" />
+        <EmptyState v-else-if="loaded && !product" :icon="PackageX" :title="t('admin.product.notFound')" :hint="t('admin.product.notFoundHint')" data-test="product-not-found" />
 
         <template v-else-if="product">
             <PageHeader :title="heading" :subtitle="product.reference">

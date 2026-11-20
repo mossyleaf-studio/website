@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowDown, ArrowUp, GripVertical, Pencil, Plus, Trash2 } from '@lucide/vue';
+import { ArrowDown, ArrowUp, GripVertical, Link2, Pencil, Plus, Trash2 } from '@lucide/vue';
 import { ref } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
@@ -48,7 +48,7 @@ function confirmRemove(link) {
             <BaseButton @click="openEditor()"><Plus size="1rem" aria-hidden="true" />{{ t('admin.links.add') }}</BaseButton>
         </PageHeader>
 
-        <EmptyState v-if="!links.length" :title="t('admin.links.empty')" :hint="t('admin.links.emptyHint')" />
+        <EmptyState v-if="!links.length" :icon="Link2" :title="t('admin.links.empty')" :hint="t('admin.links.emptyHint')" />
 
         <VueDraggable
             v-else

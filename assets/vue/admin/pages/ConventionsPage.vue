@@ -1,5 +1,5 @@
 <script setup>
-import { Pencil, Plus, Trash2 } from '@lucide/vue';
+import { CalendarDays, Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../../components/ui/BaseButton.vue';
@@ -47,7 +47,7 @@ function confirmRemove(convention) {
             <BaseButton data-test="convention-add" @click="openEditor()"><Plus size="1rem" aria-hidden="true" />{{ t('admin.conventions.add') }}</BaseButton>
         </PageHeader>
 
-        <EmptyState v-if="!conventions.length" :title="t('admin.conventions.empty')" :hint="t('admin.conventions.emptyHint')" />
+        <EmptyState v-if="!conventions.length" :icon="CalendarDays" :title="t('admin.conventions.empty')" :hint="t('admin.conventions.emptyHint')" />
 
         <template v-for="group in ['upcoming', 'past']" :key="group">
             <section v-if="groups[group].length" :aria-labelledby="`conventions-${group}`" :data-test="`conventions-${group}`">

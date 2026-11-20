@@ -1,4 +1,5 @@
 <script setup>
+import { Tags } from '@lucide/vue';
 import { reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../../components/ui/BaseButton.vue';
@@ -54,7 +55,7 @@ async function submit() {
 <template>
     <BaseModal v-model:open="open" :title="t('admin.categories.title')">
         <form class="category-names" data-test="category-names" @submit.prevent="submit">
-            <EmptyState v-if="!categories.length" :title="t('admin.categories.empty')" :hint="t('admin.categories.emptyDetail')" />
+            <EmptyState v-if="!categories.length" :icon="Tags" :title="t('admin.categories.empty')" :hint="t('admin.categories.emptyDetail')" />
             <template v-else>
                 <p class="category-names__hint">{{ t('admin.categories.hint') }}</p>
                 <LocalizedField

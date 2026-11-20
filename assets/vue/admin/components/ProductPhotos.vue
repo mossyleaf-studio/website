@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowDown, ArrowUp, GripVertical, ImagePlus, Star, Trash2 } from '@lucide/vue';
+import { ArrowDown, ArrowUp, GripVertical, Image, ImagePlus, Star, Trash2 } from '@lucide/vue';
 import { ref, watch } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
@@ -84,7 +84,7 @@ function remove(photo) {
         </div>
         <p class="product-photos__formats">{{ t('admin.product.photos.formats') }}</p>
 
-        <EmptyState v-if="!photos.length && !sending" :title="t('admin.product.photos.empty')" :hint="t('admin.product.photos.emptyHint')" />
+        <EmptyState v-if="!photos.length && !sending" :icon="Image" :title="t('admin.product.photos.empty')" :hint="t('admin.product.photos.emptyHint')" />
 
         <VueDraggable
             v-else
