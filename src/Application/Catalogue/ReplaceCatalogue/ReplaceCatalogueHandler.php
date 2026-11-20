@@ -22,7 +22,7 @@ final readonly class ReplaceCatalogueHandler
 {
     private const int MAX_PRODUCTS = 2000;
     private const int MAX_VARIANTS = 50;
-    private const string SLUG_LOCALE = 'fr';
+    public const string SLUG_LOCALE = 'fr';
     private const string SLUG_FALLBACK = 'product';
     private const int SLUG_SUFFIX_ROOM = 8;
 

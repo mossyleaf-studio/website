@@ -1,0 +1,15 @@
+<h1>{{ data.title }}</h1>
+{% if data.categories|length > 1 %}
+    <nav class="shop-prerender__chips" aria-label="{{ 'shop.categories'|site_t }}" data-categories>
+        <ul>
+            {% for category in data.categories %}
+                <li><a href="{{ category.url }}"{% if category.current %} aria-current="page"{% endif %}>{{ category.label }}</a></li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endif %}
+{% if data.products is empty %}
+    <p class="shop-prerender__sheet" data-empty>{{ 'shop.empty'|site_t }}</p>
+{% else %}
+    {% include 'shop/prerender/_cards.html.twig' with {products: data.products, eager: true} %}
+{% endif %}

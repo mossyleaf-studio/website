@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Shop;
 
+use App\Application\Catalogue\CatalogueQueries;
 use App\Application\Content\ContentQueries;
 use App\Domain\Content\SiteText;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -16,10 +17,14 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/{_locale}/', name: 'shop_home', requirements: ['_locale' => 'en|fr'], methods: ['GET'], stateless: true)]
 final readonly class ShopHomeController
 {
+    private const int LATEST = 8;
+
     public function __construct(
         private ShopDoor $door,
         private ShopUrls $urls,
         private ContentQueries $queries,
+        private CatalogueQueries $catalogue,
+        private CatalogueProps $props,
         private ShopPage $page,
     ) {
     }
@@ -32,16 +37,20 @@ final readonly class ShopHomeController
 
         $locale = ShopUrls::locale($request);
         $content = $this->queries->shop($preview);
+        $products = $this->catalogue->shop($preview);
 
         return $this->page->render($request, $preview, $content, [
             'page' => 'home',
             'intro' => $content->intro->in($locale),
             'featured' => LocalizedArtwork::featured($content, $locale),
+            'shopUrl' => $this->props->listing($locale, $preview),
+            ...([] === $products ? [] : ['products' => $this->props->cards(\array_slice($products, 0, self::LATEST), $locale, $preview)]),
             'about' => [
                 'title' => $content->aboutTitle->in($locale),
                 'text' => SiteText::paragraphs($content->aboutText->in($locale))[0] ?? '',
                 'url' => $this->urls->to('shop_about', $locale, $preview),
             ],
+            ...([] === $products ? [] : ['categories' => $this->props->tiles($products, $locale, $preview)]),
         ]);
     }
 }

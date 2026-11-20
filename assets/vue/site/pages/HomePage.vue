@@ -1,7 +1,9 @@
 <script setup>
+import CategoryTiles from '../components/CategoryTiles.vue';
 import FeaturedArt from '../components/FeaturedArt.vue';
 import PaperSheet from '../components/PaperSheet.vue';
 import PillButton from '../components/PillButton.vue';
+import ProductGrid from '../components/ProductGrid.vue';
 import RichText from '../components/RichText.vue';
 
 defineProps({
@@ -12,9 +14,22 @@ defineProps({
 <template>
     <div class="home">
         <div :class="['home__hero', { 'home__hero--solo': !data.featured }]">
-            <h1 class="home__title">{{ data.intro }}</h1>
+            <div class="home__lead">
+                <h1 class="home__title">{{ data.intro }}</h1>
+                <p>
+                    <PillButton :href="data.shopUrl" data-shop>{{ $t('home.shopLink') }}</PillButton>
+                </p>
+            </div>
             <FeaturedArt v-if="data.featured" class="home__art" :artwork="data.featured" />
         </div>
+
+        <section v-if="data.products" class="home__shelf" aria-labelledby="latest-title" data-latest>
+            <div class="home__shelf-head">
+                <h2 id="latest-title" class="home__heading">{{ $t('home.latest') }}</h2>
+                <a class="home__all" :href="data.shopUrl">{{ $t('shop.all') }}</a>
+            </div>
+            <ProductGrid :products="data.products" :columns="4" />
+        </section>
 
         <PaperSheet tag="section" tape="blossom" class="home__about" aria-labelledby="about-title">
             <h2 id="about-title" class="home__about-title">{{ data.about.title }}</h2>
@@ -23,6 +38,11 @@ defineProps({
                 <PillButton :href="data.about.url" tone="paper">{{ $t('home.aboutLink') }}</PillButton>
             </p>
         </PaperSheet>
+
+        <section v-if="data.categories" class="home__shelf" aria-labelledby="categories-title">
+            <h2 id="categories-title" class="home__heading">{{ $t('home.categories') }}</h2>
+            <CategoryTiles :categories="data.categories" />
+        </section>
     </div>
 </template>
 
@@ -48,10 +68,51 @@ defineProps({
     text-wrap: balance;
 }
 
+.home__lead {
+    display: grid;
+    gap: var(--space-6);
+    justify-items: start;
+}
+
+.home__hero--solo .home__lead {
+    justify-items: center;
+}
+
 .home__hero--solo .home__title {
     max-width: 22ch;
-    margin-inline: auto;
     text-align: center;
+}
+
+.home__shelf {
+    display: grid;
+    gap: var(--space-6);
+}
+
+.home__shelf-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-5);
+}
+
+.home__heading {
+    font-family: var(--font-display);
+    font-weight: var(--font-display-weight);
+    font-size: var(--font-size-2xl);
+    line-height: 1.15;
+}
+
+.home__all {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-family: var(--font-ui);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--color-ink);
+    text-decoration-thickness: 0.125rem;
+    text-underline-offset: 0.3em;
 }
 
 .home__art {

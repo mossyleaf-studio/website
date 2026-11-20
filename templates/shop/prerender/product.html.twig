@@ -1,0 +1,56 @@
+{% set shop = (layout.navigation|filter(entry => entry.key == 'shop')|first).url %}
+{% set chosen = data.variants|filter(variant => variant.available > 0)|first %}
+<article class="shop-prerender__product">
+    <nav class="shop-prerender__breadcrumb" aria-label="{{ 'layout.breadcrumb'|site_t }}" data-breadcrumb>
+        <ol>
+            <li><a href="{{ shop }}">{{ 'nav.shop'|site_t }}</a></li>
+            <li data-category><a href="{{ data.category.url }}">{{ data.category.label }}</a></li>
+            <li><span aria-current="page">{{ data.title }}</span></li>
+        </ol>
+    </nav>
+    <div class="shop-prerender__product-body">
+        {% if data.photos is not empty %}
+            <ul class="shop-prerender__photos" data-photos>
+                {% for photo in data.photos %}
+                    <li><img src="{{ photo.src }}" srcset="{{ photo.srcset }}" sizes="(min-width: 56rem) 50vw, 100vw" alt="{{ photo.alt }}" width="{{ photo.width }}" height="{{ photo.height }}"{% if loop.first %} fetchpriority="high"{% else %} loading="lazy"{% endif %}></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <span class="shop-prerender__blank"></span>
+        {% endif %}
+        <div class="shop-prerender__details">
+            {% if data.hidden %}
+                <p data-hidden><span class="shop-prerender__tape" data-label>{{ 'product.hidden'|site_t }}</span> {{ 'product.hiddenNote'|site_t }}</p>
+            {% endif %}
+            <h1>{{ data.title }}</h1>
+            <div>
+                <p class="shop-prerender__price" data-price>{{ data.price|money }}</p>
+                {% if data.priceNote %}
+                    <p class="shop-prerender__note" data-price-note>{{ data.priceNote }}</p>
+                {% endif %}
+            </div>
+            {% if data.variants|length > 1 or (data.variants|first).name %}
+                <ul class="shop-prerender__variants" aria-label="{{ 'product.variants'|site_t }}" data-variants>
+                    {% for variant in data.variants %}
+                        <li{% if variant.soldOut %} class="shop-prerender__variant--sold-out"{% elseif chosen and variant.sku == chosen.sku %} class="shop-prerender__variant--chosen" aria-current="true"{% endif %}><span data-variant>{{ variant.name }}</span>{% if variant.soldOut %} <span>{{ 'product.soldOut'|site_t }}</span>{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <p class="shop-prerender__stock" data-stock>{{ ('product.' ~ (chosen ? chosen.state : 'soldOut'))|site_t }}</p>
+            {% set paragraphs = data.description|split("\n")|map(line => line|trim)|filter(line => line is not empty) %}
+            {% if paragraphs is not empty %}
+                <div class="shop-prerender__description" data-description>
+                    {% for paragraph in paragraphs %}
+                        <p>{{ paragraph|rich_text }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</article>
+{% if data.related is not empty %}
+    <section aria-labelledby="related-title" data-related>
+        <h2 id="related-title">{{ 'product.related'|site_t }}</h2>
+        {% include 'shop/prerender/_cards.html.twig' with {products: data.related, eager: false, columns: 4} %}
+    </section>
+{% endif %}

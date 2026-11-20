@@ -3,10 +3,12 @@
         "skip": "Skip to content",
         "navigation": "Main",
         "menu": "Menu",
-        "languages": "Language"
+        "languages": "Language",
+        "breadcrumb": "Breadcrumb"
     },
     "nav": {
-        "about": "About"
+        "about": "About",
+        "shop": "Shop"
     },
     "language": {
         "code": {
@@ -19,7 +21,31 @@
         }
     },
     "home": {
-        "aboutLink": "More about the studio"
+        "aboutLink": "More about the studio",
+        "shopLink": "Visit the shop",
+        "latest": "New in the shop",
+        "categories": "Browse by category"
+    },
+    "shop": {
+        "title": "Shop",
+        "all": "All products",
+        "categories": "Categories",
+        "empty": "No products to show yet. New pieces are on their way."
+    },
+    "product": {
+        "soldOut": "Sold out",
+        "inStock": "In stock",
+        "hidden": "Hidden",
+        "variants": "Options",
+        "related": "You may also like",
+        "hiddenNote": "Visitors don’t see this product until you show it in the admin.",
+        "lastPieces": "Last pieces",
+        "quantity": "Quantity",
+        "less": "One less",
+        "more": "One more",
+        "add": "Add to cart",
+        "photos": "Photos",
+        "photo": "Show photo {number} of {count}"
     },
     "notFound": {
         "title": "Page not found",

@@ -3,10 +3,12 @@
         "skip": "Aller au contenu",
         "navigation": "Principale",
         "menu": "Menu",
-        "languages": "Langue"
+        "languages": "Langue",
+        "breadcrumb": "Fil d’Ariane"
     },
     "nav": {
-        "about": "À propos"
+        "about": "À propos",
+        "shop": "Boutique"
     },
     "language": {
         "code": {
@@ -19,7 +21,31 @@
         }
     },
     "home": {
-        "aboutLink": "En savoir plus sur le studio"
+        "aboutLink": "En savoir plus sur le studio",
+        "shopLink": "Voir la boutique",
+        "latest": "Nouveautés",
+        "categories": "Parcourir par catégorie"
+    },
+    "shop": {
+        "title": "Boutique",
+        "all": "Tous les produits",
+        "categories": "Catégories",
+        "empty": "Aucun produit à montrer pour l’instant. De nouvelles pièces arrivent."
+    },
+    "product": {
+        "soldOut": "Épuisé",
+        "inStock": "En stock",
+        "hidden": "Masqué",
+        "variants": "Options",
+        "related": "Vous aimerez aussi",
+        "hiddenNote": "Les visiteurs ne voient pas ce produit tant que vous ne l’affichez pas dans l’admin.",
+        "lastPieces": "Dernières pièces",
+        "quantity": "Quantité",
+        "less": "Un de moins",
+        "more": "Un de plus",
+        "add": "Ajouter au panier",
+        "photos": "Photos",
+        "photo": "Afficher la photo {number} sur {count}"
     },
     "notFound": {
         "title": "Page introuvable",

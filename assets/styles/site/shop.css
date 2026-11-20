@@ -262,3 +262,220 @@ html[data-layout="shop"] .shop-prerender__footer .shop-prerender__languages ul {
         align-items: start;
     }
 }
+
+html[data-layout="shop"] .shop-prerender__cards,
+html[data-layout="shop"] .shop-prerender__tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--grid-gap);
+}
+
+html[data-layout="shop"] .shop-prerender__card,
+html[data-layout="shop"] .shop-prerender__tiles a {
+    position: relative;
+    display: grid;
+    gap: var(--space-1);
+    text-decoration: none;
+}
+
+html[data-layout="shop"] :is(.shop-prerender__card, .shop-prerender__tiles a) :is(img, .shop-prerender__blank),
+html[data-layout="shop"] .shop-prerender__product-body > .shop-prerender__blank {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    margin-bottom: var(--space-2);
+    object-fit: cover;
+    background: var(--color-card);
+    border: 0.0625rem solid var(--color-edge);
+    border-radius: var(--radius-photo);
+}
+
+html[data-layout="shop"] .shop-prerender__tiles a :is(img, .shop-prerender__blank) {
+    aspect-ratio: 4 / 3;
+}
+
+html[data-layout="shop"] .shop-prerender__tiles span:not(.shop-prerender__blank) {
+    font-family: var(--font-display);
+    font-weight: var(--font-display-weight);
+    font-size: var(--font-size-lg);
+}
+
+html[data-layout="shop"] .shop-prerender__labels {
+    position: absolute;
+    top: -0.375rem;
+    left: -0.375rem;
+    display: grid;
+    justify-items: start;
+    gap: var(--space-1);
+}
+
+html[data-layout="shop"] .shop-prerender__tape {
+    display: inline-block;
+    padding: var(--space-1) var(--space-4);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--color-ink);
+    background: color-mix(in oklch, var(--color-tape-leaf) 85%, white);
+    rotate: -2deg;
+}
+
+html[data-layout="shop"] .shop-prerender__tape--blossom {
+    background: color-mix(in oklch, var(--color-tape-blossom) 85%, white);
+}
+
+html[data-layout="shop"] :is(.shop-prerender__chips, .shop-prerender__variants) ul,
+html[data-layout="shop"] .shop-prerender__variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+}
+
+html[data-layout="shop"] .shop-prerender__chips a,
+html[data-layout="shop"] .shop-prerender__variants li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    padding: 0 var(--space-4);
+    font-size: var(--font-size-sm);
+    text-decoration: none;
+    background: var(--color-card);
+    border: 0.0625rem solid var(--color-ink);
+    border-radius: var(--radius-pill);
+}
+
+html[data-layout="shop"] .shop-prerender__chips a[aria-current] {
+    font-weight: 700;
+    background: var(--color-leaf);
+    border: var(--border-strong);
+}
+
+html[data-layout="shop"] .shop-prerender__variants .shop-prerender__variant--chosen {
+    font-weight: 700;
+    background: var(--color-leaf);
+    border: var(--border-strong);
+}
+
+html[data-layout="shop"] .shop-prerender__variants .shop-prerender__variant--sold-out {
+    color: var(--color-muted);
+    border-style: dashed;
+}
+
+html[data-layout="shop"] .shop-prerender__product {
+    display: grid;
+    gap: var(--space-5);
+}
+
+html[data-layout="shop"] .shop-prerender__breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-3);
+    margin: 0;
+    padding: 0;
+    font-size: var(--font-size-sm);
+    list-style: none;
+}
+
+html[data-layout="shop"] .shop-prerender__breadcrumb li {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap);
+}
+
+html[data-layout="shop"] .shop-prerender__breadcrumb li + li::before {
+    content: '/' / '';
+    padding-right: var(--space-3);
+    color: var(--color-muted);
+}
+
+html[data-layout="shop"] .shop-prerender__breadcrumb [aria-current] {
+    color: var(--color-muted);
+}
+
+html[data-layout="shop"] .shop-prerender__product-body,
+html[data-layout="shop"] .shop-prerender__photos,
+html[data-layout="shop"] .shop-prerender__details,
+html[data-layout="shop"] .shop-prerender__description {
+    display: grid;
+    gap: var(--space-5);
+    align-items: start;
+    justify-items: start;
+}
+
+html[data-layout="shop"] .shop-prerender__photos img {
+    width: 100%;
+    background: var(--color-card);
+    border: 0.0625rem solid var(--color-edge);
+    border-radius: var(--radius-photo);
+}
+
+html[data-layout="shop"] .shop-prerender__details h1 {
+    font-size: clamp(2rem, 1.5rem + 2vw, var(--font-size-3xl));
+}
+
+html[data-layout="shop"] :is(.shop-prerender__card strong, .shop-prerender__price) {
+    font-variant-numeric: tabular-nums;
+}
+
+html[data-layout="shop"] .shop-prerender__price {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+html[data-layout="shop"] .shop-prerender :is(.shop-prerender__note, [data-hidden]) {
+    font-size: var(--font-size-xs);
+    color: var(--color-muted);
+}
+
+html[data-layout="shop"] .shop-prerender__stock {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+}
+
+html[data-layout="shop"] .shop-prerender__description {
+    gap: var(--space-4);
+    justify-self: stretch;
+    max-width: var(--measure);
+    padding-top: var(--space-5);
+    border-top: 0.0625rem solid var(--color-edge);
+}
+
+html[data-layout="shop"] .shop-prerender__main section {
+    display: grid;
+    gap: var(--space-5);
+}
+
+@media (min-width: 56rem) {
+    html[data-layout="shop"] .shop-prerender__cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    html[data-layout="shop"] .shop-prerender__cards--4,
+    html[data-layout="shop"] .shop-prerender__tiles {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    html[data-layout="shop"] .shop-prerender__product-body {
+        grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+        gap: var(--space-8);
+    }
+}
+
+html[data-layout="shop"] .shop-prerender__lead {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+}
+
+html[data-layout="shop"] .shop-prerender__pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-height);
+    padding: 0 var(--space-5);
+    font-weight: 700;
+    text-decoration: none;
+    background: var(--color-leaf);
+    border: var(--border-strong);
+    border-radius: var(--radius-pill);
+}

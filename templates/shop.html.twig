@@ -39,6 +39,9 @@
         <meta property="og:image:alt" content="{{ seo.image.alt }}">
         <meta name="twitter:image" content="{{ absolute_url(seo.image.url) }}">
     {% endif %}
+    {% if seo.jsonLd %}
+        <script type="application/ld+json">{{ seo.jsonLd|raw }}</script>
+    {% endif %}
     {% for font in [layout.fonts.heading, layout.fonts.body] %}
         {% if font %}
             <link rel="stylesheet" href="{{ font.stylesheet }}">

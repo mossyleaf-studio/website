@@ -19,6 +19,9 @@ interface ProductRepository
     /** @return list<Product> */
     public function all(): array;
 
+    /** @return list<Product> */
+    public function forSale(bool $hiddenToo): array;
+
     /** @return list<string> */
     public function photoFiles(): array;
 }

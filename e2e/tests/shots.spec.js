@@ -9,6 +9,13 @@ const SHOP = {
     'shop-about-fr': '/beta/fr/about',
     'shop-about-en': '/beta/en/about',
     'shop-not-found': '/beta/fr/no-such-page',
+    'shop-listing-fr': '/beta/fr/shop',
+    'shop-listing-en': '/beta/en/shop',
+    'shop-listing-category': '/beta/fr/shop?category=stickers',
+    'shop-product-variants-fr': '/beta/fr/shop/moss-print',
+    'shop-product-variants-en': '/beta/en/shop/washi-tape-set',
+    'shop-product-sold-out': '/beta/fr/shop/meadow-sticker-sheet',
+    'shop-product-hidden': '/beta/en/shop/dew-greeting-card',
 };
 const ADMIN = { texts: '/admin/texts', links: '/admin/links', images: '/admin/images', products: '/admin/products' };
 
@@ -35,6 +42,7 @@ async function writeTheFrenchTexts(request) {
 }
 
 test('screenshots of the site and the admin', async ({ page }) => {
+    test.setTimeout(120_000);
     await signIn(page);
     await page.setViewportSize(VIEWPORTS.phone);
     await page.goto(SHOP['shop-home-fr']);
@@ -76,6 +84,12 @@ test('screenshots of the site and the admin', async ({ page }) => {
     await editorWithoutScript.goto(SHOP['shop-home-fr']);
     await expect(editorWithoutScript.locator('#shop main h1')).toBeVisible();
     await editorWithoutScript.screenshot({ path: 'shots/shop-home-without-javascript.png', fullPage: true });
+    await editorWithoutScript.goto(SHOP['shop-product-variants-fr']);
+    await expect(editorWithoutScript.locator('#shop main h1')).toBeVisible();
+    await editorWithoutScript.screenshot({ path: 'shots/shop-product-without-javascript.png', fullPage: true });
+    await editorWithoutScript.setViewportSize(VIEWPORTS.desktop);
+    await editorWithoutScript.goto(SHOP['shop-listing-fr']);
+    await editorWithoutScript.screenshot({ path: 'shots/shop-listing-without-javascript.png', fullPage: true });
     await editorWithoutScript.context().close();
 
     await page.goto('/admin/images');

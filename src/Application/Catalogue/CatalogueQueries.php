@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 namespace App\Application\Catalogue;
 
+use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogueHandler;
+use App\Domain\Catalogue\Category;
 use App\Domain\Catalogue\CategoryRepository;
+use App\Domain\Catalogue\Product;
 use App\Domain\Catalogue\ProductRepository;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 final readonly class CatalogueQueries
 {
+    private const int RELATED = 4;
+
     public function __construct(
         private ProductRepository $products,
         private CategoryRepository $categories,
+        private SluggerInterface $slugger,
     ) {
     }
 
@@ -25,5 +32,57 @@ final readonly class CatalogueQueries
     public function categories(): array
     {
         return CategoryView::list($this->categories->all());
+    }
+
+    /** @return list<ShopProductView> */
+    public function shop(bool $preview): array
+    {
+        $keys = $this->categoryKeys();
+
+        return array_map(fn (Product $product): ShopProductView => $this->shopView($product, $keys), $this->products->forSale($preview));
+    }
+
+    public function shopProduct(string $slug, bool $preview): ?ShopProductView
+    {
+        $product = $this->products->withSlug($slug);
+
+        return null !== $product && self::shows($product, $preview) ? $this->shopView($product, $this->categoryKeys()) : null;
+    }
+
+    /** @return list<ShopProductView> */
+    public function related(ShopProductView $product, bool $preview): array
+    {
+        return \array_slice(array_values(array_filter(
+            $this->shop($preview),
+            static fn (ShopProductView $other): bool => $other->category->key === $product->category->key && $other->id !== $product->id,
+        )), 0, self::RELATED);
+    }
+
+    private static function shows(Product $product, bool $preview): bool
+    {
+        return !$product->isRetired() && $product->price() > 0 && ($preview || $product->isVisible());
+    }
+
+    /** @param array<string, string> $keys */
+    private function shopView(Product $product, array $keys): ShopProductView
+    {
+        $category = $product->category();
+
+        return ShopProductView::of($product, ShopCategoryView::of($category, $keys[(string) $category->id()]));
+    }
+
+    /** @return array<string, string> */
+    private function categoryKeys(): array
+    {
+        $categories = $this->categories->all();
+        usort($categories, static fn (Category $a, Category $b): int => strcmp((string) $a->id(), (string) $b->id()));
+        $keys = [];
+        foreach ($categories as $category) {
+            $id = (string) $category->id();
+            $slug = $this->slugger->slug($category->name(), '-', ReplaceCatalogueHandler::SLUG_LOCALE)->lower()->toString();
+            $keys[$id] = '' === $slug || \in_array($slug, $keys, true) ? strtolower($id) : $slug;
+        }
+
+        return $keys;
     }
 }

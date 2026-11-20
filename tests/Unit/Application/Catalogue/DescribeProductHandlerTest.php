@@ -83,6 +83,11 @@ final class DescribeProductHandlerTest extends TestCase
                 return $this->products;
             }
 
+            public function forSale(bool $hiddenToo): array
+            {
+                return $this->products;
+            }
+
             public function photoFiles(): array
             {
                 return [];

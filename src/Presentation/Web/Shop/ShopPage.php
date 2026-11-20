@@ -13,8 +13,8 @@ use Twig\Environment;
 
 final readonly class ShopPage
 {
-    private const int SAFE_IN_HTML = \JSON_HEX_TAG | \JSON_HEX_AMP | \JSON_HEX_APOS | \JSON_HEX_QUOT | \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES;
-    private const array NAVIGATION = ['home' => 'shop_home', 'about' => 'shop_about'];
+    public const int SAFE_IN_HTML = \JSON_HEX_TAG | \JSON_HEX_AMP | \JSON_HEX_APOS | \JSON_HEX_QUOT | \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES;
+    private const array NAVIGATION = ['home' => 'shop_home', 'shop' => 'shop_listing', 'about' => 'shop_about'];
     private const array OPEN_GRAPH_LOCALES = ['en' => 'en_GB', 'fr' => 'fr_FR'];
 
     public function __construct(
@@ -23,8 +23,11 @@ final readonly class ShopPage
     ) {
     }
 
-    /** @param array<string, mixed> $data */
-    public function render(Request $request, bool $preview, ShopContentView $content, array $data, ?string $title = null, int $status = Response::HTTP_OK): Response
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $seo
+     */
+    public function render(Request $request, bool $preview, ShopContentView $content, array $data, ?string $title = null, int $status = Response::HTTP_OK, array $seo = []): Response
     {
         $locale = ShopUrls::locale($request);
         $route = ShopUrls::route($request);
@@ -46,7 +49,7 @@ final readonly class ShopPage
             'props' => json_encode(['layout' => $layout, 'data' => $data], self::SAFE_IN_HTML | \JSON_THROW_ON_ERROR),
             'layout' => $layout,
             'data' => $data,
-            'seo' => $this->seo($content, $locale, $preview, $route, $parameters, $title, Response::HTTP_OK === $status),
+            'seo' => [...$this->seo($content, $locale, $preview, $route, $parameters, $title, Response::HTTP_OK === $status), ...$seo],
         ]));
     }
 
@@ -105,6 +108,7 @@ final readonly class ShopPage
             'alternates' => $alternates,
             'locale' => self::OPEN_GRAPH_LOCALES[$locale->value],
             'image' => null === $image ? null : ['url' => $image->url, 'width' => $image->width, 'height' => $image->height, 'alt' => $featured->alt ?? $content->studioName],
+            'jsonLd' => null,
         ];
     }
 }

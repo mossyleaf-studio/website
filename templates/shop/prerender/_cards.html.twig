@@ -1,0 +1,25 @@
+<ul class="shop-prerender__cards{% if (columns ?? 3) == 4 %} shop-prerender__cards--4{% endif %}" data-products>
+    {% for product in products %}
+        <li>
+            <a class="shop-prerender__card" href="{{ product.url }}">
+                {% if product.image %}
+                    <img src="{{ product.image.src }}" srcset="{{ product.image.srcset }}" sizes="(min-width: 56rem) {{ (columns ?? 3) == 4 ? '25vw' : '34vw' }}, 50vw" alt="{{ product.image.alt }}" width="{{ product.image.width }}" height="{{ product.image.height }}" loading="{{ eager and loop.first ? 'eager' : 'lazy' }}">
+                {% else %}
+                    <span class="shop-prerender__blank"></span>
+                {% endif %}
+                <span data-card-title>{{ product.title }}</span>
+                <strong data-card-price>{{ product.price|money }}</strong>
+                {% if product.soldOut or product.hidden %}
+                    <span class="shop-prerender__labels">
+                        {% if product.soldOut %}
+                            <span class="shop-prerender__tape shop-prerender__tape--blossom" data-label>{{ 'product.soldOut'|site_t }}</span>
+                        {% endif %}
+                        {% if product.hidden %}
+                            <span class="shop-prerender__tape" data-label>{{ 'product.hidden'|site_t }}</span>
+                        {% endif %}
+                    </span>
+                {% endif %}
+            </a>
+        </li>
+    {% endfor %}
+</ul>

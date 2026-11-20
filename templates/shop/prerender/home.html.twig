@@ -1,13 +1,42 @@
 <div class="shop-prerender__hero">
-    <h1>{{ data.intro }}</h1>
+    <div class="shop-prerender__lead">
+        <h1>{{ data.intro }}</h1>
+        <p><a class="shop-prerender__pill" href="{{ data.shopUrl }}" data-shop>{{ 'home.shopLink'|site_t }}</a></p>
+    </div>
     {% if data.featured %}
         <figure>
             <img src="{{ data.featured.url }}" alt="{{ data.featured.alt }}" width="{{ data.featured.width }}" height="{{ data.featured.height }}" fetchpriority="high">
         </figure>
     {% endif %}
 </div>
-<section class="shop-prerender__sheet" aria-labelledby="about-title">
+{% if data.products is defined %}
+    <section aria-labelledby="latest-title" data-latest>
+        <h2 id="latest-title">{{ 'home.latest'|site_t }}</h2>
+        {% include 'shop/prerender/_cards.html.twig' with {products: data.products, eager: false, columns: 4} %}
+        <p><a href="{{ data.shopUrl }}">{{ 'shop.all'|site_t }}</a></p>
+    </section>
+{% endif %}
+<section class="shop-prerender__sheet" aria-labelledby="about-title" data-about>
     <h2 id="about-title">{{ data.about.title }}</h2>
     <p>{{ data.about.text|rich_text }}</p>
     <p><a href="{{ data.about.url }}">{{ 'home.aboutLink'|site_t }}</a></p>
 </section>
+{% if data.categories is defined %}
+    <section aria-labelledby="categories-title">
+        <h2 id="categories-title">{{ 'home.categories'|site_t }}</h2>
+        <ul class="shop-prerender__tiles" data-tiles>
+            {% for tile in data.categories %}
+                <li>
+                    <a href="{{ tile.url }}">
+                        {% if tile.image %}
+                            <img src="{{ tile.image.src }}" srcset="{{ tile.image.srcset }}" sizes="(min-width: 56rem) 25vw, 50vw" alt="" width="{{ tile.image.width }}" height="{{ tile.image.height }}" loading="lazy">
+                        {% else %}
+                            <span class="shop-prerender__blank"></span>
+                        {% endif %}
+                        <span>{{ tile.label }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endif %}

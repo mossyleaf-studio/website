@@ -66,7 +66,7 @@ final class CatalogueFixtures extends Fixture
             'photos' => [], 'visible' => true,
         ],
         'STK-003' => [
-            'category' => 'Stickers', 'name' => 'Washi tape set', 'price' => 900, 'variants' => [['Green', 'STK-003-G', 14], ['Blue', 'STK-003-B', 9]],
+            'category' => 'Stickers', 'name' => 'Washi tape set', 'price' => 900, 'variants' => [['Green', 'STK-003-G', 14], ['Blue', 'STK-003-B', 2]],
             'title' => 'Washi tape set', 'titleFr' => '',
             'description' => 'Two rolls of washi tape printed with the studio leaves.',
             'descriptionFr' => '',
