@@ -331,6 +331,27 @@ final class ShopPagesTest extends WebTestCase
             self::assertSame('note', $crawler->filter('#site')->attr('data-page'), $url);
             self::assertSame($expected, $crawler->filter('#site-content')->text(), $url);
             self::assertSame('en', $crawler->filter('html')->attr('lang'), $url);
+            self::assertCount(0, $crawler->filter('meta[name^="turbo-"], [data-turbo-track], [data-turbo-permanent]'), $url);
+        }
+    }
+
+    public function testEveryShopDocumentCarriesWhatTurboNeedsToSwapItWithoutAReload(): void
+    {
+        $client = self::signedInClient();
+
+        foreach (['/beta/fr/', '/beta/en/about', '/beta/fr/no-such-page'] as $url) {
+            $crawler = $client->request('GET', $url);
+
+            self::assertSame('no-preview', $crawler->filter('head meta[name="turbo-cache-control"]')->attr('content'), $url);
+            $entry = $crawler->filter('head script[type="module"][src*="/assets/shop.js"]');
+            self::assertCount(1, $entry, $url);
+            self::assertSame('reload', $entry->attr('data-turbo-track'), $url);
+            self::assertCount(0, $crawler->filter('head script[type="application/ld+json"]'), $url);
+            $announcer = $crawler->filter('body > #shop-announcer');
+            self::assertCount(1, $announcer, $url);
+            self::assertSame('', $announcer->attr('data-turbo-permanent'), $url);
+            self::assertSame('polite', $announcer->attr('aria-live'), $url);
+            self::assertSame('', $announcer->text(), $url);
         }
     }
 

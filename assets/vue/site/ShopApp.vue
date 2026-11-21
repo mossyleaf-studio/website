@@ -12,7 +12,6 @@ import NotFoundPage from './pages/NotFoundPage.vue';
 import OrderPage from './pages/OrderPage.vue';
 import ProductPage from './pages/ProductPage.vue';
 import ShopPage from './pages/ShopPage.vue';
-import { useCart } from './useCart.js';
 
 const props = defineProps({
     layout: { type: Object, required: true },
@@ -20,7 +19,6 @@ const props = defineProps({
 });
 
 provide('navigation', props.layout.navigation);
-provide('cart', useCart());
 const home = computed(() => props.layout.navigation.find((entry) => entry.key === 'home').url);
 const shop = computed(() => props.layout.navigation.find((entry) => entry.key === 'shop').url);
 </script>

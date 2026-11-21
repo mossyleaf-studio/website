@@ -158,6 +158,24 @@ async function shootTheContactForm(page, size) {
     await closed.close();
 }
 
+async function shootTheLoadingBar(page, size) {
+    await page.goto('/beta/fr/');
+    let release;
+    const held = new Promise((resolve) => {
+        release = resolve;
+    });
+    await page.route('**/beta/fr/conventions', async (route) => {
+        await held;
+        await route.continue();
+    });
+    await page.locator('#shop a[href="/beta/fr/conventions"]').filter({ visible: true }).first().click();
+    await expect(page.locator('.progress-bar--visible')).toBeVisible();
+    await page.screenshot({ path: `shots/shop-loading-bar-${size}.png`, animations: 'disabled' });
+    release();
+    await expect(page).toHaveURL(/\/beta\/fr\/conventions$/);
+    await page.unroute('**/beta/fr/conventions');
+}
+
 async function fillTheCheckout(page) {
     await page.getByLabel('E-mail').fill('lou@example.com');
     await page.getByLabel('Nom et prénom').fill('Lou Martin');
@@ -369,6 +387,7 @@ test('screenshots of the site and the admin', async ({ page }) => {
     let order = null;
     for (const [size, viewport] of Object.entries(VIEWPORTS)) {
         await page.setViewportSize(viewport);
+        await shootTheLoadingBar(page, size);
         await shootTheContactForm(page, size);
         await shootTheCart(page, size);
         order = await shootTheCheckout(page, size);

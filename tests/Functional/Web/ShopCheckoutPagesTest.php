@@ -65,6 +65,7 @@ final class ShopCheckoutPagesTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSame('fr', $crawler->filter('html')->attr('lang'));
         self::assertSame('checkout', $crawler->filter('#shop')->attr('data-page'));
+        self::assertSame('no-cache', $crawler->filter('head meta[name="turbo-cache-control"]')->attr('content'));
         self::assertResponseHeaderSame('X-Robots-Tag', 'noindex, nofollow');
         self::assertSame('noindex, nofollow', $crawler->filter('meta[name="robots"]')->attr('content'));
         self::assertCount(0, $crawler->filter('link[rel="canonical"]'));
@@ -161,6 +162,7 @@ final class ShopCheckoutPagesTest extends WebTestCase
         self::assertSame('noindex, nofollow', $crawler->filter('meta[name="robots"]')->attr('content'));
         self::assertCount(0, $crawler->filter('link[rel="canonical"]'));
         self::assertSame('order', $crawler->filter('#shop')->attr('data-page'));
+        self::assertSame('no-cache', $crawler->filter('head meta[name="turbo-cache-control"]')->attr('content'));
         $data = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data');
         self::assertSame(['page', 'title', 'order', 'statusUrl'], array_keys($data));
         self::assertSame(['order', 'Votre commande', '/api/shop/fr/orders/'.$placed['token']], [$data['page'], $data['title'], $data['statusUrl']]);

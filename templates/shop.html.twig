@@ -16,6 +16,7 @@
     <meta name="description" content="{{ seo.description }}">
     <meta name="theme-color" content="#fef9e7">
     <meta name="robots" content="{{ seo.robots }}">
+    <meta name="turbo-cache-control" content="{{ data.page in ['order', 'checkout'] ? 'no-cache' : 'no-preview' }}">
     {% if seo.canonical %}
         <link rel="canonical" href="{{ seo.canonical }}">
     {% endif %}
@@ -39,9 +40,6 @@
         <meta property="og:image:alt" content="{{ seo.image.alt }}">
         <meta name="twitter:image" content="{{ absolute_url(seo.image.url) }}">
     {% endif %}
-    {% if seo.jsonLd %}
-        <script type="application/ld+json">{{ seo.jsonLd|raw }}</script>
-    {% endif %}
     {% for font in [layout.fonts.heading, layout.fonts.body] %}
         {% if font %}
             <link rel="stylesheet" href="{{ font.stylesheet }}">
@@ -49,12 +47,16 @@
     {% endfor %}
 {% endblock %}
 
-{% block stylesheets %}{{ vite_entry_link_tags('shop') }}{% endblock %}
-{% block javascripts %}{{ vite_entry_script_tags('shop') }}{% endblock %}
+{% block stylesheets %}{{ vite_entry_link_tags('shop', {attr: {'data-turbo-track': 'reload'}}) }}{% endblock %}
+{% block javascripts %}{{ vite_entry_script_tags('shop', {attr: {'data-turbo-track': 'reload'}}) }}{% endblock %}
 
 {% block body %}
+    {% if seo.jsonLd %}
+        <script type="application/ld+json">{{ seo.jsonLd|raw }}</script>
+    {% endif %}
     <script type="application/json" id="site-content">{{ props|raw }}</script>
     <div id="shop" data-page="{{ data.page }}"{% if layout.preview ?? false %} data-preview{% endif %}>
         {% include 'shop/_prerender.html.twig' %}
     </div>
+    <p id="shop-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true" data-turbo-permanent></p>
 {% endblock %}

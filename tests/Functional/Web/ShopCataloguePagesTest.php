@@ -218,6 +218,7 @@ final class ShopCataloguePagesTest extends WebTestCase
         self::assertSame('1600', $crawler->filter('meta[property="og:image:width"]')->attr('content'));
         self::assertSame($title, $crawler->filter('meta[property="og:image:alt"]')->attr('content'));
         self::assertSame(1, substr_count($html, '<script type="application/ld+json">'));
+        self::assertCount(1, $crawler->filter('body > script[type="application/ld+json"]'));
         self::assertStringNotContainsString('alert(1)</script>', $html);
 
         $product = Json::decode($crawler->filter('script[type="application/ld+json"]')->text());

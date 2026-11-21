@@ -43,7 +43,8 @@ const zone = computed(() => quote.value?.shipping?.zone ?? null);
 const payable = computed(() => quote.value !== null && quote.value.deliverable && !pending.value && quoteFailure.value === null);
 const total = computed(() => (quote.value ? formatPrice(quote.value.total, locale.value) : ''));
 
-const leaveForTheCart = () => window.location.replace(props.data.cartUrl);
+let active = true;
+const leaveForTheCart = () => active && window.location.replace(props.data.cartUrl);
 
 async function ask() {
     const sent = request.value;
@@ -80,7 +81,10 @@ function restored(event) {
     ask();
 }
 
-onBeforeUnmount(() => window.removeEventListener('pageshow', restored));
+onBeforeUnmount(() => {
+    active = false;
+    window.removeEventListener('pageshow', restored);
+});
 
 onMounted(async () => {
     window.addEventListener('pageshow', restored);
@@ -162,7 +166,7 @@ async function place(delivery) {
                 <template #notice>
                     <Notice v-if="returned" tone="success" :title="$t('checkout.placed.title')" data-test="checkout-placed">
                         <p>{{ $t('checkout.placed.text') }}</p>
-                        <p><a :href="placedUrl">{{ $t('checkout.placed.link') }}</a></p>
+                        <p><a :href="placedUrl" data-turbo="false">{{ $t('checkout.placed.link') }}</a></p>
                     </Notice>
                     <Notice v-if="outdated" ref="notice" tone="error" :title="$t('cart.issues.title')" tabindex="-1" role="alert" data-test="checkout-outdated">
                         <p v-for="text in outdated" :key="text">{{ text }}</p>

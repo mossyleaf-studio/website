@@ -56,7 +56,7 @@ const note = computed(() => {
             </div>
         </dl>
 
-        <PillButton v-if="checkoutUrl && quote.deliverable" class="order-summary__checkout" :href="checkoutUrl" data-test="checkout">{{ $t('cart.summary.checkout') }}</PillButton>
+        <PillButton v-if="checkoutUrl && quote.deliverable" class="order-summary__checkout" :href="checkoutUrl" data-turbo-prefetch="false" data-test="checkout">{{ $t('cart.summary.checkout') }}</PillButton>
     </PaperSheet>
 </template>
 

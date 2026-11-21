@@ -15,9 +15,12 @@ const stalled = ref(false);
 const startedAt = Date.now();
 const pageUrl = window.location.pathname;
 let timer = null;
+let active = true;
 
 async function ask() {
-    order.value = await getJson(props.data.statusUrl).catch(() => order.value);
+    const answer = await getJson(props.data.statusUrl).catch(() => order.value);
+    if (!active) return;
+    order.value = answer;
     schedule();
 }
 
@@ -33,7 +36,10 @@ watch(
 );
 
 onMounted(schedule);
-onBeforeUnmount(() => clearTimeout(timer));
+onBeforeUnmount(() => {
+    active = false;
+    clearTimeout(timer);
+});
 </script>
 
 <template>

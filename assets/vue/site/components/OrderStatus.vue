@@ -40,7 +40,7 @@ const tracking = computed(() => trackingOf(props.order));
         </div>
 
         <div v-if="view.payUrl || view.backToCart || view.reload" class="order-status__actions">
-            <PillButton v-if="view.payUrl" :href="view.payUrl" tone="paper" data-test="order-pay">{{ $t('order.pay') }}</PillButton>
+            <PillButton v-if="view.payUrl" :href="view.payUrl" tone="paper" data-turbo="false" data-test="order-pay">{{ $t('order.pay') }}</PillButton>
             <PillButton v-if="view.backToCart" :href="cartUrl" data-test="order-cart">{{ $t('order.backToCart') }}</PillButton>
             <a v-if="view.reload" class="order-status__reload" :href="pageUrl" data-test="order-reload">{{ $t('order.reload') }}</a>
         </div>

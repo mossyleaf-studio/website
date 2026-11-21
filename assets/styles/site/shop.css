@@ -76,6 +76,33 @@ html[data-layout="shop"] .visually-hidden {
     }
 }
 
+html[data-layout="shop"] #shop:focus {
+    outline: none;
+}
+
+html[data-layout="shop"] .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 100%;
+    height: 0.1875rem;
+    background: var(--color-ink);
+    box-shadow: 0 0 0.5rem var(--color-moss);
+    transform-origin: left;
+    transform: scaleX(0);
+    opacity: 0;
+    pointer-events: none;
+}
+
+html[data-layout="shop"] .progress-bar--visible {
+    opacity: 1;
+}
+
+html[data-layout="shop"] .turbo-progress-bar {
+    display: none;
+}
+
 html[data-layout="shop"] .shop-prerender {
     display: flex;
     flex-direction: column;
