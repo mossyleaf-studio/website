@@ -56,6 +56,8 @@
         "updateDone": "Publié : les visiteurs voient les nouveaux textes.",
         "noteDone": "Publié : les visiteurs voient la note « en construction ».",
         "scope": "Les textes, liens, images et pages légales attendent « Publier » ; les produits, les conventions et la livraison sont en ligne tout de suite.",
+        "label": "Publication",
+        "blocking": "1 point bloque l’ouverture | {count} points bloquent l’ouverture",
         "beforeOpening": "Avant que la boutique puisse ouvrir",
         "readyCount": "{ready} sur {total} prêts",
         "attention": "À surveiller",

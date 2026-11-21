@@ -3,6 +3,7 @@ import { ExternalLink } from '@lucide/vue';
 import { computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../../components/ui/BaseButton.vue';
+import BaseCard from '../../components/ui/BaseCard.vue';
 import LocalizedField from '../../components/ui/LocalizedField.vue';
 import PageHeader from '../../components/ui/PageHeader.vue';
 import StatusBadge from '../../components/ui/StatusBadge.vue';
@@ -60,44 +61,47 @@ async function submit() {
     <div class="legal-page">
         <PageHeader :title="t('admin.legal.title')" :subtitle="t('admin.legal.subtitle')" />
 
-        <div class="legal-page__tabs" role="group" :aria-label="t('admin.legal.pages')">
-            <button
-                v-for="item in legalPages"
-                :key="item.kind"
-                type="button"
-                :class="['legal-page__tab', { 'legal-page__tab--current': item.kind === current }]"
-                :aria-pressed="item.kind === current ? 'true' : 'false'"
-                :data-test="`legal-tab-${item.kind}`"
-                @click="select(item.kind)"
-            >{{ t(`admin.legal.kinds.${item.kind}`) }}</button>
-        </div>
+        <BaseCard class="legal-page__card">
+            <div class="legal-page__tabs" role="group" :aria-label="t('admin.legal.pages')">
+                <button
+                    v-for="item in legalPages"
+                    :key="item.kind"
+                    type="button"
+                    :class="['legal-page__tab', { 'legal-page__tab--current': item.kind === current }]"
+                    :aria-pressed="item.kind === current ? 'true' : 'false'"
+                    :data-test="`legal-tab-${item.kind}`"
+                    @click="select(item.kind)"
+                >{{ t(`admin.legal.kinds.${item.kind}`) }}</button>
+            </div>
 
-        <form v-if="page && drafts[current]" class="legal-page__form" data-test="legal-form" @submit.prevent="submit">
-            <div class="legal-page__status">
-                <StatusBadge v-if="empty" tone="warning" data-test="legal-hidden">{{ t('admin.legal.hidden') }}</StatusBadge>
-                <p class="legal-page__changed">{{ page.updatedAt ? t('admin.legal.changed', { when: changedOn(page.updatedAt) }) : t('admin.legal.neverChanged') }}</p>
-                <a class="legal-page__preview" :href="page.preview[previewLocale]" target="_blank" rel="noopener" data-test="legal-preview">
-                    <ExternalLink size="0.9rem" aria-hidden="true" />{{ t('admin.legal.preview') }}
-                </a>
-            </div>
-            <LocalizedField
-                v-model="drafts[current]"
-                :label="t(`admin.legal.kinds.${current}`)"
-                name="text"
-                :max="LIMITS.legalText"
-                :rows="18"
-                :hint="t('admin.legal.hint')"
-                :errors="{ en: errors.text, fr: errors.textFr }"
-            />
-            <div class="actions-row">
-                <BaseButton type="submit" :loading="saving">{{ t('common.save') }}</BaseButton>
-            </div>
-        </form>
+            <form v-if="page && drafts[current]" class="legal-page__form" data-test="legal-form" @submit.prevent="submit">
+                <div class="legal-page__status">
+                    <StatusBadge v-if="empty" tone="warning" data-test="legal-hidden">{{ t('admin.legal.hidden') }}</StatusBadge>
+                    <p class="legal-page__changed">{{ page.updatedAt ? t('admin.legal.changed', { when: changedOn(page.updatedAt) }) : t('admin.legal.neverChanged') }}</p>
+                    <a class="legal-page__preview" :href="page.preview[previewLocale]" target="_blank" rel="noopener" data-test="legal-preview">
+                        <ExternalLink size="0.9rem" aria-hidden="true" />{{ t('admin.legal.preview') }}
+                    </a>
+                </div>
+                <LocalizedField
+                    v-model="drafts[current]"
+                    :label="t(`admin.legal.kinds.${current}`)"
+                    name="text"
+                    :max="LIMITS.legalText"
+                    :rows="18"
+                    :hint="t('admin.legal.hint')"
+                    :errors="{ en: errors.text, fr: errors.textFr }"
+                />
+                <div class="actions-row">
+                    <BaseButton type="submit" :loading="saving">{{ t('common.save') }}</BaseButton>
+                </div>
+            </form>
+        </BaseCard>
     </div>
 </template>
 
 <style scoped>
 .legal-page { display: flex; flex-direction: column; gap: var(--space-5); }
+.legal-page__card { display: flex; flex-direction: column; gap: var(--space-5); }
 .legal-page__tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 
 .legal-page__tab {

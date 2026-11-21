@@ -22,7 +22,17 @@ export function publishingMessage(publication) {
     return publication.pendingChanges ? 'updates' : 'nothing';
 }
 
-export const shownItems = (readiness) => readiness?.items.filter((item) => item.state !== 'ok') ?? [];
+const notOk = (readiness) => readiness?.items.filter((item) => item.state !== 'ok') ?? [];
+
+export const shownItems = (readiness) => notOk(readiness).toSorted((a, b) => (b.state === 'blocker') - (a.state === 'blocker'));
+
+export const blockingCount = (readiness) => readiness?.items.filter((item) => item.state === 'blocker').length ?? 0;
+
+export function listShown(publication, readiness, failed) {
+    if (!publication) return false;
+    if (!readiness) return failed;
+    return !publication.open || notOk(readiness).length > 0;
+}
 
 export const readyCount = (readiness) => ({
     ready: readiness?.items.filter((item) => item.state === 'ok').length ?? 0,

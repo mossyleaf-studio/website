@@ -12,14 +12,21 @@ import { intlLocale } from '../i18n/locale.js';
 const { t } = useI18n();
 const session = useSession();
 
-const rail = useTemplateRef('rail');
+const menu = useTemplateRef('menu');
 const route = useRoute();
+
+function revealActiveLink() {
+    const active = menu.value?.querySelector('.router-link-active');
+    if (!active || menu.value.scrollWidth <= menu.value.clientWidth) return;
+    const link = active.getBoundingClientRect();
+    menu.value.scrollLeft += link.left - menu.value.getBoundingClientRect().left - (menu.value.clientWidth - link.width) / 2;
+}
 
 watch(
     () => route.name,
     async () => {
         await nextTick();
-        rail.value?.querySelector('.router-link-active')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+        revealActiveLink();
     },
     { immediate: true, flush: 'post' },
 );
@@ -49,170 +56,199 @@ const GROUPS = [
 <template>
     <ConfigProvider :locale="intlLocale()">
         <TooltipProvider :delay-duration="300">
-        <div class="admin">
-            <header class="admin__bar">
-                <a class="admin__brand" href="/" target="_blank" rel="noopener">mossyleaf.studio</a>
-                <div class="admin__account">
-                    <a class="admin__site" href="/" target="_blank" rel="noopener">
-                        <ExternalLink size="0.9rem" aria-hidden="true" />{{ t('admin.nav.site') }}
-                    </a>
-                    <form method="post" action="/logout">
-                        <input type="hidden" name="_csrf_token" :value="session.logoutToken" />
-                        <button class="admin__sign-out" type="submit" :title="session.email">
-                            <LogOut size="0.9rem" aria-hidden="true" />{{ t('admin.nav.signOut') }}
-                        </button>
-                    </form>
-                </div>
-            </header>
-            <PublishBar />
-            <div class="admin__body">
-                <nav ref="rail" class="admin__rail" :aria-label="t('admin.nav.label')">
-                    <div v-for="group in GROUPS" :key="group.name" class="admin__group">
-                        <p :id="`admin-group-${group.name}`" class="eyebrow admin__group-name">{{ t(`admin.nav.groups.${group.name}`) }}</p>
-                        <ul class="admin__sections" :aria-labelledby="`admin-group-${group.name}`">
-                            <li v-for="section in group.sections" :key="section.name">
-                                <RouterLink :to="{ name: section.name }" class="admin__tab">
-                                    <component :is="section.icon" size="1rem" aria-hidden="true" />
-                                    {{ t(`admin.nav.${section.name}`) }}
-                                </RouterLink>
-                            </li>
-                        </ul>
+            <div class="admin">
+                <aside class="admin__sidebar">
+                    <RouterLink class="admin__brand" to="/">mossyleaf.studio</RouterLink>
+                    <nav ref="menu" class="admin__menu" :aria-label="t('admin.nav.label')">
+                        <div v-for="group in GROUPS" :key="group.name" class="admin__group">
+                            <p :id="`admin-group-${group.name}`" class="admin__group-label">{{ t(`admin.nav.groups.${group.name}`) }}</p>
+                            <ul class="admin__links" :aria-labelledby="`admin-group-${group.name}`">
+                                <li v-for="section in group.sections" :key="section.name">
+                                    <RouterLink v-slot="{ href, navigate, isActive }" :to="{ name: section.name }" custom>
+                                        <a :href="href" :class="['admin__link', { 'router-link-active': isActive }]" :aria-current="isActive ? 'page' : undefined" @click="navigate">
+                                            <component :is="section.icon" class="admin__icon" size="1.125rem" :stroke-width="1.75" aria-hidden="true" />
+                                            {{ t(`admin.nav.${section.name}`) }}
+                                        </a>
+                                    </RouterLink>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <div class="admin__account">
+                        <p v-if="session?.email" class="admin__email" :title="session.email">{{ session.email }}</p>
+                        <a class="admin__account-link" href="/" target="_blank" rel="noopener">
+                            <ExternalLink size="1rem" :stroke-width="1.75" aria-hidden="true" />
+                            <span class="admin__account-label">{{ t('admin.nav.site') }}</span>
+                        </a>
+                        <form method="post" action="/logout">
+                            <input type="hidden" name="_csrf_token" :value="session?.logoutToken" />
+                            <button class="admin__account-link" type="submit">
+                                <LogOut size="1rem" :stroke-width="1.75" aria-hidden="true" />
+                                <span class="admin__account-label">{{ t('admin.nav.signOut') }}</span>
+                            </button>
+                        </form>
                     </div>
-                </nav>
+                </aside>
                 <main id="main" class="admin__main">
-                    <RouterView />
+                    <PublishBar>
+                        <div class="admin__page">
+                            <RouterView />
+                        </div>
+                    </PublishBar>
                 </main>
             </div>
-        </div>
-        <ToastHost />
+            <ToastHost />
         </TooltipProvider>
     </ConfigProvider>
 </template>
 
 <style scoped>
-.admin { min-height: 100vh; }
+.admin {
+    display: grid;
+    grid-template-columns: var(--rail-width) minmax(0, 1fr);
+    align-content: start;
+    min-height: 100vh;
+}
 
-.admin__bar {
+.admin__sidebar {
     position: sticky;
     top: 0;
-    z-index: 20;
+    height: 100vh;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-2) var(--space-5);
-    padding: var(--space-3) var(--space-5);
-    border-bottom: 0.0625rem solid var(--color-border);
-    background: var(--color-surface);
+    flex-direction: column;
+    gap: var(--space-6);
+    padding: var(--space-6) var(--space-4);
+    background: var(--color-sidebar);
+    border-right: 0.0625rem solid var(--color-border);
 }
 
 .admin__brand {
-    color: var(--color-ink);
+    padding: 0 var(--space-3);
     font-family: var(--font-display);
-    font-size: 1.25rem;
-    text-decoration: none;
-}
-
-.admin__rail {
-    display: flex;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-5);
-    overflow-x: auto;
-    border-bottom: 0.0625rem solid var(--color-border);
-    scrollbar-width: thin;
-}
-
-.admin__group { display: flex; flex: 1 0 auto; }
-.admin__group + .admin__group { padding-left: var(--space-2); border-left: 0.0625rem solid var(--color-border); }
-
-.admin__group-name { display: none; }
-
-.admin__sections {
-    display: flex;
-    flex: 1 0 auto;
-    gap: var(--space-1);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.admin__sections li { flex: 1 0 auto; }
-
-.admin__tab {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    color: var(--color-muted);
-    font-weight: 600;
-    font-size: var(--font-size-md);
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--color-ink);
     text-decoration: none;
     white-space: nowrap;
 }
 
-.admin__tab:hover { color: var(--color-ink); background: var(--color-hover); }
-.admin__tab.router-link-active { color: var(--color-accent-strong); background: var(--color-accent-soft); }
+.admin__menu { display: flex; flex: 1; flex-direction: column; gap: var(--space-4); min-height: 0; overflow-y: auto; }
+.admin__group { display: flex; flex-direction: column; gap: var(--space-1); }
+.admin__group-label { padding: 0 var(--space-3); color: var(--color-subtle); font-size: var(--font-size-xs); font-weight: 600; }
+.admin__links { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
 
-.admin__account { display: flex; align-items: center; gap: var(--space-4); margin-left: auto; }
+.admin__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-left: 0.125rem solid transparent;
+    font-weight: 500;
+    color: var(--color-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color var(--transition), background var(--transition), border-color var(--transition);
+}
 
-.admin__site, .admin__sign-out {
+.admin__link:hover { color: var(--color-ink); background: var(--color-bg); }
+
+.admin__link.router-link-active {
+    color: var(--color-ink);
+    background: var(--color-accent-soft);
+    border-left-color: var(--color-accent);
+}
+
+.admin__icon { flex-shrink: 0; color: var(--color-subtle); transition: color var(--transition); }
+.admin__link:hover .admin__icon { color: var(--color-ink); }
+.admin__link.router-link-active .admin__icon { color: var(--color-accent); }
+
+.admin__account {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-3) 0;
+    border-top: 0.0625rem solid var(--color-border);
+    font-size: var(--font-size-sm);
+}
+
+.admin__email { max-width: 100%; overflow: hidden; color: var(--color-subtle); text-overflow: ellipsis; white-space: nowrap; }
+
+.admin__account-link {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--space-2);
     padding: 0;
     border: none;
     background: none;
     color: var(--color-muted);
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-sm);
     text-decoration: none;
     cursor: pointer;
+    transition: color var(--transition);
 }
 
-.admin__site:hover, .admin__sign-out:hover { color: var(--color-ink); }
+.admin__account-link:hover { color: var(--color-ink); }
 
 .admin__main {
-    width: 100%;
-    max-width: 52rem;
-    margin-inline: auto;
-    padding: var(--space-6) var(--space-5) var(--space-7);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+        "publish"
+        "list"
+        "page";
+    align-content: start;
+    min-width: 0;
+    overflow-x: clip;
+    padding: var(--space-6) var(--space-7);
 }
 
-@media (max-width: 40rem) {
-    .admin__bar { padding-inline: var(--space-4); }
-    .admin__rail { padding-inline: var(--space-4); }
-    .admin__main { padding-inline: var(--space-4); }
-}
+.admin__page { grid-area: page; min-width: 0; }
 
-@media (min-width: 56rem) {
-    .admin__body {
-        display: grid;
-        grid-template-columns: 14rem minmax(0, 1fr);
+@media (min-width: 90rem) {
+    .admin__main {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "publish publish"
+            "page list";
         align-items: start;
     }
+}
 
-    .admin__rail {
-        position: sticky;
-        top: 4rem;
-        flex-direction: column;
-        gap: var(--space-5);
-        padding: var(--space-6) var(--space-4);
-        overflow-x: visible;
-        border-bottom: none;
+@media (max-width: 53.75rem) {
+    .admin { grid-template-columns: minmax(0, 1fr); }
+
+    .admin__sidebar {
+        position: static;
+        height: auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--space-2) var(--space-3);
+        padding: var(--space-3) var(--space-4) 0;
+        border-right: none;
+        border-bottom: 0.0625rem solid var(--color-border);
     }
 
-    .admin__group { flex: none; flex-direction: column; }
-    .admin__group + .admin__group { padding-left: 0; border-left: none; }
+    .admin__menu { grid-column: 1 / -1; grid-row: 2; flex-direction: row; gap: var(--space-1); min-width: 0; overflow-x: auto; overflow-y: visible; scrollbar-width: none; }
+    .admin__group,
+    .admin__links { flex-direction: row; }
+    .admin__group-label { display: none; }
+    .admin__link { border-left: none; border-bottom: 0.125rem solid transparent; padding: var(--space-2); }
+    .admin__link.router-link-active { border-bottom-color: var(--color-accent); }
+    .admin__account { grid-column: 2; grid-row: 1; flex-direction: row; align-items: center; gap: var(--space-3); padding: 0; border-top: none; }
+    .admin__email { display: none; }
+    .admin__main { padding: var(--space-4); }
+}
 
-    .admin__group-name {
-        display: block;
-        margin: 0 0 var(--space-2);
-        padding-inline: var(--space-3);
+@media (max-width: 30rem) {
+    .admin__account-label {
+        position: absolute;
+        width: 0.0625rem;
+        height: 0.0625rem;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
     }
-
-    .admin__sections { flex-direction: column; }
-    .admin__sections li { flex: none; }
-
-    .admin__tab { justify-content: flex-start; }
 }
 </style>

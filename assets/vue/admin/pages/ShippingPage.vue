@@ -87,25 +87,30 @@ const amountError = (code, field) => (malformed[code][field] ? t('admin.shipping
 </template>
 
 <style scoped>
-.shipping-page { display: flex; flex-direction: column; gap: var(--space-4); }
+.shipping-page { display: flex; flex-direction: column; gap: var(--space-5); }
 .shipping-page__hint { color: var(--color-muted); }
-.shipping-page__zones { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.shipping-page__hint { max-width: 48rem; }
+.shipping-page__zones { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.shipping-page__zones > li { display: flex; }
 
 .shipping-zone {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-4);
+    flex: 1;
+    gap: var(--space-4);
+    padding: var(--space-5);
     border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
     background: var(--color-surface);
 }
 
-.shipping-zone__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.shipping-zone__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
 .shipping-zone__text { display: flex; flex-direction: column; gap: 0.125rem; min-width: 0; }
-.shipping-zone__name { margin: 0; color: var(--color-ink); font-size: var(--font-size-md); font-weight: 600; }
+.shipping-zone__name { margin: 0; color: var(--color-ink); font-size: var(--font-size); font-weight: 600; }
 .shipping-zone__covers { color: var(--color-muted); font-size: var(--font-size-md); }
 .shipping-zone__switch { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
 .shipping-zone__state { color: var(--color-muted); font-size: var(--font-size-sm); }
-.shipping-zone__fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: var(--space-3); }
+.shipping-zone__fields { display: flex; flex-direction: column; gap: var(--space-4); }
+.shipping-zone__fields > * { max-width: 14rem; }
+.shipping-zone .actions-row { margin-top: auto; }
 </style>

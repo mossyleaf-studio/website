@@ -4,6 +4,7 @@ import { computed, ref, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import BaseButton from '../../components/ui/BaseButton.vue';
+import BaseCard from '../../components/ui/BaseCard.vue';
 import BaseModal from '../../components/ui/BaseModal.vue';
 import ConfirmButton from '../../components/ui/ConfirmButton.vue';
 import FormField from '../../components/ui/FormField.vue';
@@ -71,8 +72,7 @@ async function deleteOrder() {
 </script>
 
 <template>
-    <section v-if="actions.length" class="order-actions" data-test="order-actions">
-        <h2 class="order-actions__heading">{{ t('admin.order.actions.title') }}</h2>
+    <BaseCard v-if="actions.length" :title="t('admin.order.actions.title')" class="order-actions" data-test="order-actions">
         <div class="order-actions__row">
             <BaseButton v-if="actions.includes('ship')" :disabled="busy" data-test="order-ship" @click="shipOpen = true"><PackageCheck size="1rem" aria-hidden="true" />{{ t('admin.order.ship.label') }}</BaseButton>
             <BaseButton v-if="actions.includes('checkPayment')" variant="secondary" :loading="busy" data-test="order-check-payment" @click="verify"><RefreshCw size="1rem" aria-hidden="true" />{{ t('admin.order.checkPayment.label') }}</BaseButton>
@@ -97,15 +97,14 @@ async function deleteOrder() {
                 </div>
             </form>
         </BaseModal>
-    </section>
+    </BaseCard>
 </template>
 
 <style scoped>
-.order-actions { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); border: 0.0625rem solid var(--color-border); border-radius: var(--radius); background: var(--color-surface); }
-.order-actions__heading { font-size: var(--font-size); }
 .order-actions__row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .order-actions__confirm { display: contents; }
 .order-actions__hint { color: var(--color-muted); font-size: var(--font-size-md); }
+.order-actions__row + .order-actions__hint { margin-top: var(--space-3); }
 .order-actions__form { display: flex; flex-direction: column; gap: var(--space-4); }
 
 @media (max-width: 40rem) {

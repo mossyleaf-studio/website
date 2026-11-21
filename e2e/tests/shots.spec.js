@@ -270,7 +270,7 @@ async function shootThePublishBar(page) {
             if (state !== 'open') await expect(bar.getByTestId('publish-ready-count')).toBeVisible();
             if (state === 'blocked') await expect(bar.getByTestId('readiness-shipping')).toHaveAttribute('data-state', 'blocker');
             if (state === 'ready') await expect(bar.getByTestId('readiness-shipping')).toHaveCount(0);
-            await bar.screenshot({ path: `shots/admin-publish-${state}-${size}.png`, animations: 'disabled' });
+            await page.screenshot({ path: `shots/admin-publish-${state}-${size}.png`, animations: 'disabled' });
         }
     }
 }
@@ -416,5 +416,29 @@ test('screenshots of the site and the admin', async ({ page }) => {
         await page.getByTestId('artwork-card').first().getByRole('button', { name: 'Delete' }).click();
         await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click();
         await expect(page.getByTestId('artwork-card')).toHaveCount(count - 1);
+    }
+});
+
+test('screenshots of the admin layout', async ({ page }) => {
+    test.setTimeout(120_000);
+    await signIn(page);
+    await placePaidOrder(page, [{ sku: 'CRD-001', quantity: 2 }, { sku: 'PRT-001-A4', quantity: 1 }]);
+    const orders = await (await page.request.get('/api/admin/orders')).json();
+    const products = await (await page.request.get('/api/admin/products')).json();
+    const pages = { ...ADMIN, orders: '/admin/orders', order: `/admin/orders/${orders[0].id}`, product: `/admin/products/${products[0].id}`, 'not-found': '/admin/nowhere' };
+    for (const [size, viewport] of Object.entries({ ...VIEWPORTS, laptop: { width: 1100, height: 800 } })) {
+        await page.setViewportSize(viewport);
+        for (const [name, path] of Object.entries(pages)) {
+            await page.goto(path);
+            await expect(page.getByTestId('publish-readiness')).toBeVisible();
+            await page.waitForLoadState('networkidle');
+            await page.screenshot({ path: `shots/layout-${name}-${size}.png`, fullPage: true, animations: 'disabled' });
+        }
+        if (size !== 'desktop') {
+            await page.goto('/admin/orders');
+            await page.getByTestId('publish-readiness').getByRole('button').click();
+            await expect(page.getByTestId('publish-readiness').getByRole('listitem').first()).toBeVisible();
+            await page.screenshot({ path: `shots/layout-list-open-${size}.png`, fullPage: true, animations: 'disabled' });
+        }
     }
 });

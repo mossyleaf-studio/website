@@ -9,6 +9,7 @@ defineProps({
 <template>
     <header class="page-header" :style="tone ? { '--tone': tone } : undefined">
         <div class="page-header__text">
+            <div v-if="$slots.back" class="page-header__back"><slot name="back" /></div>
             <h1 :class="['page-header__title', { 'page-header__title--toned': tone }]">{{ title }}</h1>
             <p v-if="subtitle" class="page-header__subtitle">{{ subtitle }}</p>
         </div>
@@ -17,10 +18,13 @@ defineProps({
 </template>
 
 <style scoped>
-.page-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-3); padding-bottom: var(--space-4); border-bottom: 0.0625rem solid var(--color-border); }
-.page-header__text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.page-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-4); padding-bottom: var(--space-4); border-bottom: 0.0625rem solid var(--color-border); }
+.page-header__text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; max-width: 48rem; }
+.page-header__back { margin-bottom: var(--space-1); font-size: var(--font-size-md); }
+.page-header__back :deep(a) { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); text-decoration: none; }
+.page-header__back :deep(a:hover) { color: var(--color-ink); }
 .page-header__title { overflow-wrap: anywhere; }
 .page-header__title--toned { color: var(--tone); }
 .page-header__subtitle { color: var(--color-muted); }
-.page-header__actions { display: flex; align-items: center; gap: var(--space-1); }
+.page-header__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 </style>

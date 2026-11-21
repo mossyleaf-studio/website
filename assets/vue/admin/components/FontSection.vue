@@ -118,9 +118,9 @@ async function submit() {
 .font-section__header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
 .font-section__title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 400; }
 .font-section__preview { color: var(--color-muted); font-size: var(--font-size-md); }
-.font-section__hint { color: var(--color-muted); font-size: var(--font-size-md); }
+.font-section__hint { max-width: 48rem; color: var(--color-muted); font-size: var(--font-size-md); }
 
-.font-section__fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--space-4); }
+.font-section__fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 20rem)); gap: var(--space-4); }
 
 .font-section__sample {
     display: flex;

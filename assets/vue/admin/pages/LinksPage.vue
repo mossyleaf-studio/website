@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../../components/ui/BaseButton.vue';
+import BaseCard from '../../components/ui/BaseCard.vue';
 import ConfirmButton from '../../components/ui/ConfirmButton.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import IconButton from '../../components/ui/IconButton.vue';
@@ -50,32 +51,33 @@ function confirmRemove(link) {
 
         <EmptyState v-if="!links.length" :icon="Link2" :title="t('admin.links.empty')" :hint="t('admin.links.emptyHint')" />
 
-        <VueDraggable
-            v-else
-            v-model="links"
-            tag="ul"
-            class="links-page__list"
-            handle=".links-page__grip"
-            :animation="160"
-            ghost-class="links-page__ghost"
-            @end="saveOrder"
-        >
-            <li v-for="(link, index) in links" :key="link.id" class="links-page__item" data-test="link-row">
-                <span class="links-page__grip" :title="t('admin.links.move', { title: link.title })"><GripVertical size="1.125rem" aria-hidden="true" /></span>
-                <span :class="['links-page__tape', `links-page__tape--${link.tape}`]" aria-hidden="true" />
-                <div class="links-page__text">
-                    <p class="links-page__title">{{ link.title }}</p>
-                    <p class="links-page__description">{{ link.description }}</p>
-                    <a class="links-page__url" :href="link.url" target="_blank" rel="noopener">{{ link.url }}</a>
-                </div>
-                <div class="links-page__actions">
-                    <IconButton :icon="ArrowUp" :label="t('admin.moveUp')" :disabled="index === 0" @click="move(index, -1)" />
-                    <IconButton :icon="ArrowDown" :label="t('admin.moveDown')" :disabled="index === links.length - 1" @click="move(index, 1)" />
-                    <IconButton :icon="Pencil" :label="t('admin.links.edit')" @click="openEditor(link)" />
-                    <ConfirmButton :icon="Trash2" :label="t('admin.links.delete')" :message="t('admin.links.deleteMessage', { title: link.title })" @confirm="confirmRemove(link)" />
-                </div>
-            </li>
-        </VueDraggable>
+        <BaseCard v-else>
+            <VueDraggable
+                v-model="links"
+                tag="ul"
+                class="links-page__list"
+                handle=".links-page__grip"
+                :animation="160"
+                ghost-class="links-page__ghost"
+                @end="saveOrder"
+            >
+                <li v-for="(link, index) in links" :key="link.id" class="links-page__item" data-test="link-row">
+                    <span class="links-page__grip" :title="t('admin.links.move', { title: link.title })"><GripVertical size="1.125rem" aria-hidden="true" /></span>
+                    <span :class="['links-page__tape', `links-page__tape--${link.tape}`]" aria-hidden="true" />
+                    <div class="links-page__text">
+                        <p class="links-page__title">{{ link.title }}</p>
+                        <p class="links-page__description">{{ link.description }}</p>
+                        <a class="links-page__url" :href="link.url" target="_blank" rel="noopener">{{ link.url }}</a>
+                    </div>
+                    <div class="links-page__actions">
+                        <IconButton :icon="ArrowUp" :label="t('admin.moveUp')" :disabled="index === 0" @click="move(index, -1)" />
+                        <IconButton :icon="ArrowDown" :label="t('admin.moveDown')" :disabled="index === links.length - 1" @click="move(index, 1)" />
+                        <IconButton :icon="Pencil" :label="t('admin.links.edit')" @click="openEditor(link)" />
+                        <ConfirmButton :icon="Trash2" :label="t('admin.links.delete')" :message="t('admin.links.deleteMessage', { title: link.title })" @confirm="confirmRemove(link)" />
+                    </div>
+                </li>
+            </VueDraggable>
+        </BaseCard>
 
         <LinkEditor v-model:open="editorOpen" :link="editing" />
     </div>
@@ -83,17 +85,19 @@ function confirmRemove(link) {
 
 <style scoped>
 .links-page { display: flex; flex-direction: column; gap: var(--space-5); }
-.links-page__list { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.links-page__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 
 .links-page__item {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border: 0.0625rem solid var(--color-border);
-    border-radius: var(--radius);
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 0.0625rem solid var(--color-border);
     background: var(--color-surface);
+    transition: background var(--transition);
 }
+
+.links-page__item:hover { background: var(--color-hover); }
 
 .links-page__grip { display: inline-flex; color: var(--color-subtle); cursor: grab; touch-action: none; }
 .links-page__ghost { opacity: 0.4; }

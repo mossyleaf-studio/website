@@ -3,6 +3,7 @@ import { Image, ImagePlus } from '@lucide/vue';
 import { ref } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
+import BaseCard from '../../components/ui/BaseCard.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import PageHeader from '../../components/ui/PageHeader.vue';
 import { useToast } from '../../composables/useToast.js';
@@ -67,33 +68,36 @@ function move(index, offset) {
                 />
             </label>
         </PageHeader>
-        <p class="images-page__formats">{{ t('admin.images.formats') }}</p>
+        <BaseCard class="images-page__card">
+            <p class="images-page__formats">{{ t('admin.images.formats') }}</p>
 
-        <EmptyState v-if="!artworks.length && !sending" :icon="Image" :title="t('admin.images.empty')" :hint="t('admin.images.emptyHint')" />
+            <EmptyState v-if="!artworks.length && !sending" :icon="Image" :title="t('admin.images.empty')" :hint="t('admin.images.emptyHint')" />
 
-        <VueDraggable
-            v-else
-            v-model="artworks"
-            class="images-page__grid"
-            handle=".artwork-card__grip"
-            :animation="160"
-            ghost-class="images-page__ghost"
-            @end="saveOrder"
-        >
-            <ArtworkCard
-                v-for="(artwork, index) in artworks"
-                :key="artwork.id"
-                :artwork="artwork"
-                :first="index === 0"
-                :last="index === artworks.length - 1"
-                @move="(offset) => move(index, offset)"
-            />
-        </VueDraggable>
+            <VueDraggable
+                v-else
+                v-model="artworks"
+                class="images-page__grid"
+                handle=".artwork-card__grip"
+                :animation="160"
+                ghost-class="images-page__ghost"
+                @end="saveOrder"
+            >
+                <ArtworkCard
+                    v-for="(artwork, index) in artworks"
+                    :key="artwork.id"
+                    :artwork="artwork"
+                    :first="index === 0"
+                    :last="index === artworks.length - 1"
+                    @move="(offset) => move(index, offset)"
+                />
+            </VueDraggable>
+        </BaseCard>
     </div>
 </template>
 
 <style scoped>
-.images-page { display: flex; flex-direction: column; gap: var(--space-4); }
+.images-page { display: flex; flex-direction: column; gap: var(--space-5); }
+.images-page__card { display: flex; flex-direction: column; gap: var(--space-4); }
 .images-page__formats { color: var(--color-muted); font-size: var(--font-size-md); }
 
 .images-page__upload {

@@ -84,6 +84,7 @@ async function submit() {
             />
             <FormField
                 v-else
+                class="text-section__single"
                 :label="field.label"
                 :error="errors[field.name]"
                 :hint="[field.hint, t('admin.count', { count: (form[field.name] ?? '').length, max: field.max })].filter(Boolean).join(' · ')"
@@ -113,5 +114,6 @@ async function submit() {
 .text-section__header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
 .text-section__title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 400; }
 .text-section__preview { color: var(--color-muted); font-size: var(--font-size-md); }
+.text-section__single { max-width: 40rem; }
 .text-section__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 </style>

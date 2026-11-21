@@ -3,6 +3,7 @@ import { CalendarDays, Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../../components/ui/BaseButton.vue';
+import BaseCard from '../../components/ui/BaseCard.vue';
 import ConfirmButton from '../../components/ui/ConfirmButton.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import IconButton from '../../components/ui/IconButton.vue';
@@ -50,8 +51,7 @@ function confirmRemove(convention) {
         <EmptyState v-if="!conventions.length" :icon="CalendarDays" :title="t('admin.conventions.empty')" :hint="t('admin.conventions.emptyHint')" />
 
         <template v-for="group in ['upcoming', 'past']" :key="group">
-            <section v-if="groups[group].length" :aria-labelledby="`conventions-${group}`" :data-test="`conventions-${group}`">
-                <h2 :id="`conventions-${group}`" class="eyebrow conventions-page__heading">{{ t(`admin.conventions.${group}`) }}</h2>
+            <BaseCard v-if="groups[group].length" :title="t(`admin.conventions.${group}`)" :data-test="`conventions-${group}`">
                 <ul class="conventions-page__list">
                     <li v-for="convention in groups[group]" :key="convention.id" :class="['conventions-page__item', { 'conventions-page__item--past': group === 'past' }]" data-test="convention-row">
                         <div class="conventions-page__text">
@@ -64,7 +64,7 @@ function confirmRemove(convention) {
                         </div>
                     </li>
                 </ul>
-            </section>
+            </BaseCard>
         </template>
 
         <ConventionEditor v-model:open="editorOpen" :convention="editing" />
@@ -73,20 +73,19 @@ function confirmRemove(convention) {
 
 <style scoped>
 .conventions-page { display: flex; flex-direction: column; gap: var(--space-5); }
-.conventions-page__heading { margin: 0 0 var(--space-2); }
-.conventions-page__list { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.conventions-page__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border-top: 0.0625rem solid var(--color-border); }
 
 .conventions-page__item {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border: 0.0625rem solid var(--color-border);
-    border-radius: var(--radius);
-    background: var(--color-surface);
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 0.0625rem solid var(--color-border);
+    transition: background var(--transition);
 }
 
-.conventions-page__item--past { border-style: dashed; }
+.conventions-page__item:hover { background: var(--color-hover); }
+.conventions-page__item--past .conventions-page__name { color: var(--color-muted); }
 .conventions-page__text { display: flex; flex: 1; flex-direction: column; gap: 0.125rem; min-width: 0; }
 .conventions-page__name { color: var(--color-ink); font-weight: 600; }
 .conventions-page__meta { color: var(--color-muted); font-size: var(--font-size-md); }

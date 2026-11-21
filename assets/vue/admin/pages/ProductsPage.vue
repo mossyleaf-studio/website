@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../../components/ui/BaseButton.vue';
+import BaseCard from '../../components/ui/BaseCard.vue';
 import BaseSelect from '../../components/ui/BaseSelect.vue';
 import BaseSwitch from '../../components/ui/BaseSwitch.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
@@ -67,88 +68,93 @@ function toggle(product, visible) {
             <BaseButton variant="secondary" data-test="category-names-open" @click="namesOpen = true"><Tags size="1rem" aria-hidden="true" />{{ t('admin.products.categoryNames') }}</BaseButton>
         </PageHeader>
 
-        <EmptyState v-if="failed && !products.length" :icon="CircleAlert" :title="t('admin.products.loadFailed')" :hint="t('common.error')" data-test="products-failed">
-            <BaseButton variant="secondary" @click="fetchProducts">{{ t('admin.retry') }}</BaseButton>
-        </EmptyState>
+        <BaseCard v-if="failed || loaded || products.length" class="products-page__card">
+            <EmptyState v-if="failed && !products.length" :icon="CircleAlert" :title="t('admin.products.loadFailed')" :hint="t('common.error')" data-test="products-failed">
+                <BaseButton variant="secondary" @click="fetchProducts">{{ t('admin.retry') }}</BaseButton>
+            </EmptyState>
 
-        <EmptyState v-else-if="loaded && !products.length" :icon="Package" :title="t('admin.products.empty')" :hint="t('admin.products.emptyHint')" data-test="products-empty" />
+            <EmptyState v-else-if="loaded && !products.length" :icon="Package" :title="t('admin.products.empty')" :hint="t('admin.products.emptyHint')" data-test="products-empty" />
 
-        <template v-else-if="products.length">
-            <div class="products-page__filters">
-                <input v-model="query" class="control products-page__search" type="search" name="search" :aria-label="t('admin.products.search')" :placeholder="t('admin.products.searchPlaceholder')" data-test="product-search" />
-                <div class="products-page__category"><BaseSelect v-model="category" :options="categoryOptions" :aria-label="t('admin.products.categoryFilter')" data-test="product-category-filter" /></div>
-            </div>
-            <p v-if="filtering" class="products-page__note">{{ t('admin.products.filtering') }}</p>
+            <template v-else-if="products.length">
+                <div class="products-page__filters">
+                    <input v-model="query" class="control products-page__search" type="search" name="search" :aria-label="t('admin.products.search')" :placeholder="t('admin.products.searchPlaceholder')" data-test="product-search" />
+                    <div class="products-page__category"><BaseSelect v-model="category" :options="categoryOptions" :aria-label="t('admin.products.categoryFilter')" data-test="product-category-filter" /></div>
+                </div>
+                <p v-if="filtering" class="products-page__note">{{ t('admin.products.filtering') }}</p>
 
-            <EmptyState v-if="!rows.length" :icon="SearchX" :title="t('admin.products.noMatch')" :hint="t('admin.products.noMatchHint')" data-test="products-no-match" />
+                <EmptyState v-if="!rows.length" :icon="SearchX" :title="t('admin.products.noMatch')" :hint="t('admin.products.noMatchHint')" data-test="products-no-match" />
 
-            <VueDraggable
-                v-else
-                :model-value="rows"
-                tag="ul"
-                class="products-page__list"
-                handle=".products-page__grip"
-                :disabled="filtering"
-                :animation="animation"
-                ghost-class="products-page__ghost"
-                @update:model-value="(list) => { products = list; }"
-                @end="saveOrder()"
-            >
-                <li v-for="(product, index) in rows" :key="product.id" class="products-page__item" data-test="product-row" :data-reference="product.reference">
-                    <span :class="['products-page__grip', { 'products-page__grip--off': filtering }]" :title="t('admin.products.move', { title: heading(product) })"><GripVertical size="1.125rem" aria-hidden="true" /></span>
-                    <div class="products-page__thumb">
-                        <img v-if="product.photos.length" :src="product.photos[0].thumbUrl" alt="" :width="product.photos[0].thumbWidth" :height="product.photos[0].thumbHeight" loading="lazy" />
-                        <ImageOff v-else size="1.25rem" aria-hidden="true" />
-                    </div>
-                    <div class="products-page__text">
-                        <RouterLink class="products-page__name" :to="{ name: 'product', params: { id: product.id } }">{{ heading(product) }}</RouterLink>
-                        <p class="products-page__meta">{{ product.reference }} · {{ product.category.name }}</p>
-                        <div class="products-page__chips">
-                            <StatusBadge v-if="product.retired" data-test="product-retired">{{ t('admin.products.retired') }}</StatusBadge>
-                            <StatusBadge v-for="gap in completeness(product)" :key="gap" tone="warning" data-test="product-chip">{{ t(`admin.products.chips.${gap}`) }}</StatusBadge>
+                <VueDraggable
+                    v-else
+                    :model-value="rows"
+                    tag="ul"
+                    class="products-page__list"
+                    handle=".products-page__grip"
+                    :disabled="filtering"
+                    :animation="animation"
+                    ghost-class="products-page__ghost"
+                    @update:model-value="(list) => { products = list; }"
+                    @end="saveOrder()"
+                >
+                    <li v-for="(product, index) in rows" :key="product.id" class="products-page__item" data-test="product-row" :data-reference="product.reference">
+                        <span :class="['products-page__grip', { 'products-page__grip--off': filtering }]" :title="t('admin.products.move', { title: heading(product) })"><GripVertical size="1.125rem" aria-hidden="true" /></span>
+                        <div class="products-page__thumb">
+                            <img v-if="product.photos.length" :src="product.photos[0].thumbUrl" alt="" :width="product.photos[0].thumbWidth" :height="product.photos[0].thumbHeight" loading="lazy" />
+                            <ImageOff v-else size="1.25rem" aria-hidden="true" />
                         </div>
-                    </div>
-                    <p class="products-page__price tabular">{{ formatCents(product.price, intlLocale()) }}</p>
-                    <p class="products-page__stock tabular">{{ totalStock(product) > 0 ? t('admin.products.stock', { count: totalStock(product) }) : t('admin.products.soldOut') }}</p>
-                    <BaseSwitch
-                        :model-value="product.visible"
-                        :label="t('admin.products.visible', { title: heading(product) })"
-                        :disabled="product.retired && !product.visible"
-                        data-test="product-visibility"
-                        @update:model-value="(visible) => toggle(product, visible)"
-                    />
-                    <div class="products-page__actions">
-                        <IconButton :icon="ArrowUp" :label="t('admin.products.moveUp', { title: heading(product) })" :disabled="filtering || index === 0" @click="move(index, -1)" />
-                        <IconButton :icon="ArrowDown" :label="t('admin.products.moveDown', { title: heading(product) })" :disabled="filtering || index === rows.length - 1" @click="move(index, 1)" />
-                        <RouterLink class="products-page__edit" :to="{ name: 'product', params: { id: product.id } }" tabindex="-1" aria-hidden="true" :title="t('admin.products.edit', { title: heading(product) })" data-test="product-edit">
-                            <Pencil size="1.125rem" aria-hidden="true" />
-                        </RouterLink>
-                    </div>
-                </li>
-            </VueDraggable>
-        </template>
+                        <div class="products-page__text">
+                            <RouterLink class="products-page__name" :to="{ name: 'product', params: { id: product.id } }">{{ heading(product) }}</RouterLink>
+                            <p class="products-page__meta">{{ product.reference }} · {{ product.category.name }}</p>
+                            <div class="products-page__chips">
+                                <StatusBadge v-if="product.retired" data-test="product-retired">{{ t('admin.products.retired') }}</StatusBadge>
+                                <StatusBadge v-for="gap in completeness(product)" :key="gap" tone="warning" data-test="product-chip">{{ t(`admin.products.chips.${gap}`) }}</StatusBadge>
+                            </div>
+                        </div>
+                        <p class="products-page__price tabular">{{ formatCents(product.price, intlLocale()) }}</p>
+                        <p class="products-page__stock tabular">{{ totalStock(product) > 0 ? t('admin.products.stock', { count: totalStock(product) }) : t('admin.products.soldOut') }}</p>
+                        <BaseSwitch
+                            :model-value="product.visible"
+                            :label="t('admin.products.visible', { title: heading(product) })"
+                            :disabled="product.retired && !product.visible"
+                            data-test="product-visibility"
+                            @update:model-value="(visible) => toggle(product, visible)"
+                        />
+                        <div class="products-page__actions">
+                            <IconButton :icon="ArrowUp" :label="t('admin.products.moveUp', { title: heading(product) })" :disabled="filtering || index === 0" @click="move(index, -1)" />
+                            <IconButton :icon="ArrowDown" :label="t('admin.products.moveDown', { title: heading(product) })" :disabled="filtering || index === rows.length - 1" @click="move(index, 1)" />
+                            <RouterLink class="products-page__edit" :to="{ name: 'product', params: { id: product.id } }" tabindex="-1" aria-hidden="true" :title="t('admin.products.edit', { title: heading(product) })" data-test="product-edit">
+                                <Pencil size="1.125rem" aria-hidden="true" />
+                            </RouterLink>
+                        </div>
+                    </li>
+                </VueDraggable>
+            </template>
+        </BaseCard>
 
         <CategoryNames v-model:open="namesOpen" />
     </div>
 </template>
 
 <style scoped>
-.products-page { display: flex; flex-direction: column; gap: var(--space-4); }
+.products-page { display: flex; flex-direction: column; gap: var(--space-5); }
+.products-page__card { display: flex; flex-direction: column; gap: var(--space-4); }
 .products-page__filters { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.products-page__search { flex: 1 1 14rem; }
+.products-page__search { flex: 0 1 20rem; }
 .products-page__category { flex: 0 1 16rem; min-width: 10rem; }
 .products-page__note { color: var(--color-muted); font-size: var(--font-size-md); }
-.products-page__list { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.products-page__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border-top: 0.0625rem solid var(--color-border); }
 
 .products-page__item {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border: 0.0625rem solid var(--color-border);
-    border-radius: var(--radius);
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 0.0625rem solid var(--color-border);
     background: var(--color-surface);
+    transition: background var(--transition);
 }
+
+.products-page__item:hover { background: var(--color-hover); }
 
 .products-page__grip { display: inline-flex; color: var(--color-muted); cursor: grab; touch-action: none; }
 .products-page__grip--off { cursor: not-allowed; opacity: 0.4; }
