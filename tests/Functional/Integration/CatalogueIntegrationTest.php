@@ -295,6 +295,109 @@ final class CatalogueIntegrationTest extends WebTestCase
         self::assertLessThanOrEqual(Product::MAX_SLUG, mb_strlen(self::product(self::FOX)->slug()));
     }
 
+    public function testANewProductArrivesHiddenWithThePushedDescriptions(): void
+    {
+        $client = self::createClient();
+
+        self::push($client, [self::fox(['descriptions' => ['fr' => "  Un renard.\nDans les fougères.\n\nTirage A4.  ", 'en' => 'A fox among ferns.']])]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(['created' => 1, 'updated' => 0, 'retired' => 0], Json::decode((string) $client->getResponse()->getContent()));
+        $fox = self::product(self::FOX);
+        self::assertSame(["Un renard.\nDans les fougères.\n\nTirage A4.", 'A fox among ferns.'], [$fox->description()->fr, $fox->description()->en]);
+        self::assertSame(['', '', 'prints-fox', 0], [$fox->title()->fr, $fox->title()->en, $fox->slug(), $fox->position()]);
+        self::assertFalse($fox->isVisible());
+    }
+
+    public function testADescriptionInOneLanguageLeavesTheOtherEmpty(): void
+    {
+        $client = self::createClient();
+
+        self::push($client, [self::owl(['descriptions' => ['fr' => 'Une chouette.']])]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(['Une chouette.', ''], [self::product(self::OWL)->description()->fr, self::product(self::OWL)->description()->en]);
+    }
+
+    public function testALaterPushFillsAnEmptyDescription(): void
+    {
+        $client = self::createClient();
+        self::push($client, [self::fox()]);
+
+        self::push($client, [self::fox(['descriptions' => ['fr' => 'Un renard.', 'en' => 'A fox.']])]);
+
+        self::assertSame(['created' => 0, 'updated' => 1, 'retired' => 0], Json::decode((string) $client->getResponse()->getContent()));
+        self::assertSame(['Un renard.', 'A fox.'], [self::product(self::FOX)->description()->fr, self::product(self::FOX)->description()->en]);
+    }
+
+    public function testADescriptionTheWebsiteHoldsIsKeptInEachLanguage(): void
+    {
+        $client = self::createClient();
+        self::push($client, [self::fox()]);
+        self::product(self::FOX)->describe(Translation::of('', 'Affiche renard'), Translation::of('', 'Écrit par le studio.'));
+        self::entityManager()->flush();
+
+        self::push($client, [self::fox(['descriptions' => ['fr' => 'Texte Etsy.', 'en' => 'Etsy text.']])]);
+
+        self::assertResponseIsSuccessful();
+        $fox = self::product(self::FOX);
+        self::assertSame(['Écrit par le studio.', 'Etsy text.', 'Affiche renard'], [$fox->description()->fr, $fox->description()->en, $fox->title()->fr]);
+
+        self::push($client, [self::fox(['descriptions' => ['fr' => 'Autre texte.', 'en' => 'Another text.']])]);
+
+        self::assertSame(['Écrit par le studio.', 'Etsy text.'], [self::product(self::FOX)->description()->fr, self::product(self::FOX)->description()->en]);
+    }
+
+    public function testABlankTextOrAnUnknownLanguageChangesNothing(): void
+    {
+        $client = self::createClient();
+
+        self::push($client, [self::fox(['descriptions' => ['fr' => " \n\t ", 'de' => 'Ein Fuchs.', 'EN' => 'A fox.']]), self::owl(['descriptions' => []])]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(['', ''], [self::product(self::FOX)->description()->fr, self::product(self::FOX)->description()->en]);
+        self::assertSame(['', ''], [self::product(self::OWL)->description()->fr, self::product(self::OWL)->description()->en]);
+    }
+
+    public function testATextOverTheLimitIsCutAtTheLastParagraphBreak(): void
+    {
+        $client = self::createClient();
+        $first = rtrim(str_repeat('Un renard dort. ', 150));
+        $second = str_repeat('Une fougère pousse. ', 100);
+
+        self::push($client, [self::fox(['descriptions' => ['en' => $first."\n\n".$second]])]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame($first, self::product(self::FOX)->description()->en);
+    }
+
+    /**
+     * @return iterable<string, array{mixed, string}>
+     */
+    public static function malformedDescriptions(): iterable
+    {
+        $notTexts = 'products[1].descriptions: Descriptions are texts keyed by language, such as {"fr": "…", "en": "…"}.';
+        yield 'a list' => [['Un renard.'], $notTexts];
+        yield 'a number as a value' => [['fr' => 3], $notTexts];
+        yield 'a list as a value' => [['en' => ['A fox.']], $notTexts];
+        yield 'a text' => ['Un renard.', 'products[1].descriptions: This value should be of type array.'];
+        yield 'null' => [null, 'products[1].descriptions: This value should be of type array.'];
+    }
+
+    #[DataProvider('malformedDescriptions')]
+    public function testMalformedDescriptionsRefuseTheCatalogue(mixed $descriptions, string $detail): void
+    {
+        $client = self::createClient();
+        self::push($client, [self::fox(), self::owl()]);
+
+        self::push($client, [self::owl(['descriptions' => ['fr' => 'Une chouette.']]), self::fox(['descriptions' => $descriptions])]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame($detail, Json::string(Json::decode((string) $client->getResponse()->getContent()), 'detail'));
+        self::assertNothingChanged();
+        self::assertSame(['', ''], [self::product(self::OWL)->description()->fr, self::product(self::FOX)->description()->fr]);
+    }
+
     /**
      * @return iterable<string, array{list<array<string, mixed>>}>
      */

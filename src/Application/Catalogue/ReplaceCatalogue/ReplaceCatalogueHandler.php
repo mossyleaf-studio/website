@@ -137,6 +137,7 @@ final readonly class ReplaceCatalogueHandler
                 } else {
                     $product->synchronise($item->reference, $item->name, $item->displayName, $category, $item->price);
                 }
+                $product->prefillDescription($item->descriptions);
 
                 foreach ($item->variants as $index => $variant) {
                     $product->stock($variant->sku, $variant->name, self::unsold($variant->stock, $sold[trim($variant->sku)] ?? []), $index);

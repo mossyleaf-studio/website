@@ -252,6 +252,41 @@ final class ProductTest extends TestCase
         return $product->addPhoto(new Ulid(), new PhotoFile('full.webp', 1600, 1200), new PhotoFile('thumb.webp', 600, 450));
     }
 
+    public function testAPushedDescriptionFillsOnlyTheEmptyLanguages(): void
+    {
+        $product = self::product();
+        $product->describe(Translation::of('', 'Affiche renard'), Translation::of('', 'Écrit par le studio.'));
+
+        $product->prefillDescription(Translation::of(' A fox. ', 'Texte Etsy.'));
+
+        self::assertSame(['A fox.', 'Écrit par le studio.', 'Affiche renard'], [$product->description()->en, $product->description()->fr, $product->title()->fr]);
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function textsOverTheLimit(): iterable
+    {
+        $first = rtrim(str_repeat('Un renard dort. ', 150));
+        yield 'at the last paragraph break' => [$first."\n\n".str_repeat('Une fougère pousse. ', 100), $first];
+        yield 'else at the last sentence end, keeping line breaks' => ["Renard\n".str_repeat('Une phrase courte. ', 300), "Renard\n".rtrim(str_repeat('Une phrase courte. ', 210))];
+        yield 'a question or an exclamation ends a sentence too' => [str_repeat('Un renard ? ', 300).str_repeat('Oui ! ', 300), rtrim(str_repeat('Un renard ? ', 300).str_repeat('Oui ! ', 66))];
+        yield 'else at the last space, never inside a word' => [str_repeat('fougères ', 500), rtrim(str_repeat('fougères ', 444))];
+        yield 'else at the limit when the text has no space' => [str_repeat('é', 4500), str_repeat('é', 4000)];
+        yield 'a text at the limit is kept whole' => [str_repeat('é', 4000), str_repeat('é', 4000)];
+    }
+
+    #[DataProvider('textsOverTheLimit')]
+    public function testAPushedDescriptionOverTheLimitIsCutToFit(string $pushed, string $kept): void
+    {
+        $product = self::product();
+
+        $product->prefillDescription(Translation::of($pushed, $pushed));
+
+        self::assertSame([$kept, $kept], [$product->description()->en, $product->description()->fr]);
+        self::assertLessThanOrEqual(Product::MAX_DESCRIPTION, mb_strlen($product->description()->en));
+    }
+
     private static function product(): Product
     {
         return Product::pushed(new Ulid(), 'PRT-FOX', 'Fox', 'Prints Fox', Category::named('Prints', 0), 1500, 'prints-fox', 0);

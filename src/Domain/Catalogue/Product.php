@@ -160,6 +160,14 @@ class Product implements Orderable
         $this->description = $description;
     }
 
+    public function prefillDescription(Translation $pushed): void
+    {
+        $this->description = Translation::of(
+            '' === $this->description->en ? self::fit($pushed->en, self::MAX_DESCRIPTION) : $this->description->en,
+            '' === $this->description->fr ? self::fit($pushed->fr, self::MAX_DESCRIPTION) : $this->description->fr,
+        );
+    }
+
     public function useSlug(string $slug): void
     {
         $slug = trim($slug);
@@ -302,6 +310,22 @@ class Product implements Orderable
         usort($photos, static fn (ProductPhoto $a, ProductPhoto $b): int => $a->position() <=> $b->position());
 
         return $photos;
+    }
+
+    private static function fit(string $text, int $max): string
+    {
+        if (mb_strlen($text) <= $max) {
+            return $text;
+        }
+
+        $head = mb_substr($text, 0, $max + 1);
+        foreach (['/^(.*\S)\s*\n\s*\n/su', '/^(.*[.!?…])\s/su', '/^(.*\S)\s/su'] as $cut) {
+            if (1 === preg_match($cut, $head, $match)) {
+                return $match[1];
+            }
+        }
+
+        return mb_substr($text, 0, $max);
     }
 
     private static function text(string $field, string $value, int $max): string

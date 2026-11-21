@@ -8,6 +8,7 @@ use App\Application\Catalogue\ReplaceCatalogue\PushedProduct;
 use App\Application\Catalogue\ReplaceCatalogue\PushedVariant;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogue;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogueHandler;
+use App\Domain\Shared\Translation;
 use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -118,6 +119,17 @@ final class ProductsApiTest extends WebTestCase
         self::assertSame(['Fox print', 'Affiche renard', 'A fox among ferns.', 'Un renard dans les fougères.', 'fox-print'], [$fox['title'], $fox['titleFr'], $fox['description'], $fox['descriptionFr'], $fox['slug']]);
         $client->jsonRequest('GET', '/api/admin/products');
         self::assertSame('Affiche renard', Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'titleFr'));
+    }
+
+    public function testTheProductCarriesTheDescriptionsThePushFilled(): void
+    {
+        $client = self::signedInClient();
+        self::push([new PushedProduct(new Ulid(self::FOX), 'PRT-FOX', 'Fox', 'Prints', 'Prints Fox', 1500, [new PushedVariant(null, 'PRT-FOX', 1)], Translation::of('A fox among ferns.', "Un renard.\n\nDans les fougères."))]);
+
+        $client->jsonRequest('GET', '/api/admin/products');
+
+        $fox = Json::array(Json::decode((string) $client->getResponse()->getContent()), 0);
+        self::assertSame(['A fox among ferns.', "Un renard.\n\nDans les fougères.", '', ''], [$fox['description'], $fox['descriptionFr'], $fox['title'], $fox['titleFr']]);
     }
 
     /**
