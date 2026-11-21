@@ -15,8 +15,8 @@ use Symfony\Component\Uid\Ulid;
 #[Route('/api/admin/products/{id}/visibility', name: 'api_products_show', requirements: ['id' => Requirement::ULID], methods: ['PUT'], format: 'json')]
 final class ShowProductController extends AbstractController
 {
-    public function __invoke(Ulid $id, ShowProductHandler $showProduct): JsonResponse
+    public function __invoke(Ulid $id, ShowProductHandler $showProduct, AdminProducts $products): JsonResponse
     {
-        return $this->json($showProduct(new ShowProduct($id)));
+        return $this->json($products->one($showProduct(new ShowProduct($id))));
     }
 }

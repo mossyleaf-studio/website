@@ -12,8 +12,8 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/admin/products', name: 'api_products_list', methods: ['GET'], format: 'json')]
 final class ListProductsController extends AbstractController
 {
-    public function __invoke(CatalogueQueries $queries): JsonResponse
+    public function __invoke(CatalogueQueries $queries, AdminProducts $products): JsonResponse
     {
-        return $this->json($queries->products());
+        return $this->json($products->all($queries->products()));
     }
 }

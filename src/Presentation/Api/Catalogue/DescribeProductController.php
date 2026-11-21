@@ -16,8 +16,8 @@ use Symfony\Component\Uid\Ulid;
 #[Route('/api/admin/products/{id}', name: 'api_products_describe', requirements: ['id' => Requirement::ULID], methods: ['PUT'], format: 'json')]
 final class DescribeProductController extends AbstractController
 {
-    public function __invoke(Ulid $id, #[MapRequestPayload] ProductPayload $payload, DescribeProductHandler $describeProduct): JsonResponse
+    public function __invoke(Ulid $id, #[MapRequestPayload] ProductPayload $payload, DescribeProductHandler $describeProduct, AdminProducts $products): JsonResponse
     {
-        return $this->json($describeProduct(new DescribeProduct($id, $payload->title, $payload->titleFr, $payload->description, $payload->descriptionFr, $payload->slug)));
+        return $this->json($products->one($describeProduct(new DescribeProduct($id, $payload->title, $payload->titleFr, $payload->description, $payload->descriptionFr, $payload->slug))));
     }
 }

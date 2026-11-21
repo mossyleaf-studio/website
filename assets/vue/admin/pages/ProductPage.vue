@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowLeft, CircleAlert, PackageX } from '@lucide/vue';
+import { ArrowLeft, CircleAlert, ExternalLink, PackageX } from '@lucide/vue';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
@@ -23,7 +23,8 @@ const props = defineProps({
     id: { type: String, required: true },
 });
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const previewLocale = computed(() => (locale.value === 'fr' ? 'fr' : 'en'));
 const toast = useToast();
 const { products, load, describe, show, hide } = useProducts();
 
@@ -92,6 +93,9 @@ function toggle(visible) {
     <div class="product-page" data-test="product-editor">
         <PageHeader v-if="product" :title="heading" :subtitle="product.reference">
             <template #back><RouterLink :to="{ name: 'products' }"><ArrowLeft size="0.875rem" aria-hidden="true" />{{ t('admin.product.back') }}</RouterLink></template>
+            <a v-if="product.preview" class="product-page__preview" :href="product.preview[previewLocale]" target="_blank" rel="noopener" data-test="product-preview">
+                <ExternalLink size="0.9rem" aria-hidden="true" />{{ t('admin.product.preview') }}
+            </a>
             <StatusBadge v-if="product.retired">{{ t('admin.products.retired') }}</StatusBadge>
         </PageHeader>
         <RouterLink v-else class="product-page__back" :to="{ name: 'products' }"><ArrowLeft size="0.875rem" aria-hidden="true" />{{ t('admin.product.back') }}</RouterLink>
@@ -187,6 +191,8 @@ function toggle(visible) {
 .product-page { display: flex; flex-direction: column; gap: var(--space-5); container-type: inline-size; }
 .product-page__back { display: inline-flex; align-items: center; align-self: flex-start; gap: var(--space-1); color: var(--color-muted); font-size: var(--font-size-md); text-decoration: none; }
 .product-page__back:hover { color: var(--color-ink); }
+.product-page__preview { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: var(--font-size-md); }
+.product-page__preview:hover { color: var(--color-ink); }
 
 .product-page__grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr); gap: var(--space-5); align-items: start; }
 .product-page__main, .product-page__side { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }

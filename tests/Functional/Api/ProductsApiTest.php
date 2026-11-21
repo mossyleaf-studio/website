@@ -57,7 +57,53 @@ final class ProductsApiTest extends WebTestCase
             'visible' => false,
             'position' => 0,
             'photos' => [],
+            'preview' => ['en' => '/beta/en/shop/prints-fox', 'fr' => '/beta/fr/shop/prints-fox'],
         ], Json::array($products, 0));
+    }
+
+    public function testAProductThatCanBeSoldCarriesTheAddressOfItsPreviewInEachLanguage(): void
+    {
+        $client = self::signedInClient();
+        [$fox, $owl] = self::push([self::fox(), self::owl()]);
+
+        $client->jsonRequest('PUT', "/api/admin/products/{$fox}", self::description(['slug' => 'fox-print']));
+
+        $renamed = ['en' => '/beta/en/shop/fox-print', 'fr' => '/beta/fr/shop/fox-print'];
+        self::assertSame($renamed, Json::array(Json::decode((string) $client->getResponse()->getContent()), 'preview'));
+
+        $client->request('GET', '/beta/fr/shop/fox-print');
+
+        self::assertResponseIsSuccessful();
+
+        $client->jsonRequest('PUT', "/api/admin/products/{$fox}/visibility");
+
+        self::assertSame($renamed, Json::array(Json::decode((string) $client->getResponse()->getContent()), 'preview'));
+
+        $client->jsonRequest('DELETE', "/api/admin/products/{$fox}/visibility");
+
+        self::assertSame($renamed, Json::array(Json::decode((string) $client->getResponse()->getContent()), 'preview'));
+
+        $client->jsonRequest('PUT', '/api/admin/products/order', ['ids' => [$owl, $fox]]);
+
+        $reordered = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame(['/beta/en/shop/stickers-owl', '/beta/en/shop/fox-print'], [Json::string($reordered, 0, 'preview', 'en'), Json::string($reordered, 1, 'preview', 'en')]);
+    }
+
+    public function testAProductThatCannotBeSoldHasNoPreview(): void
+    {
+        $client = self::signedInClient();
+        self::push([self::fox(), new PushedProduct(new Ulid(self::OWL), 'STK-OWL', 'Owl', 'Stickers', 'Stickers Owl', 0, [new PushedVariant(null, 'STK-OWL', 4)])]);
+
+        $client->jsonRequest('GET', '/api/admin/products');
+
+        $products = Json::decode((string) $client->getResponse()->getContent());
+        self::assertNull(Json::at($products, 1, 'preview'));
+
+        self::push([self::owl()]);
+        $client->jsonRequest('GET', '/api/admin/products');
+
+        $products = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame([true, null], [Json::at($products, 0, 'retired'), Json::at($products, 0, 'preview')]);
     }
 
     public function testAProductIsDescribedInBothLanguagesAndGetsANewSlug(): void

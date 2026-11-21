@@ -15,8 +15,8 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/admin/products/order', name: 'api_products_order', methods: ['PUT'], format: 'json')]
 final class ReorderProductsController extends AbstractController
 {
-    public function __invoke(#[MapRequestPayload] OrderPayload $payload, ReorderProductsHandler $reorderProducts): JsonResponse
+    public function __invoke(#[MapRequestPayload] OrderPayload $payload, ReorderProductsHandler $reorderProducts, AdminProducts $products): JsonResponse
     {
-        return $this->json($reorderProducts(new ReorderProducts($payload->ids)));
+        return $this->json($products->all($reorderProducts(new ReorderProducts($payload->ids))));
     }
 }

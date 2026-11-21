@@ -264,6 +264,7 @@
         "loadFailed": "Les produits n’ont pas pu être chargés"
     },
     "product": {
+        "preview": "Voir dans la boutique",
         "back": "Tous les produits",
         "notFound": "Produit introuvable",
         "notFoundHint": "Il a peut-être été retiré du catalogue.",

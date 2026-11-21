@@ -15,8 +15,8 @@ use Symfony\Component\Uid\Ulid;
 #[Route('/api/admin/products/{id}/visibility', name: 'api_products_hide', requirements: ['id' => Requirement::ULID], methods: ['DELETE'], format: 'json')]
 final class HideProductController extends AbstractController
 {
-    public function __invoke(Ulid $id, HideProductHandler $hideProduct): JsonResponse
+    public function __invoke(Ulid $id, HideProductHandler $hideProduct, AdminProducts $products): JsonResponse
     {
-        return $this->json($hideProduct(new HideProduct($id)));
+        return $this->json($products->one($hideProduct(new HideProduct($id))));
     }
 }

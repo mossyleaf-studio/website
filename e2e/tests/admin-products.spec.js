@@ -15,6 +15,9 @@ test('a hidden product gets a photo and its texts, then goes live', async ({ pag
     await expect(row(page, 'CRD-002').getByTestId('product-visibility')).not.toBeChecked();
     await row(page, 'CRD-002').getByTestId('product-edit').click();
     await expect(page.getByTestId('product-editor')).toBeVisible();
+    await expect(page.getByTestId('product-preview')).toHaveAttribute('href', /^\/beta\/en\/shop\/[a-z0-9-]+$/);
+    const preview = await page.request.get(await page.getByTestId('product-preview').getAttribute('href'));
+    expect(preview.ok()).toBeTruthy();
     await expect(page.getByTestId('photo-card')).toHaveCount(0);
 
     await page.getByTestId('photo-upload').setInputFiles(PNG);

@@ -264,6 +264,7 @@
         "loadFailed": "The products could not be loaded"
     },
     "product": {
+        "preview": "Preview in the shop",
         "back": "All products",
         "notFound": "Product not found",
         "notFoundHint": "It may have been removed from the catalogue.",
