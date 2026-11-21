@@ -14,7 +14,7 @@ final readonly class AdminProducts
     {
     }
 
-    /** @return array<string, mixed> */
+    /** @return array<mixed> */
     public function one(ProductView $product): array
     {
         return [...get_object_vars($product), 'preview' => $this->preview($product)];
@@ -23,7 +23,7 @@ final readonly class AdminProducts
     /**
      * @param list<ProductView> $products
      *
-     * @return list<array<string, mixed>>
+     * @return list<array<mixed>>
      */
     public function all(array $products): array
     {
