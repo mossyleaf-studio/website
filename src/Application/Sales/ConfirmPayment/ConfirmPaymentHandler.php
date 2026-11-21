@@ -11,6 +11,7 @@ use App\Application\Sales\PaymentGateway;
 use App\Application\Sales\PaymentState;
 use App\Domain\Catalogue\ProductRepository;
 use App\Domain\Sales\Order;
+use App\Domain\Sales\OrderLine;
 use App\Domain\Sales\OrderRepository;
 use App\Domain\Sales\OrderStatus;
 use Psr\Clock\ClockInterface;
@@ -91,12 +92,12 @@ final readonly class ConfirmPaymentHandler
 
     private function take(Order $order): void
     {
-        $quantities = [];
-        foreach ($order->lines() as $line) {
-            $quantities[$line->sku()] = ($quantities[$line->sku()] ?? 0) + $line->quantity();
+        $variants = [];
+        foreach ($this->products->variantsWithSkus(array_map(static fn (OrderLine $line): string => $line->sku(), $order->lines())) as $variant) {
+            $variants[$variant->sku()] = $variant;
         }
-        foreach ($this->products->variantsWithSkus(array_map(strval(...), array_keys($quantities))) as $variant) {
-            $variant->take($quantities[$variant->sku()]);
+        foreach ($order->lines() as $line) {
+            $line->take(($variants[$line->sku()] ?? null)?->take($line->quantity()) ?? 0);
         }
     }
 }

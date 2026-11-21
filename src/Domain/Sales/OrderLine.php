@@ -43,6 +43,9 @@ class OrderLine
     #[ORM\Column]
     private int $position;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $taken = null;
+
     public function __construct(Order $order, string $sku, string $name, string $title, ?string $variant, int $unitPrice, int $quantity, int $position)
     {
         $this->id = new Ulid();
@@ -84,6 +87,16 @@ class OrderLine
     public function quantity(): int
     {
         return $this->quantity;
+    }
+
+    public function take(int $units): int
+    {
+        return $this->taken = max(0, min($units, $this->quantity));
+    }
+
+    public function taken(): int
+    {
+        return $this->taken ?? 0;
     }
 
     public function total(): int

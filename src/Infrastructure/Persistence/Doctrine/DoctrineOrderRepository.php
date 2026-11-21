@@ -140,14 +140,15 @@ final readonly class DoctrineOrderRepository implements OrderRepository
         return $orders;
     }
 
-    public function unexportedUnits(): array
+    public function unexportedLines(): array
     {
-        /** @var list<array{sku: string, units: int|string}> $rows */
-        $rows = $this->entityManager
-            ->createQuery('SELECT l.sku AS sku, SUM(l.quantity) AS units FROM '.OrderLine::class.' l JOIN l.order o WHERE o.status IN (:holding) AND o.exportedAt IS NULL GROUP BY l.sku')
+        /** @var list<OrderLine> $lines */
+        $lines = $this->entityManager
+            ->createQuery('SELECT l, o FROM '.OrderLine::class.' l JOIN l.order o WHERE o.status IN (:holding) AND o.exportedAt IS NULL ORDER BY o.createdAt ASC, o.id ASC, l.position ASC')
             ->setParameter('holding', [OrderStatus::Paid->value, OrderStatus::Shipped->value])
-            ->getArrayResult();
+            ->setHint(Query::HINT_REFRESH, true)
+            ->getResult();
 
-        return array_column(array_map(static fn (array $row): array => [$row['sku'], (int) $row['units']], $rows), 1, 0);
+        return $lines;
     }
 }

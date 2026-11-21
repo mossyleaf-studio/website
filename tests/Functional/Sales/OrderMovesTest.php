@@ -146,6 +146,48 @@ final class OrderMovesTest extends WebTestCase
         self::assertSame(6, self::storedStock('STI-MOTH'));
     }
 
+    public function testAnOrderPaidAfterItsPieceSoldOutGivesNothingBackWhenCancelled(): void
+    {
+        self::stockTheShop();
+        $placed = $this->placeOrder([['STI-MOTH', 2]], 1250);
+        self::push(self::shopProducts(0));
+        $this->gateway->pay('checkout-1');
+        $this->confirm('checkout-1');
+        self::assertSame(0, self::stockOf('STI-MOTH'));
+
+        $this->cancel($placed->token);
+
+        self::assertSame(0, self::stockOf('STI-MOTH'));
+    }
+
+    public function testAnOrderPaidOnFewerUnitsThanItsQuantityGivesBackOnlyWhatItTook(): void
+    {
+        self::stockTheShop();
+        $placed = $this->placeOrder([['STI-MOTH', 3]], 1550);
+        self::push(self::shopProducts(1));
+        $this->gateway->pay('checkout-1');
+        $this->confirm('checkout-1');
+        self::assertSame(0, self::stockOf('STI-MOTH'));
+
+        $this->cancel($placed->token);
+
+        self::assertSame(1, self::stockOf('STI-MOTH'));
+    }
+
+    public function testAPaidTestOrderThatTookNothingGivesNothingBackWhenDeleted(): void
+    {
+        self::stockTheShop();
+        $placed = $this->placeOrder([['STI-MOTH', 2]], 1250, preview: true);
+        self::push(self::shopProducts(0));
+        $this->gateway->pay('checkout-1');
+        $this->confirm('checkout-1');
+
+        $this->deleteTest($placed->token);
+
+        self::assertFalse(self::exists($placed->token));
+        self::assertSame(0, self::stockOf('STI-MOTH'));
+    }
+
     public function testCancellingAShippedOrderGivesItsUnitsBack(): void
     {
         self::stockTheShop();

@@ -69,9 +69,12 @@ class ProductVariant
         $this->position = $position;
     }
 
-    public function take(int $quantity): void
+    public function take(int $quantity): int
     {
-        $this->stock = max(0, $this->stock - $quantity);
+        $taken = max(0, min($quantity, $this->stock));
+        $this->stock -= $taken;
+
+        return $taken;
     }
 
     public function giveBack(int $quantity): void

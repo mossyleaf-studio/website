@@ -14,6 +14,7 @@ use App\Domain\Catalogue\Exception\EmptyCatalogue;
 use App\Domain\Catalogue\Exception\ProductRefused;
 use App\Domain\Catalogue\Product;
 use App\Domain\Catalogue\ProductRepository;
+use App\Domain\Sales\OrderLine;
 use App\Domain\Sales\OrderRepository;
 use App\Domain\Shared\Exception\DomainException;
 use Psr\Clock\ClockInterface;
@@ -111,7 +112,10 @@ final readonly class ReplaceCatalogueHandler
         }
         $this->transaction->commit();
 
-        $sold = $this->orders->unexportedUnits();
+        $sold = [];
+        foreach ($this->orders->unexportedLines() as $line) {
+            $sold[$line->sku()][] = $line;
+        }
         $categories = [];
         foreach ($this->categories->all() as $category) {
             $categories[$category->name()] = $category;
@@ -135,7 +139,7 @@ final readonly class ReplaceCatalogueHandler
                 }
 
                 foreach ($item->variants as $index => $variant) {
-                    $product->stock($variant->sku, $variant->name, self::unsold($variant->stock, $sold[trim($variant->sku)] ?? 0), $index);
+                    $product->stock($variant->sku, $variant->name, self::unsold($variant->stock, $sold[trim($variant->sku)] ?? []), $index);
                 }
             } catch (DomainException $reason) {
                 throw new ProductRefused($item->reference, $reason);
@@ -147,9 +151,17 @@ final readonly class ReplaceCatalogueHandler
         return new CatalogueReport(\count($pushed) - $updated, $updated, $retired);
     }
 
-    private static function unsold(int $pushed, int $sold): int
+    /** @param list<OrderLine> $lines */
+    private static function unsold(int $pushed, array $lines): int
     {
-        return $pushed < 0 ? $pushed : max(0, $pushed - $sold);
+        if ($pushed < 0) {
+            return $pushed;
+        }
+        foreach ($lines as $line) {
+            $pushed -= $line->take($pushed);
+        }
+
+        return $pushed;
     }
 
     /**

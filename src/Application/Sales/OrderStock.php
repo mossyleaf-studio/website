@@ -15,10 +15,13 @@ final readonly class OrderStock
 
     public function giveBack(Order $order): void
     {
-        $units = $order->units();
         $this->products->lock();
-        foreach ($this->products->variantsWithSkus(array_map(strval(...), array_keys($units))) as $variant) {
-            $variant->giveBack($units[$variant->sku()]);
+        $taken = [];
+        foreach ($order->lines() as $line) {
+            $taken[$line->sku()] = ($taken[$line->sku()] ?? 0) + $line->taken();
+        }
+        foreach ($this->products->variantsWithSkus(array_map(strval(...), array_keys($taken))) as $variant) {
+            $variant->giveBack($taken[$variant->sku()]);
         }
     }
 }

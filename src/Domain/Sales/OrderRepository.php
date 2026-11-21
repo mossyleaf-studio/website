@@ -41,6 +41,6 @@ interface OrderRepository
     /** @return list<Order> */
     public function lockSold(): array;
 
-    /** @return array<string, int> */
-    public function unexportedUnits(): array;
+    /** @return list<OrderLine> */
+    public function unexportedLines(): array;
 }

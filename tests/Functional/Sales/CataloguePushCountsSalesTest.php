@@ -176,6 +176,64 @@ final class CataloguePushCountsSalesTest extends WebTestCase
         self::assertSame([7, 7], [self::stockOf('STI-MOTH'), self::available('stickers-moth', 'STI-MOTH')]);
     }
 
+    public function testAnOrderThePushCouldSubtractInFullGivesItsWholeQuantityBack(): void
+    {
+        self::stockTheShop();
+        self::push(self::shopProducts(8));
+        $placed = $this->paidOrder([['STI-MOTH', 2]], 1250);
+        self::push(self::shopProducts(8));
+        self::assertSame(6, self::stockOf('STI-MOTH'));
+
+        self::cancel($placed);
+
+        self::assertSame(8, self::stockOf('STI-MOTH'));
+    }
+
+    public function testAnOrderThePushCouldNotSubtractGivesNothingBack(): void
+    {
+        self::stockTheShop();
+        self::push(self::shopProducts(8));
+        $this->paidOrder([['STI-MOTH', 2]], 1250);
+        $newer = $this->paidOrder([['STI-MOTH', 2]], 1250);
+        self::push(self::shopProducts(2));
+        self::assertSame(0, self::stockOf('STI-MOTH'));
+
+        self::cancel($newer);
+
+        self::assertSame(0, self::stockOf('STI-MOTH'));
+    }
+
+    public function testThePushedUnitsServeTheOlderOrdersFirst(): void
+    {
+        self::stockTheShop();
+        self::push(self::shopProducts(8));
+        $older = $this->paidOrder([['STI-MOTH', 1]], 950);
+        $newer = $this->paidOrder([['STI-MOTH', 1]], 950);
+        self::push(self::shopProducts(1));
+        self::assertSame(0, self::stockOf('STI-MOTH'));
+
+        self::cancel($newer);
+
+        self::assertSame(0, self::stockOf('STI-MOTH'));
+
+        self::cancel($older);
+
+        self::assertSame(1, self::stockOf('STI-MOTH'));
+    }
+
+    public function testADeletedPaidTestOrderGivesBackWhatThePushLeftIt(): void
+    {
+        self::stockTheShop();
+        self::push(self::shopProducts(8));
+        $placed = $this->paidOrder([['STI-MOTH', 2]], 1250, test: true);
+        self::push(self::shopProducts(1));
+        self::assertSame(0, self::stockOf('STI-MOTH'));
+
+        self::deleteTestOrder($placed);
+
+        self::assertSame(1, self::stockOf('STI-MOTH'));
+    }
+
     public function testADeletedPaidTestOrderGivesItsUnitsBackAndIsNoLongerSubtracted(): void
     {
         self::stockTheShop();
