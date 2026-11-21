@@ -140,6 +140,19 @@ trait PlacesOrders
         return $variant->available;
     }
 
+    private static function stockBehindTheBack(string $sku, int $stock): void
+    {
+        self::getContainer()->get(EntityManagerInterface::class)->getConnection()->executeStatement('UPDATE product_variant SET stock = ? WHERE sku = ?', [$stock, $sku]);
+    }
+
+    private static function storedStock(string $sku): int
+    {
+        $stock = self::getContainer()->get(EntityManagerInterface::class)->getConnection()->fetchOne('SELECT stock FROM product_variant WHERE sku = ?', [$sku]);
+        self::assertIsInt($stock);
+
+        return $stock;
+    }
+
     /** @phpstan-impure */
     private static function stockOf(string $sku): ?int
     {

@@ -10,6 +10,7 @@ use App\Domain\Catalogue\ProductRepository;
 use App\Domain\Catalogue\ProductVariant;
 use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class DoctrineProductRepository implements ProductRepository
@@ -54,7 +55,18 @@ final readonly class DoctrineProductRepository implements ProductRepository
 
     public function variantsWithSkus(array $skus): array
     {
-        return [] === $skus ? [] : $this->entityManager->getRepository(ProductVariant::class)->findBy(['sku' => $skus]);
+        if ([] === $skus) {
+            return [];
+        }
+
+        /** @var list<ProductVariant> $variants */
+        $variants = $this->entityManager
+            ->createQuery('SELECT v FROM '.ProductVariant::class.' v WHERE v.sku IN (:skus)')
+            ->setParameter('skus', $skus)
+            ->setHint(Query::HINT_REFRESH, true)
+            ->getResult();
+
+        return $variants;
     }
 
     public function photoFiles(): array

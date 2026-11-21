@@ -65,6 +65,19 @@ final class ConfirmPaymentTest extends WebTestCase
         self::assertSame(0, self::stockOf('STI-MOTH'));
     }
 
+    public function testThePaymentTakesFromTheStockReadUnderTheLockNotFromACopyInMemory(): void
+    {
+        self::stockTheShop();
+        $this->placeOrder([['STI-MOTH', 2]], 1250);
+        self::assertSame(3, self::stockOf('STI-MOTH'));
+        self::stockBehindTheBack('STI-MOTH', 7);
+        $this->gateway->pay('checkout-1');
+
+        $this->confirm('checkout-1');
+
+        self::assertSame(5, self::storedStock('STI-MOTH'));
+    }
+
     public function testAPaidOrderWhoseSkuLeftTheCatalogueStillSettles(): void
     {
         self::stockTheShop();

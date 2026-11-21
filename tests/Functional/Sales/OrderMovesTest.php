@@ -134,6 +134,18 @@ final class OrderMovesTest extends WebTestCase
         self::assertSame([], $this->mails->sent);
     }
 
+    public function testCancellingGivesTheUnitsBackToTheStockReadUnderTheLockNotToACopyInMemory(): void
+    {
+        self::stockTheShop();
+        $token = $this->paidOrder(1);
+        self::assertSame(1, self::stockOf('STI-MOTH'));
+        self::stockBehindTheBack('STI-MOTH', 4);
+
+        $this->cancel($token);
+
+        self::assertSame(6, self::storedStock('STI-MOTH'));
+    }
+
     public function testCancellingAShippedOrderGivesItsUnitsBack(): void
     {
         self::stockTheShop();
