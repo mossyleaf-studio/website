@@ -38,8 +38,7 @@ final class SumUpGatewayTest extends TestCase
         self::assertSame(['POST', 'https://api.sumup.com/v0.1/checkouts'], [$method, $url]);
         self::assertSame(['Authorization: Bearer '.self::KEY], self::header($options, 'authorization'));
         self::assertSame(0, $options['max_redirects']);
-        self::assertGreaterThan(0, $options['timeout']);
-        self::assertGreaterThan(0, $options['max_duration']);
+        self::assertSame([10.0, 20.0], [$options['timeout'], $options['max_duration']]);
         self::assertSame([
             'checkout_reference' => 'ML-AB12-CD34',
             'amount' => 12.34,
@@ -92,6 +91,7 @@ final class SumUpGatewayTest extends TestCase
         self::assertSame(['GET', 'https://api.sumup.com/v0.1/checkouts/chk%2F1'], [$method, $url]);
         self::assertSame(['Authorization: Bearer '.self::KEY], self::header($options, 'authorization'));
         self::assertSame(0, $options['max_redirects']);
+        self::assertSame([5.0, 8.0], [$options['timeout'], $options['max_duration']]);
     }
 
     public function testTheTransactionCodeIsTheOneOfTheSuccessfulTransaction(): void

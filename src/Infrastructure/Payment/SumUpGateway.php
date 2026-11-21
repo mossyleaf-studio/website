@@ -17,7 +17,9 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 final readonly class SumUpGateway implements PaymentGateway
 {
     public const string CHECKOUTS = 'https://api.sumup.com/v0.1/checkouts';
-    private const array OPTIONS = ['timeout' => 10, 'max_duration' => 20, 'max_redirects' => 0];
+    private const array OPTIONS = ['max_redirects' => 0];
+    private const array OPENING = ['timeout' => 10, 'max_duration' => 20];
+    private const array FINDING = ['timeout' => 5, 'max_duration' => 8];
     private const array STATES = ['PENDING' => PaymentState::Pending, 'PAID' => PaymentState::Paid, 'FAILED' => PaymentState::Failed, 'EXPIRED' => PaymentState::Expired];
     private const string SUCCESSFUL = 'SUCCESSFUL';
     public const string HOSTED_CHECKOUT = '#^https://([a-z0-9-]+\.)*sumup\.com/#';
@@ -46,7 +48,7 @@ final readonly class SumUpGateway implements PaymentGateway
 
     public function open(string $reference, int $amount, string $description, string $webhookUrl, string $redirectUrl, \DateTimeImmutable $validUntil): OpenedCheckout
     {
-        $answer = $this->call('POST', self::CHECKOUTS, ['json' => [
+        $answer = $this->call('POST', self::CHECKOUTS, [...self::OPENING, 'json' => [
             'checkout_reference' => $reference,
             'amount' => $amount / 100,
             'currency' => CheckoutState::CURRENCY,
@@ -69,7 +71,7 @@ final readonly class SumUpGateway implements PaymentGateway
 
     public function find(string $id): CheckoutState
     {
-        $answer = $this->call('GET', self::CHECKOUTS.'/'.rawurlencode($id), [], self::UNKNOWN_CHECKOUT);
+        $answer = $this->call('GET', self::CHECKOUTS.'/'.rawurlencode($id), self::FINDING, self::UNKNOWN_CHECKOUT);
 
         $status = $answer['status'] ?? null;
         $state = \is_string($status) ? (self::STATES[$status] ?? null) : null;
