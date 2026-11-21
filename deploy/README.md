@@ -38,7 +38,7 @@ Sign-in goes through mossyleaf accounts (`accounts.mossyleaf.studio`). An accoun
 
 - `compose.override.yaml` puts the app on the reverse proxy network (`PROXY_NETWORK`) with the alias `mossyleaf-studio`, and opens no host port.
 - The `mossyleaf.studio` block of the Caddyfile (repo `duprat-cloud`, `proxy/conf/Caddyfile`) proxies to `mossyleaf-studio:80` with a 22 MB body limit for image uploads (`import app mossyleaf-studio:80 22MB`); `www.mossyleaf.studio` redirects to it. Caddy sends the `X-Forwarded-*` headers and handles the certificates.
-- Uploaded images live in the `app_share` volume (`var/share/artworks`), the texts and links in `database_data`.
+- The `app_share` volume holds the uploaded images and product photos (`var/share/artworks`) and the self-hosted fonts (`var/share/fonts`); everything else there (`pools`, the cache) rebuilds itself. Texts, links, products and orders live in `database_data`.
 
 ## Opening and closing the shop
 
@@ -66,5 +66,7 @@ From a dev machine, with `DEPLOY_HOST` (`user@server`), `DEPLOY_DIR` and optiona
 
 ```bash
 docker compose exec -T database pg_dump -U app app | gzip > backup-$(date +%F).sql.gz
-docker run --rm -v mossyleaf-studio_app_share:/share -v "$PWD":/backup alpine tar czf /backup/artworks-$(date +%F).tgz -C /share artworks
+docker run --rm -v mossyleaf-studio_app_share:/share -v "$PWD":/backup alpine tar czf /backup/share-$(date +%F).tgz -C /share artworks fonts
 ```
+
+A backup needs the database and the `artworks` and `fonts` folders of `app_share`, taken together: the database names the files of both (a restored font or image whose file is missing is a broken link, and `MediaSweeper` deletes files no row names).
