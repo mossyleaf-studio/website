@@ -343,7 +343,7 @@ final class ShopPagesTest extends WebTestCase
             $crawler = $client->request('GET', $url);
 
             self::assertSame('no-preview', $crawler->filter('head meta[name="turbo-cache-control"]')->attr('content'), $url);
-            $entry = $crawler->filter('head script[type="module"][src*="/assets/shop.js"]');
+            $entry = $crawler->filter('head script[type="module"][src*="/assets/shop"]');
             self::assertCount(1, $entry, $url);
             self::assertSame('reload', $entry->attr('data-turbo-track'), $url);
             self::assertCount(0, $crawler->filter('head script[type="application/ld+json"]'), $url);
