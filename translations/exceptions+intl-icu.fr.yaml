@@ -38,3 +38,4 @@ sales:
     order_move_refused: 'Cette commande est {from, select, pending {en attente de paiement} paid {payée} shipped {expédiée} failed {impayée} expired {expirée} other {annulée}}, elle ne peut pas être {to, select, pending {remise en attente} paid {payée} shipped {expédiée} failed {marquée impayée} expired {expirée} other {annulée}}.'
     invalid_tracking_number: 'Écrivez le numéro de suivi sur une seule ligne.'
     not_a_test_order: 'La commande {reference} est une vraie commande : seules les commandes de test peuvent être supprimées.'
+    checkout_still_open: 'La commande {reference} peut encore être payée : terminez le paiement, ou attendez que sa page de paiement se ferme, environ une demi-heure après la commande, avant de la supprimer.'

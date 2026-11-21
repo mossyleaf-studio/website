@@ -200,7 +200,7 @@ final class ShopReadinessApiTest extends WebTestCase
 
         self::assertSame(['warning', 2], array_values(array_slice(self::item(self::readiness($client), 'testOrders'), 1)));
 
-        $client->jsonRequest('DELETE', '/api/admin/orders/'.self::order($pending['token'])->id()->toString());
+        $client->jsonRequest('DELETE', '/api/admin/orders/'.self::order($paid['token'])->id()->toString());
         self::assertResponseIsSuccessful();
         self::assertSame(['warning', 1], array_values(array_slice(self::item(self::readiness($client), 'testOrders'), 1)));
     }

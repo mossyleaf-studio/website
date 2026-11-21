@@ -38,3 +38,4 @@ sales:
     order_move_refused: 'This order is {from, select, pending {awaiting payment} paid {paid} shipped {shipped} failed {unpaid} expired {expired} other {cancelled}}, so it cannot be {to, select, pending {awaiting payment} paid {paid} shipped {shipped} failed {marked unpaid} expired {expired} other {cancelled}}.'
     invalid_tracking_number: 'Write the tracking number on a single line.'
     not_a_test_order: 'The order {reference} is a real order: only test orders can be deleted.'
+    checkout_still_open: 'The order {reference} can still be paid: finish the payment, or wait for its checkout to close, about half an hour after the order was placed, before deleting it.'

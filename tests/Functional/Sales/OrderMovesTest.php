@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Sales;
 
 use App\Application\Sales\PaymentState;
+use App\Domain\Sales\Exception\CheckoutStillOpen;
 use App\Domain\Sales\Exception\NotATestOrder;
 use App\Domain\Sales\Exception\OrderMoveRefused;
 use App\Domain\Sales\OrderStatus;
@@ -289,12 +290,14 @@ final class OrderMovesTest extends WebTestCase
     #[DataProvider('emptyHandedTestOrders')]
     public function testAnUnpaidTestOrderGivesNothingBack(?PaymentState $state): void
     {
+        $clock = self::mockTime('2026-11-20 10:00:00');
         self::stockTheShop();
         $placed = $this->placeOrder([['STI-MOTH', 2]], 1250, preview: true);
         if (null !== $state) {
             $this->gateway->script('checkout-1', $state);
             $this->confirm('checkout-1');
         }
+        $clock->sleep(30 * 60);
 
         $this->deleteTest($placed->token);
 
@@ -302,6 +305,23 @@ final class OrderMovesTest extends WebTestCase
         self::assertSame(0, self::lineCount());
         self::assertSame(3, self::stockOf('STI-MOTH'));
         self::assertSame(3, self::available('stickers-moth', 'STI-MOTH'));
+    }
+
+    public function testAPendingTestOrderWhoseCheckoutCanStillBePaidIsKept(): void
+    {
+        $clock = self::mockTime('2026-11-20 10:00:00');
+        self::stockTheShop();
+        $placed = $this->placeOrder([['STI-MOTH', 2]], 1250, preview: true);
+        $clock->sleep(29 * 60);
+
+        try {
+            $this->deleteTest($placed->token);
+            self::fail('A checkout that can still be paid keeps its order.');
+        } catch (CheckoutStillOpen) {
+        }
+
+        self::assertTrue(self::exists($placed->token));
+        self::assertSame(OrderStatus::Pending, self::fresh($placed->token)->status());
     }
 
     public function testACancelledTestOrderGivesNothingBackASecondTime(): void

@@ -232,8 +232,9 @@ final class OrdersApiTest extends WebTestCase
         self::assertSame('sales.payment_unavailable', Json::string(self::answer($client), 'code'));
     }
 
-    public function testATestOrderIsDeletedAndARealOneRefused(): void
+    public function testATestOrderIsDeletedOnceItsCheckoutClosedAndARealOneRefused(): void
     {
+        $clock = self::mockTime('2026-11-20 10:00:00');
         $client = self::stockedClient();
         $placed = self::placeThroughTheShop($client);
         $real = self::placeRealOrder();
@@ -243,6 +244,13 @@ final class OrdersApiTest extends WebTestCase
         self::assertResponseStatusCodeSame(422);
         self::assertSame('sales.not_a_test_order', Json::string(self::answer($client), 'code'));
 
+        $client->jsonRequest('DELETE', self::url($placed, ''));
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertResponseHeaderSame('Content-Type', 'application/problem+json');
+        self::assertSame('sales.checkout_still_open', Json::string(self::answer($client), 'code'));
+
+        $clock->sleep(30 * 60);
         $client->jsonRequest('DELETE', self::url($placed, ''));
 
         self::assertResponseStatusCodeSame(204);

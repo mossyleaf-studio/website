@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales;
 
+use App\Domain\Sales\Exception\CheckoutStillOpen;
 use App\Domain\Sales\Exception\InvalidTrackingNumber;
 use App\Domain\Sales\Exception\NotATestOrder;
 use App\Domain\Sales\Exception\OrderMoveRefused;
@@ -383,10 +384,13 @@ class Order
         return $units;
     }
 
-    public function assertDeletable(): void
+    public function assertDeletable(\DateTimeImmutable $now): void
     {
         if (!$this->test) {
             throw new NotATestOrder($this->reference);
+        }
+        if ($this->canBePaidAt($now)) {
+            throw new CheckoutStillOpen($this->reference);
         }
     }
 

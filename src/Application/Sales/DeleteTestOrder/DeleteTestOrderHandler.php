@@ -7,6 +7,7 @@ namespace App\Application\Sales\DeleteTestOrder;
 use App\Application\AtomicChange;
 use App\Application\Sales\OrderStock;
 use App\Domain\Sales\OrderRepository;
+use Psr\Clock\ClockInterface;
 
 final readonly class DeleteTestOrderHandler
 {
@@ -14,6 +15,7 @@ final readonly class DeleteTestOrderHandler
         private OrderRepository $orders,
         private OrderStock $stock,
         private AtomicChange $atomicChange,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -21,7 +23,7 @@ final readonly class DeleteTestOrderHandler
     {
         $this->atomicChange->apply(function () use ($command): void {
             $order = $this->orders->lock($command->id);
-            $order->assertDeletable();
+            $order->assertDeletable($this->clock->now());
             if ($order->holdsUnits()) {
                 $this->stock->giveBack($order);
             }

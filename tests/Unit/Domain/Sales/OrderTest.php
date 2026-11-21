@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Domain\Sales;
 
 use App\Domain\Sales\Country;
 use App\Domain\Sales\Delivery;
+use App\Domain\Sales\Exception\CheckoutStillOpen;
 use App\Domain\Sales\Exception\InvalidTrackingNumber;
 use App\Domain\Sales\Exception\NotATestOrder;
 use App\Domain\Sales\Exception\OrderMoveRefused;
@@ -278,10 +279,29 @@ final class OrderTest extends TestCase
 
     public function testOnlyATestOrderMayBeDeleted(): void
     {
-        self::order(new \DateTimeImmutable(), test: true)->assertDeletable();
+        $placedAt = new \DateTimeImmutable('2026-11-20 10:00:00');
+        self::order($placedAt, test: true)->assertDeletable($placedAt->modify('+30 minutes'));
 
         $this->expectException(NotATestOrder::class);
-        self::order(new \DateTimeImmutable())->assertDeletable();
+        self::order($placedAt)->assertDeletable($placedAt->modify('+30 minutes'));
+    }
+
+    public function testATestOrderIsNotDeletedWhileItsCheckoutCanStillBePaid(): void
+    {
+        $placedAt = new \DateTimeImmutable('2026-11-20 10:00:00');
+        $order = self::order($placedAt, test: true);
+
+        try {
+            $order->assertDeletable($placedAt->modify('+29 minutes 59 seconds'));
+            self::fail('A checkout that can still be paid keeps its order.');
+        } catch (CheckoutStillOpen $refusal) {
+            self::assertSame(['reference' => 'ML-AB12-CD34'], $refusal->parameters());
+        }
+
+        $order->assertDeletable($placedAt->modify('+30 minutes'));
+        $order->pay('TX', $placedAt->modify('+1 minute'));
+        $order->assertDeletable($placedAt->modify('+1 minute'));
+        $this->addToAssertionCount(1);
     }
 
     public function testTheFirstExportStampsTheOrderAndALaterOneKeepsThatStamp(): void

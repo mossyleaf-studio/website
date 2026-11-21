@@ -61,6 +61,7 @@ trait MovesOrders
             $container->get(OrderRepository::class),
             self::stock(),
             $container->get(AtomicChange::class),
+            $container->get(ClockInterface::class),
         )(new DeleteTestOrder(self::order($token)->id()));
     }
 
