@@ -28,7 +28,12 @@ final readonly class OrderQueries
     {
         $order = $this->withToken($token);
 
-        return null !== $order && OrderStatus::Pending === $order->status() ? $order->paymentId() : null;
+        if (null === $order) {
+            return null;
+        }
+        $status = $order->status();
+
+        return OrderStatus::Pending === $status || (OrderStatus::Failed === $status && $order->expiresAt() > $this->clock->now()) ? $order->paymentId() : null;
     }
 
     /** @return list<OrderView> */

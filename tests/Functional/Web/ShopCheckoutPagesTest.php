@@ -190,6 +190,21 @@ final class ShopCheckoutPagesTest extends WebTestCase
         self::assertStringContainsString('no-store', (string) $client->getResponse()->headers->get('Cache-Control'));
     }
 
+    public function testTheOrderPageSeesADeclinedCheckoutPaidOnRetry(): void
+    {
+        $client = self::stockedClient();
+        $placed = self::placeThroughTheShop($client);
+        self::sumUp()->settle($placed['paymentId'], FakeSumUp::FAILED);
+        $client->request('GET', '/beta/en/order/'.$placed['token']);
+        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
+
+        $crawler = $client->request('GET', '/beta/en/order/'.$placed['token']);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('paid', Json::at(Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data'), 'order', 'status'));
+        self::assertSame(1, self::stockOf('STI-MOTH'));
+    }
+
     public function testAnUnknownOrderStaysClosedWhileTheDoorIsShut(): void
     {
         $client = self::createClient();

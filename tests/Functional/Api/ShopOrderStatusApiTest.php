@@ -110,6 +110,39 @@ final class ShopOrderStatusApiTest extends WebTestCase
         self::assertSame(['failed', null], [self::answer($client)['status'], self::answer($client)['paymentUrl']]);
     }
 
+    public function testADeclinedCheckoutPaidOnRetryIsShownPaid(): void
+    {
+        $clock = self::mockTime('2026-11-20 10:00:00');
+        $client = self::stockedClient();
+        $placed = self::placeThroughTheShop($client);
+        self::sumUp()->settle($placed['paymentId'], FakeSumUp::FAILED);
+        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token']);
+        self::assertSame(OrderStatus::Failed, self::order($placed['token'], fresh: true)->status());
+        $clock->sleep(29 * 60);
+        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
+
+        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token']);
+
+        self::assertSame(['paid', null], [self::answer($client)['status'], self::answer($client)['paymentUrl']]);
+        self::assertSame(OrderStatus::Paid, self::order($placed['token'], fresh: true)->status());
+    }
+
+    public function testADeclinedCheckoutPastItsHoldIsNotAskedForAgain(): void
+    {
+        $clock = self::mockTime('2026-11-20 10:00:00');
+        $client = self::stockedClient();
+        $placed = self::placeThroughTheShop($client);
+        self::sumUp()->settle($placed['paymentId'], FakeSumUp::FAILED);
+        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token']);
+        $clock->sleep(35 * 60);
+        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
+
+        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token'], server: ['REMOTE_ADDR' => '203.0.113.12']);
+
+        self::assertSame('failed', self::answer($client)['status']);
+        self::assertSame(20, self::statusLimiter()->create('203.0.113.12')->consume(0)->getRemainingTokens());
+    }
+
     public function testAnOrderPastItsHoldIsExpiredWithoutPaymentLink(): void
     {
         $clock = self::mockTime('2026-11-20 10:00:00');
