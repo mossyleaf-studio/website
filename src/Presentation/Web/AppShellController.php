@@ -21,9 +21,12 @@ final class AppShellController extends AbstractController
 
     public function __invoke(string $path): Response
     {
-        return $this->render('app.html.twig', [
+        $response = $this->render('app.html.twig', [
             'preloaded' => $this->preload->json([self::PUBLICATION, self::READINESS, ...$this->pageUrls(trim($path, '/'))]),
         ]);
+        $response->headers->set('Cache-Control', 'no-store, private');
+
+        return $response;
     }
 
     /**

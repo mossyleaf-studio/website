@@ -312,6 +312,9 @@ final class OrdersApiTest extends WebTestCase
         $preloaded = Json::decode($crawler->filter('#app-preload')->text());
         self::assertSame(['/api/admin/publication', '/api/admin/shop/readiness', '/api/admin/orders'], array_keys($preloaded));
         self::assertSame([$placed['reference']], array_column(Json::array($preloaded, '/api/admin/orders'), 'reference'));
+        $cacheControl = (string) $client->getResponse()->headers->get('Cache-Control');
+        self::assertStringContainsString('no-store', $cacheControl);
+        self::assertStringContainsString('private', $cacheControl);
     }
 
     public function testTheTextsPageStillPreloadsTheTexts(): void
@@ -321,6 +324,7 @@ final class OrdersApiTest extends WebTestCase
         $crawler = $client->request('GET', '/admin/texts');
 
         self::assertSame(['/api/admin/publication', '/api/admin/shop/readiness', '/api/admin/texts'], array_keys(Json::decode($crawler->filter('#app-preload')->text())));
+        self::assertStringContainsString('no-store', (string) $client->getResponse()->headers->get('Cache-Control'));
     }
 
     /** @return list<array{string, string}> */
