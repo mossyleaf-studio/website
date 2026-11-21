@@ -23,6 +23,7 @@ defineProps({
     message: { type: String, default: undefined },
     icon: { type: [Object, Function], default: null },
     variant: { type: String, default: 'ghost' },
+    confirmVariant: { type: String, default: 'danger' },
     disabled: { type: Boolean, default: false },
 });
 const emit = defineEmits(['confirm']);
@@ -41,7 +42,7 @@ const open = ref(false);
                     <AlertDialogDescription class="confirm-dialog__message">{{ message ?? t('ui.confirm.message') }}</AlertDialogDescription>
                     <div class="actions-row">
                         <AlertDialogCancel as-child><BaseButton variant="ghost">{{ cancelLabel ?? t('common.cancel') }}</BaseButton></AlertDialogCancel>
-                        <AlertDialogAction as-child><BaseButton variant="danger" @click="emit('confirm')">{{ confirmLabel ?? t('ui.confirm.action') }}</BaseButton></AlertDialogAction>
+                        <AlertDialogAction as-child><BaseButton :variant="confirmVariant" @click="emit('confirm')">{{ confirmLabel ?? t('ui.confirm.action') }}</BaseButton></AlertDialogAction>
                     </div>
                 </AlertDialogContent>
             </AlertDialogOverlay>

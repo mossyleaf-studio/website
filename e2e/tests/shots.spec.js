@@ -158,6 +158,17 @@ async function shootTheContactForm(page, size) {
     await closed.close();
 }
 
+async function shootTheSelections(page, size) {
+    for (const [name, url, ticks] of [['products', '/admin/products', [0, 2, 5]], ['links', '/admin/links', [0, 1]], ['conventions', '/admin/conventions', [0, 2]], ['images', '/admin/images', [1, 2]]]) {
+        await page.goto(url);
+        await page.waitForLoadState('networkidle');
+        for (const index of ticks) await page.getByTestId('select-row').nth(index).click();
+        await expect(page.getByTestId('selection-bar')).toHaveCSS('opacity', '1');
+        await page.screenshot({ path: `shots/admin-${name}-selection-${size}.png`, animations: 'disabled' });
+        await page.screenshot({ path: `shots/admin-${name}-selection-full-${size}.png`, fullPage: true, animations: 'disabled' });
+    }
+}
+
 async function shootTheLoadingBar(page, size) {
     await page.goto('/beta/fr/');
     let release;
@@ -248,6 +259,14 @@ async function shootTheAdminOrders(page) {
             await expect(page.getByTestId('order-row').first()).toBeVisible();
             await page.screenshot({ path: `shots/admin-orders-${tab}-${size}.png`, fullPage: true, animations: 'disabled' });
         }
+        await page.getByTestId('select-all').click();
+        await expect(page.getByTestId('selection-bar')).toHaveCSS('opacity', '1');
+        await page.screenshot({ path: `shots/admin-orders-selection-${size}.png`, animations: 'disabled' });
+        await page.getByTestId('bulk-delete').getByRole('button').click();
+        await expect(page.getByRole('alertdialog')).toBeVisible();
+        await page.screenshot({ path: `shots/admin-orders-bulk-confirm-${size}.png`, animations: 'disabled' });
+        await page.keyboard.press('Escape');
+        await page.getByTestId('selection-clear').click();
         await page.goto(`/admin/orders/${paid.id}`);
         await expect(page.getByTestId('order-page')).toBeVisible();
         await page.screenshot({ path: `shots/admin-order-to-ship-${size}.png`, fullPage: true, animations: 'disabled' });
@@ -382,6 +401,7 @@ test('screenshots of the site and the admin', async ({ page }) => {
         await page.getByTestId('link-row').first().getByRole('button', { name: 'Edit' }).click();
         await expect(page.getByTestId('link-editor')).toBeVisible();
         await page.screenshot({ path: `shots/admin-link-editor-${size}.png`, animations: 'disabled' });
+        await shootTheSelections(page, size);
     }
 
     let order = null;

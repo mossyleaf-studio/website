@@ -38,5 +38,8 @@ const { toasts, dismiss } = useToast();
 .toast[data-swipe="move"] { transform: translateX(var(--reka-toast-swipe-move-x)); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(0.5rem); } }
 @keyframes toast-out { to { opacity: 0; transform: translateY(0.5rem); } }
-@media (max-width: 48rem) { .toast-host { bottom: calc(5.5rem + env(safe-area-inset-bottom)); } }
+@media (max-width: 48rem) {
+    .toast-host { bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
+    body:has(.selection-bar) .toast-host { bottom: calc(9rem + env(safe-area-inset-bottom)); }
+}
 </style>

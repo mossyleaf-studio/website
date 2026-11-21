@@ -211,7 +211,15 @@
             "blossom": "Blue dots"
         },
         "empty": "No link yet",
-        "emptyHint": "Add the shop and Instagram so visitors can find them."
+        "emptyHint": "Add the shop and Instagram so visitors can find them.",
+        "bulk": {
+            "count": "{count} link selected | {count} links selected",
+            "select": "Select “{title}”",
+            "all": "Select all the links",
+            "delete": "Delete {count} link | Delete {count} links",
+            "deleteMessage": "The link will disappear from the site. | The {count} links will disappear from the site.",
+            "deleted": "{count} link deleted. | {count} links deleted."
+        }
     },
     "images": {
         "title": "Images",
@@ -232,7 +240,16 @@
         "deleted": "Image deleted.",
         "move": "Move the image",
         "empty": "No image yet",
-        "emptyHint": "Add a few drawings: the first one you feature appears at the top of the site."
+        "emptyHint": "Add a few drawings: the first one you feature appears at the top of the site.",
+        "bulk": {
+            "count": "{count} image selected | {count} images selected",
+            "select": "Select image {position}",
+            "selectNamed": "Select “{alt}”",
+            "all": "Select all the images",
+            "delete": "Delete {count} image | Delete {count} images",
+            "deleteMessage": "The image will disappear from the site. | The {count} images will disappear from the site.",
+            "deleted": "{count} image deleted. | {count} images deleted."
+        }
     },
     "products": {
         "title": "Products",
@@ -261,7 +278,16 @@
         "moveUp": "Move “{title}” up",
         "moveDown": "Move “{title}” down",
         "moved": "“{title}” is now at position {position}.",
-        "loadFailed": "The products could not be loaded"
+        "loadFailed": "The products could not be loaded",
+        "bulk": {
+            "count": "{count} product selected | {count} products selected",
+            "select": "Select “{title}”",
+            "all": "Select all the products shown",
+            "show": "Show {count} product | Show {count} products",
+            "hide": "Hide {count} product | Hide {count} products",
+            "shown": "{count} product shown in the shop. | {count} products shown in the shop.",
+            "hidden": "{count} product hidden from the shop. | {count} products hidden from the shop."
+        }
     },
     "product": {
         "preview": "Preview in the shop",
@@ -350,6 +376,17 @@
             "endsOn": "Last day",
             "url": "Website",
             "note": "Note"
+        },
+        "bulk": {
+            "count": "{count} convention selected | {count} conventions selected",
+            "select": "Select {name}",
+            "all": {
+                "upcoming": "Select all the upcoming conventions",
+                "past": "Select all the past conventions"
+            },
+            "delete": "Delete {count} convention | Delete {count} conventions",
+            "deleteMessage": "The convention will disappear from the shop at once. | The {count} conventions will disappear from the shop at once.",
+            "deleted": "{count} convention deleted. | {count} conventions deleted."
         }
     },
     "legal": {
@@ -435,6 +472,17 @@
             "failed": "Payment failed",
             "expired": "Expired",
             "cancelled": "Cancelled"
+        },
+        "bulk": {
+            "count": "{count} order selected | {count} orders selected",
+            "select": "Select order {reference}",
+            "all": "Select all the orders shown",
+            "ship": "Ship {count} order | Ship {count} orders",
+            "shipMessage": "The customer receives the shipped mail: {count} mail will leave, without a tracking number. | Each customer receives the shipped mail: {count} mails will leave, without a tracking number.",
+            "shipped": "{count} order marked as shipped. | {count} orders marked as shipped.",
+            "delete": "Delete {count} test order | Delete {count} test orders",
+            "deleteMessage": "The test order disappears for good. | The {count} test orders disappear for good.",
+            "deleted": "{count} test order deleted. | {count} test orders deleted."
         }
     },
     "order": {
@@ -501,5 +549,22 @@
             "done": "Test order {reference} deleted."
         },
         "unreachable": "SumUp cannot be reached. Nothing was changed."
+    },
+    "selection": {
+        "label": "Selection",
+        "clear": "Deselect",
+        "all": "Select all",
+        "running": "Working… {done} of {total}"
+    },
+    "bulk": {
+        "skipped": {
+            "retired": "{count} skipped: retired by mossytrunk. | {count} skipped: retired by mossytrunk.",
+            "alreadyShown": "{count} already shown. | {count} already shown.",
+            "alreadyHidden": "{count} already hidden. | {count} already hidden.",
+            "notPaid": "{count} skipped: not paid, or already shipped. | {count} skipped: not paid, or already shipped.",
+            "notTest": "{count} skipped: not a test order. | {count} skipped: not test orders.",
+            "checkoutOpen": "{count} skipped: still waiting for payment. | {count} skipped: still waiting for payment."
+        },
+        "failed": "{count} refused: {reason} | {count} refused, the first because: {reason}"
     }
 }

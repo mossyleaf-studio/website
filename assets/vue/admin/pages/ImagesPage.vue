@@ -8,11 +8,14 @@ import EmptyState from '../../components/ui/EmptyState.vue';
 import PageHeader from '../../components/ui/PageHeader.vue';
 import { useToast } from '../../composables/useToast.js';
 import ArtworkCard from '../components/ArtworkCard.vue';
+import BulkBar from '../components/BulkBar.vue';
+import SelectCheck from '../components/SelectCheck.vue';
 import { useArtworks } from '../useContent.js';
+import { useSelection } from '../useSelection.js';
 
 const { t } = useI18n();
 const toast = useToast();
-const { artworks, load, upload, reorder } = useArtworks();
+const { artworks, load, upload, reorder, remove } = useArtworks();
 load();
 
 const input = ref(null);
@@ -36,6 +39,17 @@ async function send(event) {
     }
     if (added) toast.success(t('admin.images.uploaded', { count: added }, added));
 }
+
+const selection = useSelection(artworks);
+
+const actions = [{
+    key: 'delete',
+    tone: 'danger',
+    label: (count) => t('admin.images.bulk.delete', { count }, count),
+    perform: (artwork) => remove(artwork.id),
+    confirm: (count) => t('admin.images.bulk.deleteMessage', { count }, count),
+    done: 'admin.images.bulk.deleted',
+}];
 
 function saveOrder() {
     toast.attempt(() => reorder(artworks.value.map((artwork) => artwork.id)));
@@ -73,11 +87,16 @@ function move(index, offset) {
 
             <EmptyState v-if="!artworks.length && !sending" :icon="Image" :title="t('admin.images.empty')" :hint="t('admin.images.emptyHint')" />
 
+            <div v-if="artworks.length" class="images-page__head">
+                <SelectCheck :model-value="selection.head()" :label="t('admin.images.bulk.all')" :disabled="selection.locked.value" data-test="select-all" @update:model-value="selection.setAll">{{ t('admin.selection.all') }}</SelectCheck>
+            </div>
+
             <VueDraggable
-                v-else
+                v-if="artworks.length || sending"
                 v-model="artworks"
                 class="images-page__grid"
                 handle=".artwork-card__grip"
+                :disabled="selection.locked.value"
                 :animation="160"
                 ghost-class="images-page__ghost"
                 @end="saveOrder"
@@ -88,10 +107,18 @@ function move(index, offset) {
                     :artwork="artwork"
                     :first="index === 0"
                     :last="index === artworks.length - 1"
+                    :selected="selection.has(artwork.id)"
+                    :locked="selection.locked.value"
                     @move="(offset) => move(index, offset)"
-                />
+                >
+                    <template #select>
+                        <SelectCheck :model-value="selection.has(artwork.id)" :label="artwork.alt ? t('admin.images.bulk.selectNamed', { alt: artwork.alt }) : t('admin.images.bulk.select', { position: index + 1 })" :disabled="selection.locked.value" data-test="select-row" @update:model-value="(checked) => selection.set(artwork.id, checked)" />
+                    </template>
+                </ArtworkCard>
             </VueDraggable>
         </BaseCard>
+
+        <BulkBar :selection="selection" :actions="actions" noun="admin.images.bulk.count" />
     </div>
 </template>
 
@@ -120,4 +147,5 @@ function move(index, offset) {
 
 .images-page__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: var(--space-4); }
 .images-page__ghost { opacity: 0.4; }
+.images-page__head { display: flex; align-items: center; }
 </style>

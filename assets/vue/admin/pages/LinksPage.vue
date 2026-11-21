@@ -10,8 +10,11 @@ import EmptyState from '../../components/ui/EmptyState.vue';
 import IconButton from '../../components/ui/IconButton.vue';
 import PageHeader from '../../components/ui/PageHeader.vue';
 import { useToast } from '../../composables/useToast.js';
+import BulkBar from '../components/BulkBar.vue';
 import LinkEditor from '../components/LinkEditor.vue';
+import SelectCheck from '../components/SelectCheck.vue';
 import { useLinks } from '../useContent.js';
+import { useSelection } from '../useSelection.js';
 
 const { t } = useI18n();
 const toast = useToast();
@@ -38,6 +41,17 @@ function move(index, offset) {
     saveOrder();
 }
 
+const selection = useSelection(links);
+
+const actions = [{
+    key: 'delete',
+    tone: 'danger',
+    label: (count) => t('admin.links.bulk.delete', { count }, count),
+    perform: (link) => remove(link.id),
+    confirm: (count) => t('admin.links.bulk.deleteMessage', { count }, count),
+    done: 'admin.links.bulk.deleted',
+}];
+
 function confirmRemove(link) {
     toast.attempt(() => remove(link.id), t('admin.links.deleted'));
 }
@@ -52,16 +66,21 @@ function confirmRemove(link) {
         <EmptyState v-if="!links.length" :icon="Link2" :title="t('admin.links.empty')" :hint="t('admin.links.emptyHint')" />
 
         <BaseCard v-else>
+            <div class="links-page__head">
+                <SelectCheck :model-value="selection.head()" :label="t('admin.links.bulk.all')" :disabled="selection.locked.value" data-test="select-all" @update:model-value="selection.setAll">{{ t('admin.selection.all') }}</SelectCheck>
+            </div>
             <VueDraggable
                 v-model="links"
                 tag="ul"
                 class="links-page__list"
                 handle=".links-page__grip"
+                :disabled="selection.locked.value"
                 :animation="160"
                 ghost-class="links-page__ghost"
                 @end="saveOrder"
             >
-                <li v-for="(link, index) in links" :key="link.id" class="links-page__item" data-test="link-row">
+                <li v-for="(link, index) in links" :key="link.id" :class="['links-page__item', { 'links-page__item--selected': selection.has(link.id) }]" data-test="link-row">
+                    <SelectCheck :model-value="selection.has(link.id)" :label="t('admin.links.bulk.select', { title: link.title })" :disabled="selection.locked.value" data-test="select-row" @update:model-value="(checked) => selection.set(link.id, checked)" />
                     <span class="links-page__grip" :title="t('admin.links.move', { title: link.title })"><GripVertical size="1.125rem" aria-hidden="true" /></span>
                     <span :class="['links-page__tape', `links-page__tape--${link.tape}`]" aria-hidden="true" />
                     <div class="links-page__text">
@@ -70,14 +89,16 @@ function confirmRemove(link) {
                         <a class="links-page__url" :href="link.url" target="_blank" rel="noopener">{{ link.url }}</a>
                     </div>
                     <div class="links-page__actions">
-                        <IconButton :icon="ArrowUp" :label="t('admin.moveUp')" :disabled="index === 0" @click="move(index, -1)" />
-                        <IconButton :icon="ArrowDown" :label="t('admin.moveDown')" :disabled="index === links.length - 1" @click="move(index, 1)" />
-                        <IconButton :icon="Pencil" :label="t('admin.links.edit')" @click="openEditor(link)" />
-                        <ConfirmButton :icon="Trash2" :label="t('admin.links.delete')" :message="t('admin.links.deleteMessage', { title: link.title })" @confirm="confirmRemove(link)" />
+                        <IconButton :icon="ArrowUp" :label="t('admin.moveUp')" :disabled="selection.locked.value || index === 0" @click="move(index, -1)" />
+                        <IconButton :icon="ArrowDown" :label="t('admin.moveDown')" :disabled="selection.locked.value || index === links.length - 1" @click="move(index, 1)" />
+                        <IconButton :icon="Pencil" :label="t('admin.links.edit')" :disabled="selection.locked.value" @click="openEditor(link)" />
+                        <ConfirmButton :icon="Trash2" :label="t('admin.links.delete')" :disabled="selection.locked.value" :message="t('admin.links.deleteMessage', { title: link.title })" @confirm="confirmRemove(link)" />
                     </div>
                 </li>
             </VueDraggable>
         </BaseCard>
+
+        <BulkBar :selection="selection" :actions="actions" noun="admin.links.bulk.count" />
 
         <LinkEditor v-model:open="editorOpen" :link="editing" />
     </div>
@@ -85,7 +106,8 @@ function confirmRemove(link) {
 
 <style scoped>
 .links-page { display: flex; flex-direction: column; gap: var(--space-5); }
-.links-page__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.links-page__head { display: flex; align-items: center; padding: 0 var(--space-2) var(--space-2); }
+.links-page__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border-top: 0.0625rem solid var(--color-border); }
 
 .links-page__item {
     display: flex;
@@ -98,6 +120,8 @@ function confirmRemove(link) {
 }
 
 .links-page__item:hover { background: var(--color-hover); }
+.links-page__item--selected,
+.links-page__item--selected:hover { background: var(--color-accent-soft); }
 
 .links-page__grip { display: inline-flex; color: var(--color-subtle); cursor: grab; touch-action: none; }
 .links-page__ghost { opacity: 0.4; }

@@ -14,6 +14,8 @@ const props = defineProps({
     artwork: { type: Object, required: true },
     first: { type: Boolean, default: false },
     last: { type: Boolean, default: false },
+    selected: { type: Boolean, default: false },
+    locked: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['move']);
@@ -44,10 +46,13 @@ function remove() {
 </script>
 
 <template>
-    <article :class="['artwork-card', { 'artwork-card--featured': artwork.featured }]" data-test="artwork-card">
+    <article :class="['artwork-card', { 'artwork-card--featured': artwork.featured, 'artwork-card--selected': selected }]" data-test="artwork-card">
         <div class="artwork-card__frame">
             <img class="artwork-card__image" :src="artwork.url" :alt="artwork.alt" :width="artwork.width" :height="artwork.height" loading="lazy" />
-            <span class="artwork-card__grip" :title="t('admin.images.move')"><GripVertical size="1.125rem" aria-hidden="true" /></span>
+            <div class="artwork-card__tools">
+                <slot name="select" />
+                <span class="artwork-card__grip" :title="t('admin.images.move')"><GripVertical size="1.125rem" aria-hidden="true" /></span>
+            </div>
             <span v-if="artwork.featured" class="artwork-card__badge"><Star size="0.8rem" aria-hidden="true" />{{ t('admin.images.featured') }}</span>
         </div>
         <form class="artwork-card__body" @submit.prevent="saveAlt">
@@ -55,13 +60,13 @@ function remove() {
             <BaseButton v-if="altChanged" type="submit" variant="secondary" :loading="savingAlt">{{ t('admin.images.saveAlt') }}</BaseButton>
         </form>
         <footer class="artwork-card__actions">
-            <BaseButton variant="secondary" :aria-pressed="artwork.featured" @click="toggleFeatured">
+            <BaseButton variant="secondary" :aria-pressed="artwork.featured" :disabled="locked" @click="toggleFeatured">
                 <Star size="0.95rem" aria-hidden="true" />{{ artwork.featured ? t('admin.images.unfeature') : t('admin.images.feature') }}
             </BaseButton>
             <span class="artwork-card__spacer" />
-            <IconButton :icon="ArrowUp" :label="t('admin.moveUp')" :disabled="first" @click="emit('move', -1)" />
-            <IconButton :icon="ArrowDown" :label="t('admin.moveDown')" :disabled="last" @click="emit('move', 1)" />
-            <ConfirmButton :icon="Trash2" :label="t('admin.images.delete')" :message="t('admin.images.deleteMessage')" @confirm="remove" />
+            <IconButton :icon="ArrowUp" :label="t('admin.moveUp')" :disabled="locked || first" @click="emit('move', -1)" />
+            <IconButton :icon="ArrowDown" :label="t('admin.moveDown')" :disabled="locked || last" @click="emit('move', 1)" />
+            <ConfirmButton :icon="Trash2" :label="t('admin.images.delete')" :disabled="locked" :message="t('admin.images.deleteMessage')" @confirm="remove" />
         </footer>
     </article>
 </template>
@@ -81,14 +86,21 @@ function remove() {
 .artwork-card__frame { position: relative; background: var(--color-bg); }
 .artwork-card__image { display: block; width: 100%; height: 12rem; object-fit: contain; }
 
-.artwork-card__grip {
+.artwork-card--selected { border-color: var(--color-accent); background: var(--color-accent-soft); }
+
+.artwork-card__tools {
     position: absolute;
     top: var(--space-2);
     left: var(--space-2);
-    display: inline-flex;
-    padding: var(--space-1);
+    display: flex;
+    align-items: center;
     border-radius: var(--radius-sm);
     background: var(--color-surface);
+}
+
+.artwork-card__grip {
+    display: inline-flex;
+    padding: var(--space-1);
     color: var(--color-muted);
     cursor: grab;
     touch-action: none;

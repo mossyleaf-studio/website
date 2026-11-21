@@ -10,8 +10,11 @@ import IconButton from '../../components/ui/IconButton.vue';
 import PageHeader from '../../components/ui/PageHeader.vue';
 import { useToast } from '../../composables/useToast.js';
 import { dateFormat } from '../../i18n/locale.js';
+import BulkBar from '../components/BulkBar.vue';
 import ConventionEditor from '../components/ConventionEditor.vue';
+import SelectCheck from '../components/SelectCheck.vue';
 import { splitConventions } from '../conventions.js';
+import { useSelection } from '../useSelection.js';
 import { useConventions } from '../useShop.js';
 
 const { t } = useI18n();
@@ -34,6 +37,17 @@ function days(convention) {
     return dateFormat({ dateStyle: 'medium' }).formatRange(day(convention.startsOn), day(convention.endsOn));
 }
 
+const selection = useSelection(conventions);
+
+const actions = [{
+    key: 'delete',
+    tone: 'danger',
+    label: (count) => t('admin.conventions.bulk.delete', { count }, count),
+    perform: (convention) => remove(convention.id),
+    confirm: (count) => t('admin.conventions.bulk.deleteMessage', { count }, count),
+    done: 'admin.conventions.bulk.deleted',
+}];
+
 function confirmRemove(convention) {
     toast.attempt(async () => {
         await remove(convention.id);
@@ -52,20 +66,26 @@ function confirmRemove(convention) {
 
         <template v-for="group in ['upcoming', 'past']" :key="group">
             <BaseCard v-if="groups[group].length" :title="t(`admin.conventions.${group}`)" :data-test="`conventions-${group}`">
+                <div class="conventions-page__head">
+                    <SelectCheck :model-value="selection.head(groups[group])" :label="t(`admin.conventions.bulk.all.${group}`)" :disabled="selection.locked.value" data-test="select-all" @update:model-value="(checked) => selection.setAll(checked, groups[group])">{{ t('admin.selection.all') }}</SelectCheck>
+                </div>
                 <ul class="conventions-page__list">
-                    <li v-for="convention in groups[group]" :key="convention.id" :class="['conventions-page__item', { 'conventions-page__item--past': group === 'past' }]" data-test="convention-row">
+                    <li v-for="convention in groups[group]" :key="convention.id" :class="['conventions-page__item', { 'conventions-page__item--past': group === 'past', 'conventions-page__item--selected': selection.has(convention.id) }]" data-test="convention-row">
+                        <SelectCheck :model-value="selection.has(convention.id)" :label="t('admin.conventions.bulk.select', { name: convention.name })" :disabled="selection.locked.value" data-test="select-row" @update:model-value="(checked) => selection.set(convention.id, checked)" />
                         <div class="conventions-page__text">
                             <p class="conventions-page__name">{{ convention.name }}</p>
                             <p class="conventions-page__meta">{{ convention.place }} · {{ days(convention) }}</p>
                         </div>
                         <div class="conventions-page__actions">
-                            <IconButton :icon="Pencil" :label="t('admin.conventions.edit', { name: convention.name })" @click="openEditor(convention)" />
-                            <ConfirmButton :icon="Trash2" :label="t('admin.conventions.delete', { name: convention.name })" :message="t('admin.conventions.deleteMessage', { name: convention.name })" @confirm="confirmRemove(convention)" />
+                            <IconButton :icon="Pencil" :label="t('admin.conventions.edit', { name: convention.name })" :disabled="selection.locked.value" @click="openEditor(convention)" />
+                            <ConfirmButton :icon="Trash2" :label="t('admin.conventions.delete', { name: convention.name })" :disabled="selection.locked.value" :message="t('admin.conventions.deleteMessage', { name: convention.name })" @confirm="confirmRemove(convention)" />
                         </div>
                     </li>
                 </ul>
             </BaseCard>
         </template>
+
+        <BulkBar :selection="selection" :actions="actions" noun="admin.conventions.bulk.count" />
 
         <ConventionEditor v-model:open="editorOpen" :convention="editing" />
     </div>
@@ -85,6 +105,9 @@ function confirmRemove(convention) {
 }
 
 .conventions-page__item:hover { background: var(--color-hover); }
+.conventions-page__item--selected,
+.conventions-page__item--selected:hover { background: var(--color-accent-soft); }
+.conventions-page__head { display: flex; align-items: center; padding: 0 var(--space-2) var(--space-2); }
 .conventions-page__item--past .conventions-page__name { color: var(--color-muted); }
 .conventions-page__text { display: flex; flex: 1; flex-direction: column; gap: 0.125rem; min-width: 0; }
 .conventions-page__name { color: var(--color-ink); font-weight: 600; }

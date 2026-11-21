@@ -8,13 +8,16 @@ import EmptyState from '../../components/ui/EmptyState.vue';
 import PageHeader from '../../components/ui/PageHeader.vue';
 import StatusBadge from '../../components/ui/StatusBadge.vue';
 import { dateFormat, intlLocale } from '../../i18n/locale.js';
+import BulkBar from '../components/BulkBar.vue';
 import OrderStatusBadge from '../components/OrderStatusBadge.vue';
+import SelectCheck from '../components/SelectCheck.vue';
 import { formatCents } from '../money.js';
 import { countryName, ordersOfTab, searchOrders, TABS, tabCounts } from '../orders.js';
 import { useOrders } from '../useOrders.js';
+import { useSelection } from '../useSelection.js';
 
 const { t } = useI18n();
-const { orders, loaded, failed, reload } = useOrders();
+const { orders, loaded, failed, reload, ship, remove } = useOrders();
 
 reload();
 
@@ -26,6 +29,33 @@ const counts = computed(() => tabCounts(matches.value));
 const rows = computed(() => ordersOfTab(matches.value, tab.value));
 const locale = intlLocale();
 const day = dateFormat({ dateStyle: 'medium' });
+
+const selection = useSelection(rows);
+
+function deleteSkip(order) {
+    if (!order.test) return 'notTest';
+    return order.status === 'pending' ? 'checkoutOpen' : null;
+}
+
+const actions = [
+    {
+        key: 'ship',
+        label: (count) => t('admin.orders.bulk.ship', { count }, count),
+        skip: (order) => (order.status === 'paid' ? null : 'notPaid'),
+        perform: (order) => ship(order.id, ''),
+        confirm: (count) => t('admin.orders.bulk.shipMessage', { count }, count),
+        done: 'admin.orders.bulk.shipped',
+    },
+    {
+        key: 'delete',
+        tone: 'danger',
+        label: (count) => t('admin.orders.bulk.delete', { count }, count),
+        skip: deleteSkip,
+        perform: (order) => remove(order.id),
+        confirm: (count) => t('admin.orders.bulk.deleteMessage', { count }, count),
+        done: 'admin.orders.bulk.deleted',
+    },
+];
 </script>
 
 <template>
@@ -57,31 +87,40 @@ const day = dateFormat({ dateStyle: 'medium' });
 
                 <EmptyState v-else-if="!rows.length" :icon="ShoppingBag" :title="t(`admin.orders.emptyTab.${tab}`)" :hint="t('admin.orders.emptyTabHint')" data-test="orders-tab-empty" />
 
-                <ul v-else class="orders-page__list">
-                    <li class="orders-page__row orders-page__row--head" aria-hidden="true">
-                        <span class="orders-page__ref">{{ t('admin.orders.columns.reference') }}</span>
-                        <span class="orders-page__date">{{ t('admin.orders.columns.date') }}</span>
-                        <span class="orders-page__customer">{{ t('admin.orders.columns.customer') }}</span>
-                        <span class="orders-page__country">{{ t('admin.orders.columns.country') }}</span>
-                        <span class="orders-page__items">{{ t('admin.orders.columns.items') }}</span>
-                        <span class="orders-page__total">{{ t('admin.orders.columns.total') }}</span>
-                        <span class="orders-page__status">{{ t('admin.orders.columns.status') }}</span>
-                    </li>
-                    <li v-for="order in rows" :key="order.id" class="orders-page__row" data-test="order-row" :data-reference="order.reference">
-                        <span class="orders-page__ref">
-                            <RouterLink class="orders-page__link" :to="{ name: 'order', params: { id: order.id } }" :aria-label="t('admin.orders.open', { reference: order.reference })">{{ order.reference }}</RouterLink>
-                            <StatusBadge v-if="order.test" tone="warning" data-test="order-test">{{ t('admin.orders.test') }}</StatusBadge>
-                        </span>
-                        <span class="orders-page__date">{{ day.format(new Date(order.placedAt)) }}</span>
-                        <span class="orders-page__customer">{{ order.name }}</span>
-                        <span class="orders-page__country">{{ countryName(order.country, locale) }}</span>
-                        <span class="orders-page__items">{{ t('admin.orders.items', { count: order.units }, order.units) }}</span>
-                        <span class="orders-page__total tabular">{{ formatCents(order.total, locale) }}</span>
-                        <span class="orders-page__status"><OrderStatusBadge :status="order.status" /></span>
-                    </li>
-                </ul>
+                <template v-else>
+                    <div class="orders-page__head">
+                        <SelectCheck :model-value="selection.head()" :label="t('admin.orders.bulk.all')" :disabled="selection.locked.value" data-test="select-all" @update:model-value="selection.setAll">{{ t('admin.selection.all') }}</SelectCheck>
+                    </div>
+                    <ul class="orders-page__list">
+                        <li class="orders-page__row orders-page__row--head" aria-hidden="true">
+                            <span class="orders-page__check" />
+                            <span class="orders-page__ref">{{ t('admin.orders.columns.reference') }}</span>
+                            <span class="orders-page__date">{{ t('admin.orders.columns.date') }}</span>
+                            <span class="orders-page__customer">{{ t('admin.orders.columns.customer') }}</span>
+                            <span class="orders-page__country">{{ t('admin.orders.columns.country') }}</span>
+                            <span class="orders-page__items">{{ t('admin.orders.columns.items') }}</span>
+                            <span class="orders-page__total">{{ t('admin.orders.columns.total') }}</span>
+                            <span class="orders-page__status">{{ t('admin.orders.columns.status') }}</span>
+                        </li>
+                        <li v-for="order in rows" :key="order.id" :class="['orders-page__row', { 'orders-page__row--selected': selection.has(order.id) }]" data-test="order-row" :data-reference="order.reference">
+                            <span class="orders-page__check"><SelectCheck :model-value="selection.has(order.id)" :label="t('admin.orders.bulk.select', { reference: order.reference })" :disabled="selection.locked.value" data-test="select-row" @update:model-value="(checked) => selection.set(order.id, checked)" /></span>
+                            <span class="orders-page__ref">
+                                <RouterLink class="orders-page__link" :to="{ name: 'order', params: { id: order.id } }" :aria-label="t('admin.orders.open', { reference: order.reference })">{{ order.reference }}</RouterLink>
+                                <StatusBadge v-if="order.test" tone="warning" data-test="order-test">{{ t('admin.orders.test') }}</StatusBadge>
+                            </span>
+                            <span class="orders-page__date">{{ day.format(new Date(order.placedAt)) }}</span>
+                            <span class="orders-page__customer">{{ order.name }}</span>
+                            <span class="orders-page__country">{{ countryName(order.country, locale) }}</span>
+                            <span class="orders-page__items">{{ t('admin.orders.items', { count: order.units }, order.units) }}</span>
+                            <span class="orders-page__total tabular">{{ formatCents(order.total, locale) }}</span>
+                            <span class="orders-page__status"><OrderStatusBadge :status="order.status" /></span>
+                        </li>
+                    </ul>
+                </template>
             </template>
         </BaseCard>
+
+        <BulkBar :selection="selection" :actions="actions" noun="admin.orders.bulk.count" />
     </div>
 </template>
 
@@ -118,11 +157,11 @@ const day = dateFormat({ dateStyle: 'medium' });
 .orders-page__row {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: auto repeat(3, minmax(0, 1fr));
     grid-template-areas:
-        "ref ref status"
-        "customer customer total"
-        "date country items";
+        "check ref ref status"
+        "customer customer customer total"
+        "date date country items";
     align-items: center;
     gap: var(--space-1) var(--space-3);
     padding: var(--space-3) var(--space-2);
@@ -131,6 +170,10 @@ const day = dateFormat({ dateStyle: 'medium' });
 }
 
 .orders-page__row:not(.orders-page__row--head):hover { background: var(--color-hover); }
+.orders-page__row--selected,
+.orders-page__row--selected:not(.orders-page__row--head):hover { background: var(--color-accent-soft); }
+.orders-page__head { display: flex; align-items: center; padding: 0 var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
+.orders-page__check { grid-area: check; display: flex; }
 .orders-page__row--head { display: none; }
 
 .orders-page__ref { grid-area: ref; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
@@ -150,8 +193,8 @@ const day = dateFormat({ dateStyle: 'medium' });
 
 @container (min-width: 48rem) {
     .orders-page__row {
-        grid-template-columns: 8.75rem 6.5rem minmax(0, 1.5fr) minmax(0, 1fr) 4.5rem 5rem 7rem;
-        grid-template-areas: "ref date customer country items total status";
+        grid-template-columns: 2.5rem 8.75rem 6.5rem minmax(0, 1.5fr) minmax(0, 1fr) 4.5rem 5rem 7rem;
+        grid-template-areas: "check ref date customer country items total status";
         gap: var(--space-2);
         padding-block: 0.4375rem;
     }

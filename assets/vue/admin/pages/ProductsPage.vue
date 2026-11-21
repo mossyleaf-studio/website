@@ -13,9 +13,12 @@ import PageHeader from '../../components/ui/PageHeader.vue';
 import StatusBadge from '../../components/ui/StatusBadge.vue';
 import { useToast } from '../../composables/useToast.js';
 import { intlLocale } from '../../i18n/locale.js';
+import BulkBar from '../components/BulkBar.vue';
 import CategoryNames from '../components/CategoryNames.vue';
+import SelectCheck from '../components/SelectCheck.vue';
 import { formatCents } from '../money.js';
 import { completeness, filterProducts, totalStock } from '../products.js';
+import { useSelection } from '../useSelection.js';
 import { useCategories, useProducts } from '../useShop.js';
 
 const { t } = useI18n();
@@ -57,6 +60,18 @@ function move(index, offset) {
     saveOrder(t('admin.products.moved', { title: heading(product), position: index + offset + 1 }));
 }
 
+const selection = useSelection(rows);
+
+function showSkip(product) {
+    if (product.retired) return 'retired';
+    return product.visible ? 'alreadyShown' : null;
+}
+
+const actions = [
+    { key: 'show', label: (count) => t('admin.products.bulk.show', { count }, count), skip: showSkip, perform: (product) => show(product.id), done: 'admin.products.bulk.shown' },
+    { key: 'hide', tone: 'secondary', label: (count) => t('admin.products.bulk.hide', { count }, count), skip: (product) => (product.visible ? null : 'alreadyHidden'), perform: (product) => hide(product.id), done: 'admin.products.bulk.hidden' },
+];
+
 function toggle(product, visible) {
     toast.attempt(() => (visible ? show(product.id) : hide(product.id)));
 }
@@ -84,52 +99,59 @@ function toggle(product, visible) {
 
                 <EmptyState v-if="!rows.length" :icon="SearchX" :title="t('admin.products.noMatch')" :hint="t('admin.products.noMatchHint')" data-test="products-no-match" />
 
-                <VueDraggable
-                    v-else
-                    :model-value="rows"
-                    tag="ul"
-                    class="products-page__list"
-                    handle=".products-page__grip"
-                    :disabled="filtering"
-                    :animation="animation"
-                    ghost-class="products-page__ghost"
-                    @update:model-value="(list) => { products = list; }"
-                    @end="saveOrder()"
-                >
-                    <li v-for="(product, index) in rows" :key="product.id" class="products-page__item" data-test="product-row" :data-reference="product.reference">
-                        <span :class="['products-page__grip', { 'products-page__grip--off': filtering }]" :title="t('admin.products.move', { title: heading(product) })"><GripVertical size="1.125rem" aria-hidden="true" /></span>
-                        <div class="products-page__thumb">
-                            <img v-if="product.photos.length" :src="product.photos[0].thumbUrl" alt="" :width="product.photos[0].thumbWidth" :height="product.photos[0].thumbHeight" loading="lazy" />
-                            <ImageOff v-else size="1.25rem" aria-hidden="true" />
-                        </div>
-                        <div class="products-page__text">
-                            <RouterLink class="products-page__name" :to="{ name: 'product', params: { id: product.id } }">{{ heading(product) }}</RouterLink>
-                            <p class="products-page__meta">{{ product.reference }} · {{ product.category.name }}</p>
-                            <div class="products-page__chips">
-                                <StatusBadge v-if="product.retired" data-test="product-retired">{{ t('admin.products.retired') }}</StatusBadge>
-                                <StatusBadge v-for="gap in completeness(product)" :key="gap" tone="warning" data-test="product-chip">{{ t(`admin.products.chips.${gap}`) }}</StatusBadge>
+                <template v-else>
+                    <div class="products-page__head">
+                        <SelectCheck :model-value="selection.head()" :label="t('admin.products.bulk.all')" :disabled="selection.locked.value" data-test="select-all" @update:model-value="selection.setAll">{{ t('admin.selection.all') }}</SelectCheck>
+                    </div>
+                    <VueDraggable
+                        :model-value="rows"
+                        tag="ul"
+                        class="products-page__list"
+                        handle=".products-page__grip"
+                        :disabled="filtering || selection.locked.value"
+                        :animation="animation"
+                        ghost-class="products-page__ghost"
+                        @update:model-value="(list) => { products = list; }"
+                        @end="saveOrder()"
+                    >
+                        <li v-for="(product, index) in rows" :key="product.id" :class="['products-page__item', { 'products-page__item--selected': selection.has(product.id) }]" data-test="product-row" :data-reference="product.reference">
+                            <SelectCheck :model-value="selection.has(product.id)" :label="t('admin.products.bulk.select', { title: heading(product) })" :disabled="selection.locked.value" data-test="select-row" @update:model-value="(checked) => selection.set(product.id, checked)" />
+                            <span :class="['products-page__grip', { 'products-page__grip--off': filtering || selection.locked.value }]" :title="t('admin.products.move', { title: heading(product) })"><GripVertical size="1.125rem" aria-hidden="true" /></span>
+                            <div class="products-page__thumb">
+                                <img v-if="product.photos.length" :src="product.photos[0].thumbUrl" alt="" :width="product.photos[0].thumbWidth" :height="product.photos[0].thumbHeight" loading="lazy" />
+                                <ImageOff v-else size="1.25rem" aria-hidden="true" />
                             </div>
-                        </div>
-                        <p class="products-page__price tabular">{{ formatCents(product.price, intlLocale()) }}</p>
-                        <p class="products-page__stock tabular">{{ totalStock(product) > 0 ? t('admin.products.stock', { count: totalStock(product) }) : t('admin.products.soldOut') }}</p>
-                        <BaseSwitch
-                            :model-value="product.visible"
-                            :label="t('admin.products.visible', { title: heading(product) })"
-                            :disabled="product.retired && !product.visible"
-                            data-test="product-visibility"
-                            @update:model-value="(visible) => toggle(product, visible)"
-                        />
-                        <div class="products-page__actions">
-                            <IconButton :icon="ArrowUp" :label="t('admin.products.moveUp', { title: heading(product) })" :disabled="filtering || index === 0" @click="move(index, -1)" />
-                            <IconButton :icon="ArrowDown" :label="t('admin.products.moveDown', { title: heading(product) })" :disabled="filtering || index === rows.length - 1" @click="move(index, 1)" />
-                            <RouterLink class="products-page__edit" :to="{ name: 'product', params: { id: product.id } }" tabindex="-1" aria-hidden="true" :title="t('admin.products.edit', { title: heading(product) })" data-test="product-edit">
-                                <Pencil size="1.125rem" aria-hidden="true" />
-                            </RouterLink>
-                        </div>
-                    </li>
-                </VueDraggable>
+                            <div class="products-page__text">
+                                <RouterLink class="products-page__name" :to="{ name: 'product', params: { id: product.id } }">{{ heading(product) }}</RouterLink>
+                                <p class="products-page__meta">{{ product.reference }} · {{ product.category.name }}</p>
+                                <div class="products-page__chips">
+                                    <StatusBadge v-if="product.retired" data-test="product-retired">{{ t('admin.products.retired') }}</StatusBadge>
+                                    <StatusBadge v-for="gap in completeness(product)" :key="gap" tone="warning" data-test="product-chip">{{ t(`admin.products.chips.${gap}`) }}</StatusBadge>
+                                </div>
+                            </div>
+                            <p class="products-page__price tabular">{{ formatCents(product.price, intlLocale()) }}</p>
+                            <p class="products-page__stock tabular">{{ totalStock(product) > 0 ? t('admin.products.stock', { count: totalStock(product) }) : t('admin.products.soldOut') }}</p>
+                            <BaseSwitch
+                                :model-value="product.visible"
+                                :label="t('admin.products.visible', { title: heading(product) })"
+                                :disabled="(product.retired && !product.visible) || selection.locked.value"
+                                data-test="product-visibility"
+                                @update:model-value="(visible) => toggle(product, visible)"
+                            />
+                            <div class="products-page__actions">
+                                <IconButton :icon="ArrowUp" :label="t('admin.products.moveUp', { title: heading(product) })" :disabled="filtering || selection.locked.value || index === 0" @click="move(index, -1)" />
+                                <IconButton :icon="ArrowDown" :label="t('admin.products.moveDown', { title: heading(product) })" :disabled="filtering || selection.locked.value || index === rows.length - 1" @click="move(index, 1)" />
+                                <RouterLink class="products-page__edit" :to="{ name: 'product', params: { id: product.id } }" tabindex="-1" aria-hidden="true" :title="t('admin.products.edit', { title: heading(product) })" data-test="product-edit">
+                                    <Pencil size="1.125rem" aria-hidden="true" />
+                                </RouterLink>
+                            </div>
+                        </li>
+                    </VueDraggable>
+                </template>
             </template>
         </BaseCard>
+
+        <BulkBar :selection="selection" :actions="actions" noun="admin.products.bulk.count" />
 
         <CategoryNames v-model:open="namesOpen" />
     </div>
@@ -155,6 +177,9 @@ function toggle(product, visible) {
 }
 
 .products-page__item:hover { background: var(--color-hover); }
+.products-page__item--selected,
+.products-page__item--selected:hover { background: var(--color-accent-soft); }
+.products-page__head { display: flex; align-items: center; padding: var(--space-2) var(--space-2) 0; }
 
 .products-page__grip { display: inline-flex; color: var(--color-muted); cursor: grab; touch-action: none; }
 .products-page__grip--off { cursor: not-allowed; opacity: 0.4; }
@@ -201,7 +226,7 @@ function toggle(product, visible) {
 
 @media (max-width: 40rem) {
     .products-page__item { flex-wrap: wrap; }
-    .products-page__text { flex-basis: calc(100% - 7rem); }
+    .products-page__text { flex-basis: calc(100% - 10.25rem); }
     .products-page__price, .products-page__stock { min-width: 0; text-align: left; }
     .products-page__actions { margin-left: auto; }
 }

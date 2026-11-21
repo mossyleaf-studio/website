@@ -211,7 +211,15 @@
             "blossom": "Pois bleus"
         },
         "empty": "Aucun lien pour l’instant",
-        "emptyHint": "Ajoutez la boutique et Instagram pour que les visiteurs les trouvent."
+        "emptyHint": "Ajoutez la boutique et Instagram pour que les visiteurs les trouvent.",
+        "bulk": {
+            "count": "{count} lien sélectionné | {count} liens sélectionnés",
+            "select": "Sélectionner « {title} »",
+            "all": "Sélectionner tous les liens",
+            "delete": "Supprimer {count} lien | Supprimer {count} liens",
+            "deleteMessage": "Le lien disparaîtra du site. | Les {count} liens disparaîtront du site.",
+            "deleted": "{count} lien supprimé. | {count} liens supprimés."
+        }
     },
     "images": {
         "title": "Images",
@@ -232,7 +240,16 @@
         "deleted": "Image supprimée.",
         "move": "Déplacer l’image",
         "empty": "Aucune image pour l’instant",
-        "emptyHint": "Ajoutez quelques dessins : celui que vous mettez en avant s’affiche en haut du site."
+        "emptyHint": "Ajoutez quelques dessins : celui que vous mettez en avant s’affiche en haut du site.",
+        "bulk": {
+            "count": "{count} image sélectionnée | {count} images sélectionnées",
+            "select": "Sélectionner l’image {position}",
+            "selectNamed": "Sélectionner « {alt} »",
+            "all": "Sélectionner toutes les images",
+            "delete": "Supprimer {count} image | Supprimer {count} images",
+            "deleteMessage": "L’image disparaîtra du site. | Les {count} images disparaîtront du site.",
+            "deleted": "{count} image supprimée. | {count} images supprimées."
+        }
     },
     "products": {
         "title": "Produits",
@@ -261,7 +278,16 @@
         "moveUp": "Monter « {title} »",
         "moveDown": "Descendre « {title} »",
         "moved": "« {title} » est maintenant en position {position}.",
-        "loadFailed": "Les produits n’ont pas pu être chargés"
+        "loadFailed": "Les produits n’ont pas pu être chargés",
+        "bulk": {
+            "count": "{count} produit sélectionné | {count} produits sélectionnés",
+            "select": "Sélectionner « {title} »",
+            "all": "Sélectionner tous les produits affichés",
+            "show": "Afficher {count} produit | Afficher {count} produits",
+            "hide": "Masquer {count} produit | Masquer {count} produits",
+            "shown": "{count} produit affiché dans la boutique. | {count} produits affichés dans la boutique.",
+            "hidden": "{count} produit masqué de la boutique. | {count} produits masqués de la boutique."
+        }
     },
     "product": {
         "preview": "Voir dans la boutique",
@@ -350,6 +376,17 @@
             "endsOn": "Dernier jour",
             "url": "Site web",
             "note": "Note"
+        },
+        "bulk": {
+            "count": "{count} convention sélectionnée | {count} conventions sélectionnées",
+            "select": "Sélectionner {name}",
+            "all": {
+                "upcoming": "Sélectionner toutes les conventions à venir",
+                "past": "Sélectionner toutes les conventions passées"
+            },
+            "delete": "Supprimer {count} convention | Supprimer {count} conventions",
+            "deleteMessage": "La convention disparaîtra tout de suite de la boutique. | Les {count} conventions disparaîtront tout de suite de la boutique.",
+            "deleted": "{count} convention supprimée. | {count} conventions supprimées."
         }
     },
     "legal": {
@@ -435,6 +472,17 @@
             "failed": "Paiement échoué",
             "expired": "Expirée",
             "cancelled": "Annulée"
+        },
+        "bulk": {
+            "count": "{count} commande sélectionnée | {count} commandes sélectionnées",
+            "select": "Sélectionner la commande {reference}",
+            "all": "Sélectionner toutes les commandes affichées",
+            "ship": "Expédier {count} commande | Expédier {count} commandes",
+            "shipMessage": "La cliente ou le client reçoit l’e-mail d’expédition : {count} e-mail va partir, sans numéro de suivi. | Chaque cliente ou client reçoit l’e-mail d’expédition : {count} e-mails vont partir, sans numéro de suivi.",
+            "shipped": "{count} commande marquée expédiée. | {count} commandes marquées expédiées.",
+            "delete": "Supprimer {count} commande test | Supprimer {count} commandes test",
+            "deleteMessage": "La commande test disparaît pour de bon. | Les {count} commandes test disparaissent pour de bon.",
+            "deleted": "{count} commande test supprimée. | {count} commandes test supprimées."
         }
     },
     "order": {
@@ -501,5 +549,22 @@
             "done": "Commande de test {reference} supprimée."
         },
         "unreachable": "SumUp est injoignable. Rien n’a été modifié."
+    },
+    "selection": {
+        "label": "Sélection",
+        "clear": "Désélectionner",
+        "all": "Tout sélectionner",
+        "running": "En cours… {done} sur {total}"
+    },
+    "bulk": {
+        "skipped": {
+            "retired": "{count} ignoré : retiré par mossytrunk. | {count} ignorés : retirés par mossytrunk.",
+            "alreadyShown": "{count} déjà affiché. | {count} déjà affichés.",
+            "alreadyHidden": "{count} déjà masqué. | {count} déjà masqués.",
+            "notPaid": "{count} ignorée : pas payée, ou déjà expédiée. | {count} ignorées : pas payées, ou déjà expédiées.",
+            "notTest": "{count} ignorée : pas une commande test. | {count} ignorées : pas des commandes test.",
+            "checkoutOpen": "{count} ignorée : paiement encore attendu. | {count} ignorées : paiement encore attendu."
+        },
+        "failed": "{count} refus : {reason} | {count} refus, le premier : {reason}"
     }
 }
