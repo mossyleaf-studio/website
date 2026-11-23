@@ -8,6 +8,7 @@ use App\Application\Content\ContentQueries;
 use App\Application\Content\SiteSnapshots;
 use App\Presentation\Web\Shop\ShopNotFoundListener;
 use App\Presentation\Web\Shop\SiteLabels;
+use App\Tests\Functional\Catalogue\PushesCatalogue;
 use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -23,6 +24,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class ShopPagesTest extends WebTestCase
 {
+    use PushesCatalogue;
     use SignsInClient;
 
     protected function tearDown(): void
@@ -83,13 +85,13 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame('Petites bêtes dessinées.', Json::string($props, 'data', 'intro'));
         self::assertSame('Une fougère', Json::string($props, 'data', 'featured', 'alt'));
         self::assertSame(['title' => 'Le studio', 'text' => 'A tiny studio.', 'url' => '/beta/fr/about'], Json::array($props, 'data', 'about'));
-        self::assertSame([['key' => 'home', 'url' => '/beta/fr/', 'current' => true], ['key' => 'shop', 'url' => '/beta/fr/shop', 'current' => false], ['key' => 'conventions', 'url' => '/beta/fr/conventions', 'current' => false], ['key' => 'about', 'url' => '/beta/fr/about', 'current' => false], ['key' => 'contact', 'url' => '/beta/fr/contact', 'current' => false]], Json::array($props, 'layout', 'navigation'));
+        self::assertSame([['key' => 'home', 'url' => '/beta/fr/', 'current' => true], ['key' => 'conventions', 'url' => '/beta/fr/conventions', 'current' => false], ['key' => 'about', 'url' => '/beta/fr/about', 'current' => false], ['key' => 'contact', 'url' => '/beta/fr/contact', 'current' => false]], Json::array($props, 'layout', 'navigation'));
         self::assertSame([['locale' => 'en', 'url' => '/beta/en/', 'current' => false], ['locale' => 'fr', 'url' => '/beta/fr/', 'current' => true]], Json::array($props, 'layout', 'languages'));
 
         self::assertSame('Petites bêtes dessinées.', $crawler->filter('#shop main h1')->text());
         self::assertSame('A tiny studio.', $crawler->filter('#shop main section p')->first()->text());
         self::assertSame('Livraison offerte', $crawler->filter('#shop [data-announcement]')->text());
-        self::assertSame(['Accueil', 'Boutique', 'Conventions', 'À propos', 'Contact'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
+        self::assertSame(['Accueil', 'Conventions', 'À propos', 'Contact'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
         self::assertSame('Aller au contenu', $crawler->filter('#shop a[href="#main"]')->text());
         self::assertSame('Aperçu du brouillon', $crawler->filter('#shop aside[data-draft]')->attr('aria-label'));
         self::assertSame('Brouillon Seuls les admins voient cette page. Les textes, liens, images et pages légales attendent « Publier » ; les produits, conventions et frais de port sont déjà en ligne.', $crawler->filter('#shop aside[data-draft] p')->text());
@@ -186,6 +188,23 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame([[self::label('fr', 'home.aboutLink'), Json::string($data, 'about', 'url')]], self::links($shop->filter('main section p a')));
     }
 
+    public function testThePrerenderOfTheMenuListsTheCategoriesThePropsCarry(): void
+    {
+        $client = self::signedInClient();
+        $ids = self::push([self::product(1, 'Prints', 'Fox', 1500), self::product(2, 'Stickers', 'Moth', 300), self::product(3, 'Cards', 'Bee', 500)]);
+        foreach (['prints-fox', 'cards-bee'] as $slug) {
+            self::show($client, $ids[$slug]);
+        }
+
+        foreach (['/beta/fr/category/cards', '/beta/en/shop/prints-fox', '/beta/en/about', '/beta/fr/no-such-page'] as $url) {
+            $crawler = $client->request('GET', $url);
+            $layout = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'layout');
+
+            self::assertLayoutMatches($crawler->filter('#shop'), $layout);
+            self::assertCount(3, Json::array($layout, 'navigation', 1, 'children'), $url);
+        }
+    }
+
     public function testThePrerenderOfTheAboutPageSaysWhatThePropsSay(): void
     {
         $client = self::signedInClient();
@@ -230,7 +249,18 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame(array_filter([Json::string($layout, 'announcement')]), $shop->filter('[data-announcement]')->each(static fn (Crawler $bar): string => $bar->text()));
         self::assertSame(Json::string($layout, 'navigation', 0, 'url'), $shop->filter('header a[data-home]')->attr('href'));
         self::assertSame(Json::string($layout, 'studioName'), $shop->filter('header a[data-home]')->text());
-        self::assertSame(array_map(static fn (mixed $entry): array => [self::label($locale, 'nav.'.Json::string($entry, 'key')), Json::string($entry, 'url')], $navigation), self::links($shop->filter('nav[data-navigation] a')));
+        self::assertSame(array_map(static fn (mixed $entry): array => [self::label($locale, 'nav.'.Json::string($entry, 'key')), Json::string($entry, 'url')], $navigation), self::links($shop->filter('nav[data-navigation] > ul > li > a')));
+        self::assertSame(
+            array_map(static fn (mixed $entry): string => true === Json::at($entry, 'current') ? (\is_array($entry) && \array_key_exists('children', $entry) ? 'true' : 'page') : '', $navigation),
+            $shop->filter('nav[data-navigation] > ul > li > a')->each(static fn (Crawler $link): string => (string) $link->attr('aria-current')),
+        );
+        $entry = array_find($navigation, static fn (mixed $entry): bool => 'shop' === Json::at($entry, 'key'));
+        $children = null === $entry ? [] : Json::array($entry, 'children');
+        self::assertSame(
+            array_map(static fn (mixed $child): array => [Json::string($child, 'label'), Json::string($child, 'url'), true === Json::at($child, 'current') ? 'page' : ''], $children),
+            $shop->filter('nav[data-navigation] > ul > li > ul[data-categories] > li > a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href'), (string) $link->attr('aria-current')]),
+        );
+        self::assertCount([] === $children ? 0 : 1, $shop->filter('[data-categories]'));
         self::assertSame(self::label($locale, 'layout.navigation'), $shop->filter('nav[data-navigation]')->attr('aria-label'));
         self::assertSame([[self::label($locale, 'cart.link'), Json::string($layout, 'cartUrl')]], self::links($shop->filter('header a[data-cart]')));
         self::assertSame(self::label($locale, 'layout.languages'), $shop->filter('header nav[data-languages]')->attr('aria-label'));

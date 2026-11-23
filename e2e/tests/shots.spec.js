@@ -12,9 +12,9 @@ const SHOP = {
     'shop-contact-fr': '/beta/fr/contact',
     'shop-contact-en': '/beta/en/contact',
     'shop-not-found': '/beta/fr/no-such-page',
-    'shop-listing-fr': '/beta/fr/shop',
-    'shop-listing-en': '/beta/en/shop',
-    'shop-listing-category': '/beta/fr/shop?category=stickers',
+    'shop-category-fr': '/beta/fr/category/prints',
+    'shop-category-en': '/beta/en/category/prints',
+    'shop-category-stickers': '/beta/fr/category/stickers',
     'shop-product-variants-fr': '/beta/fr/shop/moss-print',
     'shop-product-variants-en': '/beta/en/shop/washi-tape-set',
     'shop-product-sold-out': '/beta/fr/shop/meadow-sticker-sheet',
@@ -25,8 +25,8 @@ const SHOP = {
 };
 const OPEN_SHOP = {
     home: '',
-    listing: 'shop',
-    'listing-category': 'shop?category=stickers',
+    category: 'category/prints',
+    'category-stickers': 'category/stickers',
     'product-variants': 'shop/washi-tape-set',
     'product-sold-out': 'shop/meadow-sticker-sheet',
     'product-hidden': 'shop/dew-greeting-card',
@@ -125,6 +125,11 @@ async function shootTheHeader(page, size) {
         await header.getByRole('link', { name: 'About' }).hover();
         await header.screenshot({ path: 'shots/shop-header-hover-desktop.png', animations: 'disabled' });
         await page.mouse.move(0, 0);
+        await page.goto('/beta/en/category/stickers');
+        await header.locator('[data-shop-menu]').click();
+        await page.mouse.move(0, 0);
+        await page.screenshot({ path: 'shots/shop-header-shop-open-desktop.png', animations: 'disabled' });
+        await page.keyboard.press('Escape');
     } else {
         await page.locator('#shop .site-header__menu').click();
         await expect(page.locator('#site-navigation').getByRole('link', { name: 'About' })).toBeVisible();
@@ -181,6 +186,14 @@ async function shootTheSelections(page, size) {
         await page.screenshot({ path: `shots/admin-${name}-selection-${size}.png`, animations: 'disabled' });
         await page.screenshot({ path: `shots/admin-${name}-selection-full-${size}.png`, fullPage: true, animations: 'disabled' });
     }
+}
+
+async function shootTheCategoryDialog(page, size) {
+    await page.goto('/admin/products');
+    await page.getByTestId('category-names-open').click();
+    await expect(page.getByTestId('category-names')).toBeVisible();
+    await page.screenshot({ path: `shots/admin-categories-dialog-${size}.png`, animations: 'disabled' });
+    await page.keyboard.press('Escape');
 }
 
 async function shootTheLoadingBar(page, size) {
@@ -351,7 +364,7 @@ async function shootTheOpenShop(browser) {
         await expect(visitor.getByTestId('order-status')).toHaveAttribute('data-state', 'paid');
         await visitor.screenshot({ path: `shots/open-order-paid-fr-${size}.png`, fullPage: true, animations: 'disabled' });
 
-        await visitor.goto('/en/shop');
+        await visitor.goto('/en/');
         await visitor.evaluate(([key, value]) => localStorage.setItem(key, value), [CART, JSON.stringify({ lines: [line('CRD-001', 2), line('PRT-001-A4', 1)], country: 'FR' })]);
         for (const [name, locale] of [['cart', 'fr'], ['cart', 'en'], ['checkout', 'fr'], ['checkout', 'en']]) {
             await visitor.goto(`/${locale}/${name}`);
@@ -372,7 +385,7 @@ async function shootTheOpenShop(browser) {
     }
 
     const crawler = await (await browser.newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.phone })).newPage();
-    for (const [name, path, marker] of [['home', '/fr/', '#shop main h1'], ['listing', '/fr/shop', '#shop main h1'], ['product', '/fr/shop/moss-print', '#shop main h1'], ['legal', '/en/legal/terms', '#shop main [data-blocks]'], ['contact', '/fr/contact', '#shop main [data-noscript]'], ['checkout', '/fr/checkout', '#shop main [data-noscript]'], ['order', new URL(orderUrl).pathname, '#shop main [data-order]']]) {
+    for (const [name, path, marker] of [['home', '/fr/', '#shop main h1'], ['category', '/fr/category/prints', '#shop main h1'], ['product', '/fr/shop/moss-print', '#shop main h1'], ['legal', '/en/legal/terms', '#shop main [data-blocks]'], ['contact', '/fr/contact', '#shop main [data-noscript]'], ['checkout', '/fr/checkout', '#shop main [data-noscript]'], ['order', new URL(orderUrl).pathname, '#shop main [data-order]']]) {
         await crawler.goto(path);
         await expect(crawler.locator(marker).first(), name).toBeVisible();
         await crawler.screenshot({ path: `shots/open-${name}-without-javascript.png`, fullPage: true });
@@ -423,6 +436,7 @@ test('screenshots of the site and the admin', async ({ page }) => {
         await page.setViewportSize(viewport);
         await shootTheLoadingBar(page, size);
         await shootTheHeader(page, size);
+        await shootTheCategoryDialog(page, size);
         await shootTheContactForm(page, size);
         await shootTheCart(page, size);
         order = await shootTheCheckout(page, size);
@@ -441,8 +455,8 @@ test('screenshots of the site and the admin', async ({ page }) => {
     await expect(editorWithoutScript.locator('#shop main h1')).toBeVisible();
     await editorWithoutScript.screenshot({ path: 'shots/shop-product-without-javascript.png', fullPage: true });
     await editorWithoutScript.setViewportSize(VIEWPORTS.desktop);
-    await editorWithoutScript.goto(SHOP['shop-listing-fr']);
-    await editorWithoutScript.screenshot({ path: 'shots/shop-listing-without-javascript.png', fullPage: true });
+    await editorWithoutScript.goto(SHOP['shop-category-fr']);
+    await editorWithoutScript.screenshot({ path: 'shots/shop-category-without-javascript.png', fullPage: true });
     await editorWithoutScript.goto(SHOP['shop-legal-fr']);
     await expect(editorWithoutScript.locator('#shop main [data-blocks]')).toBeVisible();
     await editorWithoutScript.screenshot({ path: 'shots/shop-legal-without-javascript.png', fullPage: true });

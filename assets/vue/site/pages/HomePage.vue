@@ -17,7 +17,7 @@ defineProps({
         <div :class="['home__hero', { 'home__hero--solo': !data.featured }]">
             <div class="home__lead">
                 <h1 class="home__title">{{ data.intro }}</h1>
-                <p>
+                <p v-if="data.shopUrl">
                     <PillButton :href="data.shopUrl" data-shop>{{ $t('home.shopLink') }}</PillButton>
                 </p>
             </div>
@@ -25,10 +25,7 @@ defineProps({
         </div>
 
         <section v-if="data.products" class="home__shelf" aria-labelledby="latest-title" data-latest>
-            <div class="home__shelf-head">
-                <h2 id="latest-title" class="home__heading">{{ $t('home.latest') }}</h2>
-                <a class="home__all" :href="data.shopUrl">{{ $t('shop.all') }}</a>
-            </div>
+            <h2 id="latest-title" class="home__heading">{{ $t('home.latest') }}</h2>
             <ProductGrid :products="data.products" :columns="4" />
         </section>
 
@@ -91,31 +88,11 @@ defineProps({
     gap: var(--space-6);
 }
 
-.home__shelf-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-2) var(--space-5);
-}
-
 .home__heading {
     font-family: var(--font-display);
     font-weight: var(--font-display-weight);
     font-size: var(--font-size-2xl);
     line-height: 1.15;
-}
-
-.home__all {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
-    font-family: var(--font-ui);
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: var(--color-ink);
-    text-decoration-thickness: 0.125rem;
-    text-underline-offset: 0.3em;
 }
 
 .home__art {

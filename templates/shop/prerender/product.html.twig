@@ -1,9 +1,9 @@
-{% set shop = (layout.navigation|filter(entry => entry.key == 'shop')|first).url %}
+{% set home = (layout.navigation|filter(entry => entry.key == 'home')|first).url %}
 {% set chosen = data.variants|filter(variant => variant.available > 0)|first %}
 <article class="shop-prerender__product">
     <nav class="shop-prerender__breadcrumb" aria-label="{{ 'layout.breadcrumb'|site_t }}" data-breadcrumb>
         <ol>
-            <li><a href="{{ shop }}">{{ 'nav.shop'|site_t }}</a></li>
+            <li><a href="{{ home }}">{{ 'nav.home'|site_t }}</a></li>
             <li data-category><a href="{{ data.category.url }}">{{ data.category.label }}</a></li>
             <li><span aria-current="page">{{ data.title }}</span></li>
         </ol>

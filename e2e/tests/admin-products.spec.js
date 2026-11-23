@@ -57,6 +57,34 @@ test('a category gets its French name', async ({ page }) => {
     expect((await labels.json()).map((category) => category.labelFr)).toContain(french);
 });
 
+test('moving a category in the dialog reorders the Shop menu of the preview', async ({ page }) => {
+    const menu = async () => {
+        await page.goto('/beta/en/');
+        await page.locator('#shop header.site-header [data-shop-menu]').click();
+        return page.locator('#shop header.site-header [data-categories] a').allTextContents();
+    };
+    const move = async (direction, index) => {
+        await page.goto('/admin/products');
+        await page.getByTestId('category-names-open').click();
+        await Promise.all([
+            page.waitForResponse((response) => response.url().endsWith('/api/admin/categories/order') && response.ok()),
+            page.getByTestId(`category-move-${direction}`).nth(index).click(),
+        ]);
+    };
+    const before = await menu();
+    expect(before).toEqual(['Prints', 'Stickers and tape', 'Paper goods']);
+    await move('up', 1);
+    try {
+        await expect(page.getByTestId('category-move-down').nth(0)).toBeFocused();
+        expect(await menu()).toEqual(['Stickers and tape', 'Prints', 'Paper goods']);
+        await page.goto('/beta/en/shop');
+        await expect(page).toHaveURL(/\/beta\/en\/category\/stickers$/);
+    } finally {
+        await move('down', 0);
+    }
+    expect(await menu()).toEqual(before);
+});
+
 test('the products are reordered and the order survives a reload', async ({ page }) => {
     const before = await references(page);
     await row(page, before[0]).getByRole('button', { name: /^Move .+ down$/ }).click();

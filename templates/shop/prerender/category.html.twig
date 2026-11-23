@@ -1,0 +1,2 @@
+<h1>{{ data.title }}</h1>
+{% include 'shop/prerender/_cards.html.twig' with {products: data.products, eager: true} %}

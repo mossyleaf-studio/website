@@ -49,6 +49,9 @@ export function useCategories() {
             categories.value = categories.value.map((category) => (category.id === saved.id ? saved : category));
             return saved;
         },
+        reorder: async (ids) => {
+            categories.value = await api.put(`${CATEGORIES}/order`, { ids });
+        },
     };
 }
 

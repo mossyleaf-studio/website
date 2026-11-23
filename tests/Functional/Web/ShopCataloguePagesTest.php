@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Web;
 
+use App\Application\Catalogue\CatalogueQueries;
+use App\Application\Catalogue\CategoryView;
 use App\Application\Catalogue\ReplaceCatalogue\PushedProduct;
 use App\Presentation\Web\Shop\SiteLabels;
 use App\Tests\Functional\Catalogue\PushesCatalogue;
@@ -32,7 +34,7 @@ final class ShopCataloguePagesTest extends WebTestCase
         $client = self::createClient();
         self::push(self::demo());
 
-        foreach (['/fr/shop', '/en/shop?category=prints', '/en/shop?category=nope', '/fr/shop/prints-fox', '/en/shop/no-such-product'] as $url) {
+        foreach (['/fr/shop', '/en/category/prints', '/en/category/nope', '/fr/shop/prints-fox', '/en/shop/no-such-product'] as $url) {
             $client->request('GET', $url);
 
             self::assertResponseRedirects('/', 302, $url);
@@ -44,14 +46,14 @@ final class ShopCataloguePagesTest extends WebTestCase
     {
         $client = self::createClient();
 
-        foreach (['/beta/fr/shop', '/beta/en/shop/prints-fox'] as $url) {
+        foreach (['/beta/fr/shop', '/beta/en/category/prints', '/beta/en/shop/prints-fox'] as $url) {
             $client->request('GET', $url);
 
             self::assertResponseRedirects('/login', null, $url);
         }
     }
 
-    public function testTheListingShowsTheCategoriesAndTheCardsInFrench(): void
+    public function testACategoryPageListsItsProductsInFrench(): void
     {
         $client = self::signedInClient();
         $ids = self::stockTheDemo($client);
@@ -59,19 +61,14 @@ final class ShopCataloguePagesTest extends WebTestCase
         self::label($client, 'Prints', 'Art prints', 'Affiches');
         self::photo($client, $ids['prints-fox']);
 
-        $crawler = $client->request('GET', '/beta/fr/shop');
+        $crawler = $client->request('GET', '/beta/fr/category/prints');
 
         self::assertResponseIsSuccessful();
         self::assertSame('fr', $crawler->filter('html')->attr('lang'));
         $props = Json::decode($crawler->filter('#site-content')->text());
         $data = Json::array($props, 'data');
-        self::assertSame(['page', 'title', 'categories', 'products'], array_keys($data));
-        self::assertSame(['listing', 'Boutique'], [$data['page'], $data['title']]);
-        self::assertSame([
-            ['key' => null, 'label' => 'Tous les produits', 'url' => '/beta/fr/shop', 'current' => true],
-            ['key' => 'prints', 'label' => 'Affiches', 'url' => '/beta/fr/shop?category=prints', 'current' => false],
-            ['key' => 'stickers', 'label' => 'Stickers', 'url' => '/beta/fr/shop?category=stickers', 'current' => false],
-        ], $data['categories']);
+        self::assertSame(['page', 'title', 'category', 'products'], array_keys($data));
+        self::assertSame(['category', 'Affiches', ['key' => 'prints', 'label' => 'Affiches']], [$data['page'], $data['title'], $data['category']]);
 
         $fox = Json::array($data, 'products', 0);
         $image = Json::array($fox, 'image');
@@ -83,35 +80,84 @@ final class ShopCataloguePagesTest extends WebTestCase
         self::assertSame([
             ['title' => 'Affiche renard', 'url' => '/beta/fr/shop/prints-fox', 'price' => 1500, 'image' => $image, 'soldOut' => false, 'hidden' => false],
             ['title' => 'Prints Owl', 'url' => '/beta/fr/shop/prints-owl', 'price' => 1200, 'image' => null, 'soldOut' => true, 'hidden' => false],
-            ['title' => 'Stickers Moth', 'url' => '/beta/fr/shop/stickers-moth', 'price' => 300, 'image' => null, 'soldOut' => false, 'hidden' => true],
         ], $data['products']);
 
-        self::assertContains(['key' => 'shop', 'url' => '/beta/fr/shop', 'current' => true], Json::array($props, 'layout', 'navigation'));
-        self::assertSame(['Accueil', 'Boutique', 'Conventions', 'À propos', 'Contact'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
-        self::assertSame('Boutique · mossyleaf.studio', $crawler->filter('title')->text());
+        self::assertContains(['key' => 'shop', 'url' => '/beta/fr/shop', 'current' => true, 'children' => [
+            ['key' => 'prints', 'label' => 'Affiches', 'url' => '/beta/fr/category/prints', 'current' => true],
+            ['key' => 'stickers', 'label' => 'Stickers', 'url' => '/beta/fr/category/stickers', 'current' => false],
+        ]], Json::array($props, 'layout', 'navigation'));
+        self::assertSame(['Accueil', 'Boutique', 'Conventions', 'À propos', 'Contact'], $crawler->filter('#shop nav[data-navigation] > ul > li > a')->each(static fn (Crawler $link): string => $link->text()));
+        self::assertSame([['Affiches', '/beta/fr/category/prints', 'page'], ['Stickers', '/beta/fr/category/stickers', '']], $crawler->filter('#shop nav[data-navigation] [data-categories] a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href'), (string) $link->attr('aria-current')]));
+        self::assertSame('Affiches · mossyleaf.studio', $crawler->filter('title')->text());
+        self::assertSame([['locale' => 'en', 'url' => '/beta/en/category/prints', 'current' => false], ['locale' => 'fr', 'url' => '/beta/fr/category/prints', 'current' => true]], Json::array($props, 'layout', 'languages'));
 
         $shop = $crawler->filter('#shop main');
-        self::assertSame('Boutique', $shop->filter('h1')->text());
-        self::assertSame([['Tous les produits', '/beta/fr/shop', 'page'], ['Affiches', '/beta/fr/shop?category=prints', ''], ['Stickers', '/beta/fr/shop?category=stickers', '']], $shop->filter('nav[data-categories] a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href'), (string) $link->attr('aria-current')]));
-        self::assertSame(['/beta/fr/shop/prints-fox', '/beta/fr/shop/prints-owl', '/beta/fr/shop/stickers-moth'], $shop->filter('[data-products] a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
+        self::assertSame('Affiches', $shop->filter('h1')->text());
+        self::assertSame(['/beta/fr/shop/prints-fox', '/beta/fr/shop/prints-owl'], $shop->filter('[data-products] a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
         self::assertStringContainsString("15,00\u{a0}€", $shop->filter('[data-products] li')->first()->text());
         self::assertStringContainsString('Épuisé', $shop->filter('[data-products] li')->eq(1)->text());
-        self::assertStringContainsString('Masqué', $shop->filter('[data-products] li')->eq(2)->text());
         self::assertSame(['eager'], $shop->filter('[data-products] img')->each(static fn (Crawler $image): string => (string) $image->attr('loading')));
         self::assertEveryInternalLinkIsAPreviewLink($crawler);
     }
 
-    public function testTheCategoryParameterFiltersTheListing(): void
+    public function testACategoryHoldingOnlyHiddenProductsIsShownInThePreviewWithItsProductsFlagged(): void
     {
         $client = self::signedInClient();
         self::stockTheDemo($client);
 
-        $data = self::data($client->request('GET', '/beta/en/shop?category=stickers'));
+        $crawler = $client->request('GET', '/beta/en/category/stickers');
 
         self::assertResponseIsSuccessful();
-        self::assertSame('Stickers', $data['title']);
-        self::assertSame(['/beta/en/shop/stickers-moth'], array_map(static fn (mixed $card): string => Json::string($card, 'url'), Json::array($data, 'products')));
-        self::assertSame([false, false, true], array_map(static fn (mixed $category): bool => true === Json::at($category, 'current'), Json::array($data, 'categories')));
+        $data = self::data($crawler);
+        self::assertSame(['Stickers', ['key' => 'stickers', 'label' => 'Stickers']], [$data['title'], $data['category']]);
+        self::assertSame([['/beta/en/shop/stickers-moth', true]], array_map(static fn (mixed $card): array => [Json::string($card, 'url'), Json::at($card, 'hidden')], Json::array($data, 'products')));
+        self::assertStringContainsString('Hidden', $crawler->filter('#shop main [data-products] li')->text());
+    }
+
+    public function testTheShopEntranceLeadsToTheFirstCategoryOfTheMenu(): void
+    {
+        $client = self::signedInClient();
+        self::stockTheDemo($client);
+
+        $client->request('GET', '/beta/en/shop');
+        self::assertResponseRedirects('/beta/en/category/prints', 302);
+
+        $ids = array_column(array_map(static fn (CategoryView $category): array => [$category->name, $category->id], self::getContainer()->get(CatalogueQueries::class)->categories()), 1, 0);
+        $client->jsonRequest('PUT', '/api/admin/categories/order', ['ids' => [$ids['Stickers'], $ids['Cards'], $ids['Prints']]]);
+        self::assertResponseIsSuccessful();
+
+        $client->request('GET', '/beta/fr/shop');
+        self::assertResponseRedirects('/beta/fr/category/stickers', 302);
+        self::assertSame(['stickers', 'prints'], array_map(static fn (mixed $child): string => Json::string($child, 'key'), Json::array(self::shopEntry($client->request('GET', '/beta/fr/')), 'children')));
+    }
+
+    public function testTheShopEntranceLeadsHomeAndTheMenuHasNoShopEntryWhenNothingIsShown(): void
+    {
+        $client = self::signedInClient();
+        self::push([self::product(1, 'Prints', 'Hare', 0, 5)]);
+
+        $client->request('GET', '/beta/fr/shop');
+        self::assertResponseRedirects('/beta/fr/', 302);
+
+        $crawler = $client->request('GET', '/beta/fr/');
+        $navigation = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'layout', 'navigation');
+        self::assertSame(['home', 'conventions', 'about', 'contact'], array_map(static fn (mixed $entry): string => Json::string($entry, 'key'), $navigation));
+        self::assertCount(0, $crawler->filter('#shop [data-categories]'));
+        self::assertNull(self::data($crawler)['shopUrl']);
+        self::assertCount(0, $crawler->filter('#shop main a[data-shop]'));
+    }
+
+    public function testTheShopEntryIsCurrentOnACategoryAndOnAProductPageAndItsChildOnlyOnItsOwnPage(): void
+    {
+        $client = self::signedInClient();
+        self::stockTheDemo($client);
+
+        foreach (['/beta/en/category/stickers' => ['stickers'], '/beta/en/shop/prints-fox' => [], '/beta/en/about' => null, '/beta/en/category/nowhere' => null, '/beta/en/shop/nowhere' => null] as $url => $currentChildren) {
+            $entry = self::shopEntry($client->request('GET', $url));
+
+            self::assertSame(null !== $currentChildren, $entry['current'], $url);
+            self::assertSame($currentChildren ?? [], array_values(array_map(static fn (mixed $child): string => Json::string($child, 'key'), array_filter(Json::array($entry, 'children'), static fn (mixed $child): bool => true === Json::at($child, 'current')))), $url);
+        }
     }
 
     public function testCategoryKeysAreTheSameInBothLanguagesUniqueAndNeverEmpty(): void
@@ -123,7 +169,7 @@ final class ShopCataloguePagesTest extends WebTestCase
 
         $keys = [];
         foreach (['en', 'fr'] as $locale) {
-            $categories = \array_slice(Json::array(self::data($client->request('GET', "/beta/{$locale}/shop")), 'categories'), 1);
+            $categories = Json::array(self::shopEntry($client->request('GET', "/beta/{$locale}/")), 'children');
             $keys[$locale] = array_map(static fn (mixed $category): string => Json::string($category, 'key'), $categories);
             foreach ($categories as $category) {
                 self::assertCount(1, Json::array(self::data($client->request('GET', Json::string($category, 'url'))), 'products'), Json::string($category, 'url'));
@@ -140,7 +186,7 @@ final class ShopCataloguePagesTest extends WebTestCase
         $client = self::signedInClient();
         self::stockTheDemo($client);
 
-        foreach (['/beta/en/shop?category=nope', '/beta/en/shop?category=cards', '/beta/fr/shop/cards-bee', '/beta/fr/shop/prints-hare', '/beta/fr/shop/no-such-product', '/beta/fr/shop/prints-fox%00x', '/beta/fr/shop/Prints-Fox'] as $url) {
+        foreach (['/beta/en/category/nope', '/beta/en/category/cards', '/beta/fr/category/Prints', '/beta/fr/category/prints%00x', '/beta/fr/shop/cards-bee', '/beta/fr/shop/prints-hare', '/beta/fr/shop/no-such-product', '/beta/fr/shop/prints-fox%00x', '/beta/fr/shop/Prints-Fox'] as $url) {
             $crawler = $client->request('GET', $url);
 
             self::assertResponseStatusCodeSame(404, $url);
@@ -164,7 +210,7 @@ final class ShopCataloguePagesTest extends WebTestCase
         $data = self::data($crawler);
         self::assertSame(['page', 'title', 'description', 'price', 'priceNote', 'category', 'photos', 'variants', 'soldOut', 'hidden', 'related'], array_keys($data));
         self::assertSame(['product', 'Affiche renard', "Un renard.\n\nImprimé sur [papier](https://example.com/papier).", 1500, 'TVA non applicable'], [$data['page'], $data['title'], $data['description'], $data['price'], $data['priceNote']]);
-        self::assertSame(['key' => 'prints', 'label' => 'Affiches', 'url' => '/beta/fr/shop?category=prints'], $data['category']);
+        self::assertSame(['key' => 'prints', 'label' => 'Affiches', 'url' => '/beta/fr/category/prints'], $data['category']);
         self::assertCount(2, Json::array($data, 'photos'));
         self::assertSame(['src', 'srcset', 'width', 'height', 'alt'], array_keys(Json::array($data, 'photos', 0)));
         self::assertSame('Affiche renard', Json::string($data, 'photos', 1, 'alt'));
@@ -174,7 +220,7 @@ final class ShopCataloguePagesTest extends WebTestCase
 
         $main = $crawler->filter('#shop main');
         self::assertSame('Affiche renard', $main->filter('h1')->text());
-        self::assertSame([['Affiches', '/beta/fr/shop?category=prints']], $main->filter('[data-category] a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]));
+        self::assertSame([['Affiches', '/beta/fr/category/prints']], $main->filter('[data-category] a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]));
         self::assertSame("15,00\u{a0}€", $main->filter('[data-price]')->text());
         self::assertSame('TVA non applicable', $main->filter('[data-price-note]')->text());
         self::assertSame(['Un renard.', 'Imprimé sur papier.'], $main->filter('[data-description] p')->each(static fn (Crawler $paragraph): string => $paragraph->text()));
@@ -235,7 +281,7 @@ final class ShopCataloguePagesTest extends WebTestCase
             ],
         ], $product);
         self::assertSame('http://localhost/en/shop/prints-fox', $crawler->filter('link[rel="canonical"]')->attr('href'));
-        self::assertCount(0, $client->request('GET', '/beta/en/shop')->filter('script[type="application/ld+json"]'));
+        self::assertCount(0, $client->request('GET', '/beta/en/category/prints')->filter('script[type="application/ld+json"]'));
     }
 
     public function testALongProductDescriptionIsCutForSearchEngines(): void
@@ -260,18 +306,19 @@ final class ShopCataloguePagesTest extends WebTestCase
         $crawler = $client->request('GET', '/beta/en/');
         $data = self::data($crawler);
 
-        self::assertSame('/beta/en/shop', $data['shopUrl']);
+        self::assertSame('/beta/en/category/prints', $data['shopUrl']);
         self::assertSame(['/beta/en/shop/prints-fox', '/beta/en/shop/prints-owl', '/beta/en/shop/stickers-moth'], array_map(static fn (mixed $card): string => Json::string($card, 'url'), Json::array($data, 'products')));
         self::assertSame(['key', 'label', 'url', 'image'], array_keys(Json::array($data, 'categories', 0)));
-        self::assertSame([['prints', 'Prints', '/beta/en/shop?category=prints'], ['stickers', 'Stickers', '/beta/en/shop?category=stickers']], array_map(static fn (mixed $tile): array => [Json::string($tile, 'key'), Json::string($tile, 'label'), Json::string($tile, 'url')], Json::array($data, 'categories')));
+        self::assertSame([['prints', 'Prints', '/beta/en/category/prints'], ['stickers', 'Stickers', '/beta/en/category/stickers']], array_map(static fn (mixed $tile): array => [Json::string($tile, 'key'), Json::string($tile, 'label'), Json::string($tile, 'url')], Json::array($data, 'categories')));
         self::assertSame(Json::array($data, 'products', 0, 'image'), Json::array($data, 'categories', 0, 'image'));
         self::assertNull(Json::at($data, 'categories', 1, 'image'));
 
         $main = $crawler->filter('#shop main');
-        self::assertSame([['Visit the shop', '/beta/en/shop']], $main->filter('a[data-shop]')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]));
+        self::assertSame([['Visit the shop', '/beta/en/category/prints']], $main->filter('a[data-shop]')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]));
         self::assertSame(['/beta/en/shop/prints-fox', '/beta/en/shop/prints-owl', '/beta/en/shop/stickers-moth'], $main->filter('[data-latest] [data-products] a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
         self::assertSame(['lazy'], $main->filter('[data-latest] [data-products] img')->each(static fn (Crawler $image): string => (string) $image->attr('loading')));
-        self::assertSame([['Prints', '/beta/en/shop?category=prints'], ['Stickers', '/beta/en/shop?category=stickers']], $main->filter('[data-tiles] a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]));
+        self::assertCount(0, $main->filter('[data-latest] > p'));
+        self::assertSame([['Prints', '/beta/en/category/prints'], ['Stickers', '/beta/en/category/stickers']], $main->filter('[data-tiles] a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]));
         self::assertEveryInternalLinkIsAPreviewLink($crawler);
     }
 
@@ -298,13 +345,14 @@ final class ShopCataloguePagesTest extends WebTestCase
         self::assertCount(0, $crawler->filter('#shop main [data-latest], #shop main [data-tiles]'));
     }
 
-    public function testThePrerenderOfTheListingShowsWhatThePropsCarry(): void
+    public function testThePrerenderOfACategoryShowsWhatThePropsCarry(): void
     {
         $client = self::signedInClient();
         self::stockTheDemo($client);
 
-        foreach (['fr', 'en'] as $locale) {
-            $crawler = $client->request('GET', "/beta/{$locale}/shop");
+        foreach (['fr/category/prints' => 'fr', 'en/category/prints' => 'en', 'fr/category/stickers' => 'fr'] as $path => $locale) {
+            $crawler = $client->request('GET', "/beta/{$path}");
+            self::assertSame(Json::string(self::data($crawler), 'title'), $crawler->filter('#shop main h1')->text(), $path);
             $cards = Json::array(self::data($crawler), 'products');
 
             self::assertSame(
@@ -341,7 +389,7 @@ final class ShopCataloguePagesTest extends WebTestCase
 
             self::assertSame(Json::string($data, 'title'), $main->filter('h1')->text(), $slug);
             self::assertSame(
-                [['Boutique', '/beta/fr/shop'], [Json::string($data, 'category', 'label'), Json::string($data, 'category', 'url')]],
+                [['Accueil', '/beta/fr/'], [Json::string($data, 'category', 'label'), Json::string($data, 'category', 'url')]],
                 $main->filter('nav[data-breadcrumb] a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]),
                 $slug,
             );
@@ -369,15 +417,40 @@ final class ShopCataloguePagesTest extends WebTestCase
         return self::getContainer()->get(SiteLabels::class)->label($locale, $key);
     }
 
-    public function testTheListingDoesNotRunOneQueryPerProduct(): void
+    public function testACategoryPageDoesNotRunOneQueryPerProduct(): void
     {
         $client = self::signedInClient();
         self::stockFerns($client, 2);
-        $few = self::listingQueries($client);
+        $few = self::categoryQueries($client);
 
         self::stockFerns($client, 8);
 
-        self::assertSame($few, self::listingQueries($client));
+        self::assertSame($few, self::categoryQueries($client));
+    }
+
+    public function testTheMenuReadsTheShownCategoriesWithoutLoadingTheProducts(): void
+    {
+        $client = self::signedInClient();
+        self::stockFerns($client, 2);
+        $client->enableProfiler();
+
+        $client->request('GET', '/beta/en/nowhere');
+
+        self::assertResponseStatusCodeSame(404);
+        self::assertSame(['prints'], array_map(static fn (mixed $child): string => Json::string($child, 'key'), Json::array(self::shopEntry($client->getCrawler()), 'children')));
+        $profile = $client->getProfile();
+        self::assertInstanceOf(Profile::class, $profile);
+        $collector = $profile->getCollector('db');
+        self::assertInstanceOf(DoctrineDataCollector::class, $collector);
+        $sql = '';
+        foreach ($collector->getQueries() as $queries) {
+            foreach (\is_array($queries) ? $queries : [] as $query) {
+                $sql .= "\n".Json::string($query, 'sql');
+            }
+        }
+        self::assertNotSame('', $sql);
+        self::assertStringNotContainsString('product_variant', $sql);
+        self::assertStringNotContainsString('product_photo', $sql);
     }
 
     private static function stockFerns(KernelBrowser $client, int $count): void
@@ -388,10 +461,10 @@ final class ShopCataloguePagesTest extends WebTestCase
         }
     }
 
-    private static function listingQueries(KernelBrowser $client): int
+    private static function categoryQueries(KernelBrowser $client): int
     {
         $client->enableProfiler();
-        $client->request('GET', '/beta/en/shop');
+        $client->request('GET', '/beta/en/category/prints');
         self::assertResponseIsSuccessful();
         $profile = $client->getProfile();
         self::assertInstanceOf(Profile::class, $profile);
@@ -399,6 +472,15 @@ final class ShopCataloguePagesTest extends WebTestCase
         self::assertInstanceOf(DoctrineDataCollector::class, $collector);
 
         return $collector->getQueryCount();
+    }
+
+    /** @return array<mixed> */
+    private static function shopEntry(Crawler $crawler): array
+    {
+        $entry = array_find(Json::array(Json::decode($crawler->filter('#site-content')->text()), 'layout', 'navigation'), static fn (mixed $entry): bool => 'shop' === Json::at($entry, 'key'));
+        self::assertIsArray($entry);
+
+        return $entry;
     }
 
     /** @return array<mixed> */

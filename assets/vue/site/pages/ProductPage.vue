@@ -12,7 +12,7 @@ import { formatPrice } from '../money.js';
 
 const props = defineProps({
     data: { type: Object, required: true },
-    shop: { type: String, required: true },
+    home: { type: String, required: true },
     cartUrl: { type: String, required: true },
 });
 
@@ -24,7 +24,7 @@ const add = (line) => {
 };
 
 const { t, locale } = useI18n();
-const trail = computed(() => [{ label: t('nav.shop'), url: props.shop }, { label: props.data.category.label, url: props.data.category.url }, { label: props.data.title }]);
+const trail = computed(() => [{ label: t('nav.home'), url: props.home }, { label: props.data.category.label, url: props.data.category.url }, { label: props.data.title }]);
 const price = computed(() => formatPrice(props.data.price, locale.value));
 const paragraphs = computed(() =>
     props.data.description

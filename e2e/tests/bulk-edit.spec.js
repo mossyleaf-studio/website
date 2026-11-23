@@ -57,7 +57,7 @@ test('products: hiding and showing several at once, with the head checkbox, the 
     await expect(productRow(page, 'STK-002').getByTestId('product-visibility')).not.toBeChecked();
     await expect(productRow(page, 'STK-003').getByTestId('product-visibility')).not.toBeChecked();
 
-    await page.goto('/beta/en/shop');
+    await page.goto('/beta/en/category/stickers');
     for (const reference of ['STK-002', 'STK-003']) {
         const title = products[reference].title || products[reference].name;
         await expect(page.getByTestId('product-card').filter({ hasText: title }).locator('[data-label]')).toHaveText('Hidden');
@@ -74,7 +74,7 @@ test('products: hiding and showing several at once, with the head checkbox, the 
     await expect(productRow(page, 'STK-002').getByTestId('product-visibility')).toBeChecked();
     await expect(productRow(page, 'STK-003').getByTestId('product-visibility')).toBeChecked();
 
-    await page.goto('/beta/en/shop');
+    await page.goto('/beta/en/category/stickers');
     await expect(page.getByTestId('product-card').filter({ hasText: products['STK-002'].title || products['STK-002'].name }).locator('[data-label]')).toHaveCount(0);
 
     await page.goto('/admin/products');

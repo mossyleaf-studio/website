@@ -23,7 +23,16 @@
         <nav class="shop-prerender__navigation" aria-label="{{ 'layout.navigation'|site_t }}" data-navigation>
             <ul>
                 {% for entry in layout.navigation %}
-                    <li><a href="{{ entry.url }}"{% if entry.current %} aria-current="page"{% endif %}>{{ ('nav.' ~ entry.key)|site_t }}</a></li>
+                    <li{% if entry.children is defined %} class="shop-prerender__shop"{% endif %}>
+                        <a href="{{ entry.url }}"{% if entry.current %} aria-current="{{ entry.children is defined ? 'true' : 'page' }}"{% endif %}{% if entry.children is defined %} data-shop-menu{% endif %}>{{ ('nav.' ~ entry.key)|site_t }}{% if entry.children is defined %}<svg class="shop-prerender__chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>{% endif %}</a>
+                        {%- if entry.children is defined %}
+                            <ul class="shop-prerender__categories" data-categories>
+                                {% for child in entry.children %}
+                                    <li><a href="{{ child.url }}"{% if child.current %} aria-current="page"{% endif %}>{{ child.label }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
         </nav>

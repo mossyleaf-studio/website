@@ -73,7 +73,7 @@ final class ShopContactPageTest extends WebTestCase
         self::assertSame('/beta/api/shop/fr/contact', $data['endpoint']);
         self::assertSame(['id', 'title', 'description', 'url', 'tape'], array_keys(Json::array($data, 'links', 0)));
         self::assertSame(['Instagram', 'Nouveaux dessins', 'https://www.instagram.com/mossyleaf.studio/', 'blossom'], array_slice(array_values(Json::array($data, 'links', 2)), 1));
-        self::assertSame(['key' => 'contact', 'url' => '/beta/fr/contact', 'current' => true], Json::array($props, 'layout', 'navigation', 4));
+        self::assertContains(['key' => 'contact', 'url' => '/beta/fr/contact', 'current' => true], Json::array($props, 'layout', 'navigation'));
         self::assertSame('Contact · mossyleaf.studio', $crawler->filter('title')->text());
 
         $shop = $crawler->filter('#shop');

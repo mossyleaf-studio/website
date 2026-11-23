@@ -33,6 +33,17 @@ final readonly class ShopCategoryView
         foreach ($products as $product) {
             $categories[$product->category->key] ??= $product->category;
         }
+
+        return self::ordered(array_values($categories));
+    }
+
+    /**
+     * @param list<self> $categories
+     *
+     * @return list<self>
+     */
+    public static function ordered(array $categories): array
+    {
         usort($categories, static fn (self $a, self $b): int => [$a->position, $a->key] <=> [$b->position, $b->key]);
 
         return $categories;

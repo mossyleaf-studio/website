@@ -29,12 +29,6 @@
         "latest": "New in the shop",
         "categories": "Browse by category"
     },
-    "shop": {
-        "title": "Shop",
-        "all": "All products",
-        "categories": "Categories",
-        "empty": "No products to show yet. New pieces are on their way."
-    },
     "product": {
         "soldOut": "Sold out",
         "inStock": "In stock",

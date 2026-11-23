@@ -18,7 +18,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 #[Route('/sitemap.xml', name: 'sitemap', methods: ['GET'], format: 'xml')]
 final readonly class SitemapController
 {
-    private const array PAGES = ['shop_home', 'shop_listing'];
     private const array CONTENT_PAGES = ['shop_conventions', 'shop_about', 'shop_contact'];
     private const array HREFLANG = [Locale::Fr, Locale::En];
 
@@ -56,7 +55,10 @@ final readonly class SitemapController
 
     private function shop(): string
     {
-        $pages = array_map(static fn (string $route): array => [$route, []], self::PAGES);
+        $pages = [['shop_home', []]];
+        foreach ($this->catalogue->shopCategories(false) as $category) {
+            $pages[] = ['shop_category', ['category' => $category->key]];
+        }
         foreach ($this->catalogue->shop(false) as $product) {
             $pages[] = ['shop_product', ['slug' => $product->slug]];
         }

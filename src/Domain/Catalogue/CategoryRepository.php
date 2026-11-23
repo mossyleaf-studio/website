@@ -14,4 +14,7 @@ interface CategoryRepository
 
     /** @return list<Category> */
     public function all(): array;
+
+    /** @return list<Category> */
+    public function forSale(bool $hiddenToo): array;
 }

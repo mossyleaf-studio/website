@@ -8,32 +8,56 @@ test.beforeEach(async ({ page }) => {
     await signIn(page);
 });
 
-test('the listing shows the demo products in admin order, without the retired one', async ({ page }) => {
-    await page.goto('/beta/en/shop');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    const all = await titles(page).allTextContents();
-    expect(all.slice(0, 5)).toEqual(['Moss print', 'Fern print', 'Meadow sticker sheet', 'Leaf sticker pack', 'Washi tape set']);
-    expect(all.join()).not.toContain('Wall calendar');
+test('a category page shows its products in admin order under its title, without the retired one', async ({ page }) => {
+    await page.goto('/beta/en/category/stickers');
+    await expect(page.getByRole('heading', { level: 1, name: 'Stickers and tape' })).toBeVisible();
+    await expect(titles(page)).toHaveText(['Meadow sticker sheet', 'Leaf sticker pack', 'Washi tape set']);
+    await page.goto('/beta/en/category/cards');
+    expect((await titles(page).allTextContents()).join()).not.toContain('Wall calendar');
 });
 
-test('a category chip filters the listing and marks itself current', async ({ page }) => {
+test('choosing a category in the Shop panel shows only its products and marks the entry and the category current', async ({ page }) => {
+    await page.goto('/beta/en/');
+    const shop = page.locator('#shop header.site-header [data-shop-menu]');
+    const panel = page.locator('#shop header.site-header [data-categories]');
+    await shop.click();
+    await panel.getByRole('link', { name: 'Prints' }).click();
+    await expect(page).toHaveURL(/\/beta\/en\/category\/prints$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Prints' })).toBeVisible();
+    await expect(titles(page)).toHaveText(['Moss print', 'Fern print']);
+    await expect(shop).toHaveAttribute('aria-current', 'true');
+    await shop.click();
+    await expect(panel.getByRole('link', { name: 'Prints' })).toHaveAttribute('aria-current', 'page');
+    await expect(panel.getByRole('link', { name: 'Stickers and tape' })).not.toHaveAttribute('aria-current');
+});
+
+test('the shop entrance lands on the first category', async ({ page }) => {
     await page.goto('/beta/en/shop');
-    const chips = page.getByTestId('category-filter');
-    await expect(chips.getByRole('link', { name: 'All products' })).toHaveAttribute('aria-current', 'page');
-    await chips.getByRole('link', { name: 'Prints' }).click();
-    await expect(page).toHaveURL(/\/beta\/en\/shop\?category=prints$/);
-    await expect(chips.getByRole('link', { name: 'Prints' })).toHaveAttribute('aria-current', 'page');
-    await expect(chips.getByRole('link', { name: 'All products' })).not.toHaveAttribute('aria-current');
+    await expect(page).toHaveURL(/\/beta\/en\/category\/prints$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Prints' })).toBeVisible();
+});
+
+test('the product breadcrumb leads back to its category', async ({ page }) => {
+    await page.goto('/beta/en/shop/moss-print');
+    await page.locator('#shop [data-breadcrumb]').getByRole('link', { name: 'Prints' }).click();
+    await expect(page).toHaveURL(/\/beta\/en\/category\/prints$/);
     await expect(titles(page)).toHaveText(['Moss print', 'Fern print']);
 });
 
 test('an unknown category answers the shop 404', async ({ page }) => {
-    await page.goto('/beta/en/shop?category=nothing-here');
+    await page.goto('/beta/en/category/nothing-here');
     await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
 });
 
+test('the language switch keeps the category', async ({ page }) => {
+    await page.goto('/beta/fr/category/prints');
+    await page.locator('nav[data-languages]').first().getByRole('link', { name: 'English' }).click();
+    await expect(page).toHaveURL(/\/beta\/en\/category\/prints$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Prints' })).toBeVisible();
+});
+
 test('a product opens from its card and choosing a variant changes the stock and the quantity bounds', async ({ page }) => {
-    await page.goto('/beta/en/shop');
+    await page.goto('/beta/en/category/stickers');
     await cards(page).filter({ hasText: 'Washi tape set' }).click();
     await expect(page).toHaveURL(/\/beta\/en\/shop\/washi-tape-set$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Washi tape set' })).toBeVisible();
@@ -57,17 +81,17 @@ test('a sold-out product says so and offers no quantity', async ({ page }) => {
     await page.goto('/beta/en/shop/meadow-sticker-sheet');
     await expect(page.getByTestId('stock-state')).toHaveText('Sold out');
     await expect(page.getByTestId('quantity-stepper')).toHaveCount(0);
-    await page.goto('/beta/en/shop');
+    await page.goto('/beta/en/category/stickers');
     await expect(cards(page).filter({ hasText: 'Meadow sticker sheet' }).locator('[data-label]')).toHaveText('Sold out');
 });
 
-test('a hidden product is flagged in the listing and on its page', async ({ page }) => {
+test('a hidden product is flagged in its category and on its page', async ({ page }) => {
     const products = await (await page.request.get('/api/admin/products')).json();
     const dew = products.find((product) => product.reference === 'CRD-002');
     if (dew.visible) {
         await page.request.delete(`/api/admin/products/${dew.id}/visibility`);
     }
-    await page.goto('/beta/en/shop');
+    await page.goto('/beta/en/category/cards');
     await expect(cards(page).filter({ hasText: dew.title || dew.name }).locator('[data-label]')).toHaveText('Hidden');
     await page.goto(`/beta/en/shop/${dew.slug}`);
     await expect(page.locator('[data-hidden]').first()).toBeVisible();

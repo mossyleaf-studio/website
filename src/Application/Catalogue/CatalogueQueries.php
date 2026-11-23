@@ -47,6 +47,14 @@ final readonly class CatalogueQueries
         return array_map(fn (Product $product): ShopProductView => $this->shopView($product, $keys, $held), $this->products->forSale($preview));
     }
 
+    /** @return list<ShopCategoryView> */
+    public function shopCategories(bool $preview): array
+    {
+        $keys = $this->categoryKeys();
+
+        return ShopCategoryView::ordered(array_map(static fn (Category $category): ShopCategoryView => ShopCategoryView::of($category, $keys[(string) $category->id()]), $this->categories->forSale($preview)));
+    }
+
     public function shopProduct(string $slug, bool $preview): ?ShopProductView
     {
         $product = $this->products->withSlug($slug);

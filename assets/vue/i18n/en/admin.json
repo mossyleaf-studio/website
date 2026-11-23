@@ -258,7 +258,7 @@
         "searchPlaceholder": "Name, reference or SKU",
         "categoryFilter": "Filter by category",
         "allCategories": "All categories",
-        "categoryNames": "Category names",
+        "categoryNames": "Category names and order",
         "filtering": "Reordering is off while a search or filter is active.",
         "empty": "No product yet",
         "emptyHint": "Products appear here once mossytrunk pushes its catalogue.",
@@ -346,8 +346,10 @@
         "leave": "Leave without saving? Your changes to the shop texts will be lost."
     },
     "categories": {
-        "title": "Category names",
-        "hint": "How each mossytrunk category is called in the shop.",
+        "title": "Category names and order",
+        "hint": "Name each category and put them in order: the order is the order of the Shop menu of the site.",
+        "moveUp": "Move “{name}” up",
+        "moveDown": "Move “{name}” down",
         "emptyHint": "Empty: the shop uses “{name}”.",
         "empty": "No category yet",
         "emptyDetail": "Categories appear once mossytrunk pushes its catalogue.",

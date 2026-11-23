@@ -1,7 +1,9 @@
 <div class="shop-prerender__hero">
     <div class="shop-prerender__lead">
         <h1>{{ data.intro }}</h1>
-        <p><a class="shop-prerender__pill" href="{{ data.shopUrl }}" data-shop>{{ 'home.shopLink'|site_t }}</a></p>
+        {% if data.shopUrl %}
+            <p><a class="shop-prerender__pill" href="{{ data.shopUrl }}" data-shop>{{ 'home.shopLink'|site_t }}</a></p>
+        {% endif %}
     </div>
     {% if data.featured %}
         <figure>
@@ -13,7 +15,6 @@
     <section aria-labelledby="latest-title" data-latest>
         <h2 id="latest-title">{{ 'home.latest'|site_t }}</h2>
         {% include 'shop/prerender/_cards.html.twig' with {products: data.products, eager: false, columns: 4} %}
-        <p><a href="{{ data.shopUrl }}">{{ 'shop.all'|site_t }}</a></p>
     </section>
 {% endif %}
 <section class="shop-prerender__sheet" aria-labelledby="about-title" data-about>

@@ -35,7 +35,7 @@ final readonly class CatalogueProps
     /** @return array{key: string, label: string, url: string} */
     public function category(ShopCategoryView $category, Locale $locale, bool $preview): array
     {
-        return ['key' => $category->key, 'label' => $category->label->in($locale), 'url' => $this->listing($locale, $preview, $category->key)];
+        return ['key' => $category->key, 'label' => $category->label->in($locale), 'url' => $this->urls->to('shop_category', $locale, $preview, ['category' => $category->key])];
     }
 
     /**
@@ -50,11 +50,6 @@ final readonly class CatalogueProps
 
             return [...$this->category($category, $locale, $preview), 'image' => null === $pictured ? null : self::cover($pictured)];
         }, ShopCategoryView::shownIn($products));
-    }
-
-    public function listing(Locale $locale, bool $preview, ?string $category = null): string
-    {
-        return $this->urls->to('shop_listing', $locale, $preview, null === $category ? [] : ['category' => $category]);
     }
 
     /** @return array{src: string, srcset: string, width: int, height: int, alt: string}|null */

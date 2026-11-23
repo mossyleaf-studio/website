@@ -129,7 +129,7 @@ final class SeoTest extends WebTestCase
         self::assertResponseHeaderSame('Content-Type', 'application/xml; charset=UTF-8');
         self::assertResponseNotHasHeader('Set-Cookie');
         $sitemap = new \SimpleXMLElement((string) $client->getResponse()->getContent());
-        $pages = ['', 'shop', 'shop/prints-fox', 'shop/prints-owl', 'conventions', 'about', 'contact', 'legal/terms', 'legal/legal-notice', 'legal/privacy'];
+        $pages = ['', 'category/prints', 'shop/prints-fox', 'shop/prints-owl', 'conventions', 'about', 'contact', 'legal/terms', 'legal/legal-notice', 'legal/privacy'];
         $expected = [];
         foreach ($pages as $page) {
             foreach (['en', 'fr'] as $locale) {
@@ -150,7 +150,7 @@ final class SeoTest extends WebTestCase
             self::assertSame(['fr' => "http://localhost/fr/{$path}", 'en' => "http://localhost/en/{$path}", 'x-default' => "http://localhost/en/{$path}"], $alternates, (string) $url->loc);
         }
         self::assertSame($expected, $urls);
-        self::assertDoesNotMatchRegularExpression('{cart|checkout|order|stickers-moth|prints-hare|cards-bee|shipping-returns|/beta/}', (string) $client->getResponse()->getContent());
+        self::assertDoesNotMatchRegularExpression('{cart|checkout|order|stickers|prints-hare|cards|shipping-returns|/beta/|/shop[<"]}', (string) $client->getResponse()->getContent());
     }
 
     public function testTheHomeOfTheOpenShopDeclaresTheStudioInTheLanguageOfThePage(): void
@@ -172,33 +172,41 @@ final class SeoTest extends WebTestCase
         self::assertStringNotContainsString('application/ld+json', (string) $client->getResponse()->getContent());
     }
 
-    public function testAFilteredListingPointsSearchEnginesAtTheWholeListingAndKeepsItsFilterAcrossLanguages(): void
+    public function testACategoryPagePointsSearchEnginesAtItselfInBothLanguages(): void
     {
         $client = self::openShopClient();
 
-        $crawler = $client->request('GET', '/fr/shop?category=prints');
+        $crawler = $client->request('GET', '/fr/category/prints');
 
         self::assertResponseIsSuccessful();
-        self::assertSame('http://localhost/fr/shop', $crawler->filter('link[rel="canonical"]')->attr('href'));
-        self::assertSame(['en' => 'http://localhost/en/shop', 'fr' => 'http://localhost/fr/shop', 'x-default' => 'http://localhost/en/shop'], self::alternates($crawler));
-        $languages = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'layout', 'languages');
-        self::assertSame([['locale' => 'en', 'url' => '/en/shop?category=prints', 'current' => false], ['locale' => 'fr', 'url' => '/fr/shop?category=prints', 'current' => true]], $languages);
-        self::assertSame(['/en/shop?category=prints', '/fr/shop?category=prints'], $crawler->filter('header nav[data-languages] a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
-
-        $crawler = $client->request('GET', '/fr/shop');
-        self::assertSame([['locale' => 'en', 'url' => '/en/shop', 'current' => false], ['locale' => 'fr', 'url' => '/fr/shop', 'current' => true]], Json::array(Json::decode($crawler->filter('#site-content')->text()), 'layout', 'languages'));
+        self::assertSame('index, follow, max-image-preview:large', $crawler->filter('meta[name="robots"]')->attr('content'));
+        self::assertSame('http://localhost/fr/category/prints', $crawler->filter('link[rel="canonical"]')->attr('href'));
+        self::assertSame(['en' => 'http://localhost/en/category/prints', 'fr' => 'http://localhost/fr/category/prints', 'x-default' => 'http://localhost/en/category/prints'], self::alternates($crawler));
+        self::assertSame(['/en/category/prints', '/fr/category/prints'], $crawler->filter('header nav[data-languages] a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
+        self::assertCount(0, $crawler->filter('script[type="application/ld+json"]'));
     }
 
-    public function testTheShopEntryIsCurrentOnTheListingAndOnAProductPage(): void
+    public function testTheShopEntranceRedirectsVisitorsToTheFirstCategoryWithoutASession(): void
     {
         $client = self::openShopClient();
 
-        foreach (['/en/shop', '/en/shop?category=prints', '/en/shop/prints-fox'] as $url) {
+        $client->request('GET', '/fr/shop');
+
+        self::assertResponseRedirects('/fr/category/prints', 302);
+        self::assertResponseNotHasHeader('Set-Cookie');
+    }
+
+    public function testTheShopEntryIsCurrentOnACategoryAndOnAProductPage(): void
+    {
+        $client = self::openShopClient();
+
+        foreach (['/en/category/prints' => ['/en/category/prints'], '/en/shop/prints-fox' => []] as $url => $current) {
             $crawler = $client->request('GET', $url);
 
             $navigation = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'layout', 'navigation');
             self::assertSame(['shop'], array_values(array_map(static fn (mixed $entry): string => Json::string($entry, 'key'), array_filter($navigation, static fn (mixed $entry): bool => true === Json::at($entry, 'current')))), $url);
-            self::assertSame(['/en/shop'], $crawler->filter('nav[data-navigation] a[aria-current="page"]')->each(static fn (Crawler $link): string => (string) $link->attr('href')), $url);
+            self::assertSame(['/en/shop'], $crawler->filter('nav[data-navigation] a[aria-current="true"]')->each(static fn (Crawler $link): string => (string) $link->attr('href')), $url);
+            self::assertSame($current, $crawler->filter('nav[data-navigation] a[aria-current="page"]')->each(static fn (Crawler $link): string => (string) $link->attr('href')), $url);
         }
 
         $crawler = $client->request('GET', '/en/about');

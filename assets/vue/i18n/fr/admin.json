@@ -258,7 +258,7 @@
         "searchPlaceholder": "Nom, référence ou SKU",
         "categoryFilter": "Filtrer par catégorie",
         "allCategories": "Toutes les catégories",
-        "categoryNames": "Noms des catégories",
+        "categoryNames": "Noms et ordre des catégories",
         "filtering": "Le réordonnancement est désactivé pendant une recherche ou un filtre.",
         "empty": "Aucun produit pour l’instant",
         "emptyHint": "Les produits apparaissent ici dès que mossytrunk envoie son catalogue.",
@@ -346,8 +346,10 @@
         "leave": "Quitter sans enregistrer ? Vos modifications des textes de la boutique seront perdues."
     },
     "categories": {
-        "title": "Noms des catégories",
-        "hint": "Le nom de chaque catégorie mossytrunk dans la boutique.",
+        "title": "Noms et ordre des catégories",
+        "hint": "Nommez chaque catégorie et mettez-les dans l’ordre : c’est l’ordre du menu Boutique du site.",
+        "moveUp": "Monter « {name} »",
+        "moveDown": "Descendre « {name} »",
         "emptyHint": "Vide : la boutique utilise « {name} ».",
         "empty": "Aucune catégorie pour l’instant",
         "emptyDetail": "Les catégories apparaissent dès que mossytrunk envoie son catalogue.",

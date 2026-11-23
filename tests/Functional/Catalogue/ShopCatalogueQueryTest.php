@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Catalogue;
 
 use App\Application\Catalogue\CatalogueQueries;
+use App\Application\Catalogue\CategoryView;
 use App\Application\Catalogue\ReplaceCatalogue\PushedProduct;
 use App\Application\Catalogue\ReplaceCatalogue\PushedVariant;
 use App\Application\Catalogue\ShopCategoryView;
@@ -126,6 +127,22 @@ final class ShopCatalogueQueryTest extends WebTestCase
 
         self::assertSame(['prints'], array_map(static fn (ShopCategoryView $category): string => $category->key, ShopCategoryView::shownIn(self::queries()->shop(false))));
         self::assertSame(['prints', 'stickers'], array_map(static fn (ShopCategoryView $category): string => $category->key, ShopCategoryView::shownIn(self::queries()->shop(true))));
+    }
+
+    public function testTheShopCategoriesAreTheShownOnesInMenuOrder(): void
+    {
+        $client = self::signedInClient();
+        self::stockTheDemo($client);
+        $keys = static fn (bool $preview): array => array_map(static fn (ShopCategoryView $category): string => $category->key, self::queries()->shopCategories($preview));
+
+        self::assertSame(['prints'], $keys(false));
+        self::assertSame(['prints', 'stickers'], $keys(true));
+
+        $ids = array_column(array_map(static fn (CategoryView $category): array => [$category->name, $category->id], self::queries()->categories()), 1, 0);
+        $client->jsonRequest('PUT', '/api/admin/categories/order', ['ids' => [$ids['Stickers'], $ids['Cards'], $ids['Prints']]]);
+        self::assertResponseIsSuccessful();
+
+        self::assertSame(['stickers', 'prints'], $keys(true));
     }
 
     private static function queries(): CatalogueQueries

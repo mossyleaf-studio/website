@@ -61,14 +61,17 @@ async function walk(page, prefix) {
     const titles = [await page.title()];
 
     const steps = [
-        ['/en/shop', 'shop', 'listing'],
-        ['/en/shop?category=prints', 'shop\\?category=prints', 'filtered listing'],
+        ['/en/category/prints', 'category/prints', 'category'],
+        ['/en/category/stickers', 'category/stickers', 'another category'],
+        ['/en/category/prints', 'category/prints', 'back to the first category'],
         ['/en/shop/moss-print', 'shop/moss-print', 'product'],
     ];
     for (const [href, pattern] of steps) {
+        if (href.includes('/category/')) await page.locator('#shop [data-shop-menu]').click();
         await visit(page, prefix, href, new RegExp(`${prefix}/en/${pattern}$`));
         await expect(page.locator('html')).toHaveAttribute('lang', 'en');
         await arrived(page);
+        if (href.includes('/category/')) await expect(page.locator('#shop [data-categories]')).toBeHidden();
         titles.push(await page.title());
     }
     await expect(page.getByRole('heading', { level: 1, name: 'Moss print' })).toBeVisible();

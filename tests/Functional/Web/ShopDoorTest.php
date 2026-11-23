@@ -18,8 +18,9 @@ final class ShopDoorTest extends WebTestCase
     use OpensTheShop;
     use ShopsOnline;
 
-    private const array PAGES = ['/fr/', '/en/', '/fr/shop', '/en/shop?category=prints', '/fr/shop/prints-fox', '/en/shop/no-such-product', '/en/cart', '/fr/checkout', '/en/conventions', '/fr/about', '/en/contact', '/fr/legal/terms', '/fr/no-such-page'];
-    private const array TRICKS = ['/fr/?preview=1', '/fr/shop?preview=true', '/fr/%73hop', '/%66r/about'];
+    private const array PAGES = ['/fr/', '/en/', '/en/category/prints', '/fr/category/stickers', '/fr/shop/prints-fox', '/en/shop/no-such-product', '/en/cart', '/fr/checkout', '/en/conventions', '/fr/about', '/en/contact', '/fr/legal/terms', '/fr/no-such-page'];
+    private const array TRICKS = ['/fr/?preview=1', '/fr/category/prints?preview=true', '/fr/%63ategory/prints', '/%66r/about'];
+    private const array ENTRANCES = ['/fr/shop', '/en/shop?preview=1', '/fr/%73hop'];
 
     protected function tearDown(): void
     {
@@ -45,7 +46,7 @@ final class ShopDoorTest extends WebTestCase
         self::enter($client, $state);
         $client->getCookieJar()->clear();
 
-        foreach ([...self::PAGES, ...self::TRICKS] as $url) {
+        foreach ([...self::PAGES, ...self::TRICKS, ...self::ENTRANCES] as $url) {
             $client->request('GET', $url, server: ['HTTP_PREVIEW' => '1']);
 
             self::assertResponseRedirects('/', 302, $url);
@@ -97,6 +98,13 @@ final class ShopDoorTest extends WebTestCase
             self::assertStringNotContainsString('/beta/', $props, $url);
         }
 
+        foreach (self::ENTRANCES as $url) {
+            $client->request('GET', $url, server: ['HTTP_PREVIEW' => '1']);
+
+            self::assertResponseRedirects(str_starts_with($url, '/en/') ? '/en/category/prints' : '/fr/category/prints', 302, $url);
+            self::assertResponseNotHasHeader('Set-Cookie', $url);
+        }
+
         $client->jsonRequest('POST', '/api/shop/en/quote', ['lines' => [['sku' => 'STI-MOTH', 'quantity' => 1]], 'country' => 'FR']);
         self::assertResponseIsSuccessful();
         self::assertResponseNotHasHeader('Set-Cookie');
@@ -124,7 +132,7 @@ final class ShopDoorTest extends WebTestCase
         self::publish($client, 'note');
         $client->getCookieJar()->clear();
 
-        foreach (self::PAGES as $url) {
+        foreach ([...self::PAGES, ...self::ENTRANCES] as $url) {
             $client->request('GET', $url);
 
             self::assertResponseRedirects('/', 302, $url);

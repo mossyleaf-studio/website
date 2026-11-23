@@ -29,12 +29,6 @@
         "latest": "Nouveautés",
         "categories": "Parcourir par catégorie"
     },
-    "shop": {
-        "title": "Boutique",
-        "all": "Tous les produits",
-        "categories": "Catégories",
-        "empty": "Aucun produit à montrer pour l’instant. De nouvelles pièces arrivent."
-    },
     "product": {
         "soldOut": "Épuisé",
         "inStock": "En stock",

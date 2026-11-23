@@ -3,7 +3,7 @@ import { fillForm, MAILPIT, messages, pay, REFERENCE } from './support/orders.js
 import { signIn } from './support/session.js';
 
 const ZONES = { france: { price: 450, freeFrom: 4000, enabled: true }, eu: { price: 900, freeFrom: null, enabled: true }, world: { price: 1500, freeFrom: null, enabled: true } };
-const PUBLIC_PAGES = ['/en/', '/fr/', '/en/shop', '/fr/shop?category=prints', '/en/shop/moss-print', '/fr/conventions', '/fr/contact', '/en/legal/terms', '/fr/about'];
+const PUBLIC_PAGES = ['/en/', '/fr/', '/en/category/prints', '/fr/category/stickers', '/en/shop/moss-print', '/fr/conventions', '/fr/contact', '/en/legal/terms', '/fr/about'];
 
 async function setZones(request, enabled) {
     for (const [code, body] of Object.entries(ZONES)) {
@@ -107,21 +107,21 @@ test('the studio opens the shop, a visitor buys a postcard set, then the studio 
             await expect(visitor.getByRole('complementary', { name: /Draft preview|Aperçu du brouillon/ }), url).toHaveCount(0);
             await expect(visitor.getByRole('heading', { level: 1 }).first(), url).toBeVisible();
         }
-        const listing = await english.request.get('/en/shop');
+        const listing = await english.request.get('/en/category/prints');
         expect(listing.headers()['cache-control']).toContain('public');
         const etag = listing.headers().etag;
         expect(etag).toBeTruthy();
-        expect((await english.request.get('/en/shop', { headers: { 'If-None-Match': etag } })).status()).toBe(304);
+        expect((await english.request.get('/en/category/prints', { headers: { 'If-None-Match': etag } })).status()).toBe(304);
         await noCookie();
     });
 
     await test.step('a product hidden in the admin disappears from the shop', async () => {
-        await visitor.goto('/en/shop');
+        await visitor.goto('/en/category/stickers');
         await expect(visitor.getByTestId('product-card').filter({ hasText: 'Leaf sticker pack' })).toHaveCount(1);
         const id = await productId(page.request, 'STK-002');
         expect((await page.request.delete(`/api/admin/products/${id}/visibility`)).ok()).toBe(true);
 
-        await visitor.goto('/en/shop');
+        await visitor.goto('/en/category/stickers');
         await expect(visitor.getByTestId('product-card').filter({ hasText: 'Leaf sticker pack' })).toHaveCount(0);
         await expect(visitor.getByTestId('product-card').filter({ hasText: 'Dew greeting card' })).toHaveCount(0);
         for (const slug of ['leaf-sticker-pack', 'dew-greeting-card']) {
@@ -195,13 +195,13 @@ test('the studio opens the shop, a visitor buys a postcard set, then the studio 
 
     await test.step('the sitemap lists the pages in both languages and robots.txt points to it', async () => {
         const sitemap = await (await english.request.get('/sitemap.xml')).text();
-        for (const path of ['/en/', '/fr/', '/en/shop', '/fr/shop', '/en/shop/moss-print', '/fr/shop/moss-print', '/en/conventions', '/fr/conventions', '/en/about', '/fr/contact', '/en/legal/terms', '/fr/legal/privacy']) {
+        for (const path of ['/en/', '/fr/', '/en/category/prints', '/fr/category/prints', '/en/shop/moss-print', '/fr/shop/moss-print', '/en/conventions', '/fr/conventions', '/en/about', '/fr/contact', '/en/legal/terms', '/fr/legal/privacy']) {
             expect(sitemap, path).toContain(`${path}</loc>`);
         }
         expect(sitemap).toContain('hreflang="fr"');
         expect(sitemap).toContain('hreflang="en"');
         expect(sitemap).toContain('hreflang="x-default"');
-        for (const hidden of ['/cart', '/checkout', '/order/', 'dew-greeting-card', 'wall-calendar']) expect(sitemap, hidden).not.toContain(hidden);
+        for (const hidden of ['/en/shop</loc>', '/cart', '/checkout', '/order/', 'dew-greeting-card', 'wall-calendar']) expect(sitemap, hidden).not.toContain(hidden);
 
         const robots = await (await english.request.get('/robots.txt')).text();
         expect(robots).toMatch(/^Sitemap: .+\/sitemap\.xml$/m);

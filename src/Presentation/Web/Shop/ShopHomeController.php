@@ -42,19 +42,20 @@ final readonly class ShopHomeController
         $content = $this->queries->shop($preview);
         $products = $this->catalogue->shop($preview);
         $nextConvention = $this->conventions->upcoming()[0] ?? null;
+        $tiles = $this->props->tiles($products, $locale, $preview);
 
         return $this->page->render($request, $preview, $content, [
             'page' => 'home',
             'intro' => $content->intro->in($locale),
             'featured' => LocalizedArtwork::featured($content, $locale),
-            'shopUrl' => $this->props->listing($locale, $preview),
+            'shopUrl' => $tiles[0]['url'] ?? null,
             ...([] === $products ? [] : ['products' => $this->props->cards(\array_slice($products, 0, self::LATEST), $locale, $preview)]),
             'about' => [
                 'title' => $content->aboutTitle->in($locale),
                 'text' => SiteText::paragraphs($content->aboutText->in($locale))[0] ?? '',
                 'url' => $this->urls->to('shop_about', $locale, $preview),
             ],
-            ...([] === $products ? [] : ['categories' => $this->props->tiles($products, $locale, $preview)]),
+            ...([] === $tiles ? [] : ['categories' => $tiles]),
             ...(null === $nextConvention ? [] : ['nextConvention' => LocalizedConvention::of($nextConvention, $locale)]),
         ], seo: $preview ? [] : $this->seo->of($content, $locale, $request));
     }

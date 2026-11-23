@@ -19,7 +19,7 @@ final class OpenShopPagesTest extends WebTestCase
     use PushesCatalogue;
     use SignsInClient;
 
-    private const array INDEXABLE = ['/en/', '/fr/', '/en/shop', '/fr/shop?category=prints', '/en/shop/prints-fox', '/fr/conventions', '/en/about', '/fr/contact', '/en/legal/terms'];
+    private const array INDEXABLE = ['/en/', '/fr/', '/en/category/prints', '/fr/category/prints', '/en/shop/prints-fox', '/fr/conventions', '/en/about', '/fr/contact', '/en/legal/terms'];
 
     protected function tearDown(): void
     {
@@ -56,7 +56,7 @@ final class OpenShopPagesTest extends WebTestCase
         self::openTheShop($client);
         $visitor = self::visitor($client);
 
-        foreach (['/en/shop/stickers-moth', '/fr/shop/cards-bee', '/en/shop/prints-hare'] as $url) {
+        foreach (['/en/shop/stickers-moth', '/fr/shop/cards-bee', '/en/shop/prints-hare', '/en/category/stickers', '/fr/category/cards'] as $url) {
             $crawler = $visitor->request('GET', $url);
 
             self::assertResponseStatusCodeSame(404, $url);
@@ -65,7 +65,8 @@ final class OpenShopPagesTest extends WebTestCase
         }
 
         $listed = ['/en/shop/prints-fox', '/en/shop/prints-owl'];
-        self::assertSame($listed, self::cardUrls(Json::array(self::props($visitor, '/en/shop'), 'data', 'products')));
+        self::assertSame($listed, self::cardUrls(Json::array(self::props($visitor, '/en/category/prints'), 'data', 'products')));
+        self::assertSame(['prints'], array_map(static fn (mixed $child): string => Json::string($child, 'key'), Json::array(self::props($visitor, '/en/'), 'layout', 'navigation', 1, 'children')));
         self::assertSame($listed, self::cardUrls(Json::array(self::props($visitor, '/en/'), 'data', 'products')));
         self::assertSame(['/en/shop/prints-owl'], self::cardUrls(Json::array(self::props($visitor, '/en/shop/prints-fox'), 'data', 'related')));
 
@@ -103,13 +104,13 @@ final class OpenShopPagesTest extends WebTestCase
         }
         self::assertSame(array_values($etags), array_values(array_unique($etags)));
 
-        $visitor->request('GET', '/en/shop', server: ['HTTP_IF_NONE_MATCH' => $etags['/en/']]);
+        $visitor->request('GET', '/en/category/prints', server: ['HTTP_IF_NONE_MATCH' => $etags['/en/']]);
         self::assertResponseStatusCodeSame(200);
 
         self::push([self::product(1, 'Prints', 'Fox', 1800, ['A4' => 12, 'A5' => 0]), ...\array_slice(self::demo(), 1, 3)]);
-        $visitor->request('GET', '/en/shop', server: ['HTTP_IF_NONE_MATCH' => $etags['/en/shop']]);
+        $visitor->request('GET', '/en/category/prints', server: ['HTTP_IF_NONE_MATCH' => $etags['/en/category/prints']]);
         self::assertResponseStatusCodeSame(200);
-        self::assertNotSame($etags['/en/shop'], (string) $visitor->getResponse()->getEtag());
+        self::assertNotSame($etags['/en/category/prints'], (string) $visitor->getResponse()->getEtag());
     }
 
     public function testTheCartTheCheckoutTheNotFoundPageAndThePreviewCarryNoEtag(): void
@@ -118,7 +119,7 @@ final class OpenShopPagesTest extends WebTestCase
         self::stockTheDemo($client);
         self::openTheShop($client);
 
-        foreach (['/beta/en/', '/beta/fr/shop', '/beta/en/shop/prints-fox', '/beta/en/about'] as $url) {
+        foreach (['/beta/en/', '/beta/fr/category/prints', '/beta/en/shop/prints-fox', '/beta/en/about'] as $url) {
             $client->request('GET', $url);
 
             self::assertResponseIsSuccessful($url);
