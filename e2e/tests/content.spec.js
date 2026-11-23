@@ -131,7 +131,7 @@ test('a link is added, moved to the top and shown on the contact page', async ({
     await editor.getByLabel('Title (Français)').fill('Offrir un café');
     await editor.getByLabel('Description (English)').fill('Buy the studio a coffee');
     await editor.getByLabel('Address').fill('https://ko-fi.com/mossyleaf');
-    await editor.getByRole('radio', { name: 'Blue dots' }).click();
+    await editor.getByRole('radio', { name: 'Green dots' }).click();
     await editor.getByRole('button', { name: 'Save' }).click();
 
     const row = page.getByTestId('link-row').filter({ hasText: title });

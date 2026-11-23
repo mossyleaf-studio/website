@@ -69,8 +69,8 @@ const year = new Date().getFullYear();
     font-weight: var(--font-display-weight);
     font-size: var(--font-size-lg);
     line-height: 1;
-    color: var(--color-bark);
-    border: 0.125rem solid var(--color-bark);
+    color: var(--color-ink);
+    border: 0.125rem solid var(--color-ink);
     border-radius: 50%;
     rotate: -8deg;
 }

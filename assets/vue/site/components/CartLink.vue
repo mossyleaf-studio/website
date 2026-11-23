@@ -39,16 +39,16 @@ watch(units, (count) => {
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
     font-weight: 600;
-    color: var(--color-on-forest);
+    color: var(--color-ink);
     text-decoration: none;
     background: transparent;
-    border: 0.0625rem solid var(--color-on-forest);
+    border: 0.0625rem solid var(--color-ink);
     border-radius: var(--radius-pill);
 }
 
 .cart-link__link:hover,
 .cart-link__link[aria-current='page'] {
-    background: color-mix(in oklch, var(--color-on-forest) 14%, transparent);
+    background: color-mix(in oklch, var(--color-ink) 12%, transparent);
 }
 
 .cart-link__icon {
@@ -75,15 +75,15 @@ watch(units, (count) => {
     font-size: var(--font-size-xs);
     line-height: 1;
     font-variant-numeric: tabular-nums;
-    color: var(--color-forest);
-    background: var(--color-leaf);
+    color: var(--color-paper);
+    background: var(--color-ink);
     border-radius: var(--radius-pill);
 }
 
 .cart-link__count--empty {
-    color: var(--color-on-forest);
+    color: var(--color-ink);
     background: transparent;
-    box-shadow: inset 0 0 0 0.0625rem var(--color-on-forest-muted);
+    box-shadow: inset 0 0 0 0.0625rem color-mix(in oklch, var(--color-ink) 65%, var(--color-bark));
 }
 
 @media (min-width: 40rem) {

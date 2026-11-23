@@ -40,14 +40,14 @@ defineProps({
     font-size: var(--font-size-xs);
     font-weight: 400;
     color: var(--color-ink);
-    background: color-mix(in oklch, var(--color-star) 55%, var(--color-card));
+    background: var(--color-wash-star);
     border-bottom: 0.0625rem solid color-mix(in oklch, var(--color-ink) 25%, transparent);
 }
 
 .draft-banner__text strong {
     margin-right: var(--space-2);
-    font-family: var(--font-display);
-    font-weight: var(--font-display-weight);
+    font-family: var(--font-ui);
+    font-weight: 600;
     font-size: var(--font-size-sm);
 }
 

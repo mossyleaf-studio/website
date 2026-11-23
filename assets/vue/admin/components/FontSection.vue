@@ -1,7 +1,8 @@
 <script setup>
 import { computed, reactive, ref, watch, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
-import '@fontsource/kalam/latin-700.css';
+import '@fontsource/huninn/latin-ext-400.css';
+import '@fontsource/huninn/latin-400.css';
 import '@fontsource-variable/quicksand/wght.css';
 import BaseButton from '../../components/ui/BaseButton.vue';
 import FormField from '../../components/ui/FormField.vue';
@@ -18,8 +19,8 @@ const toast = useToast();
 const { chooseFont, fontFamilies, loadFontFamilies } = useTexts();
 
 const ROLES = {
-    heading: { source: 'headingFont', site: 'Kalam', siteWeight: 700, weight: 700 },
-    body: { source: 'bodyFont', site: 'Quicksand Variable', siteWeight: 500, weight: 400 },
+    heading: { source: 'headingFont', site: 'Quicksand Variable', siteWeight: 300, weight: 700 },
+    body: { source: 'bodyFont', site: 'Huninn', siteWeight: 400, weight: 400 },
 };
 
 const form = reactive({ heading: '', body: '' });
@@ -129,7 +130,7 @@ async function submit() {
     padding: var(--space-4) var(--space-5);
     border: 0.0625rem dashed var(--color-border-strong);
     border-radius: var(--radius);
-    background: #fef9e7;
+    background: #fffdf4;
     color: #583e2f;
 }
 

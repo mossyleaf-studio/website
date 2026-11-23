@@ -74,7 +74,7 @@ const typed = (event) => {
 }
 
 .quantity-stepper__step[aria-disabled='true'] {
-    color: var(--color-line);
+    color: var(--color-edge);
     cursor: not-allowed;
 }
 

@@ -192,7 +192,7 @@ defineExpose({ showErrors });
     width: 1.5rem;
     height: 1.5rem;
     margin: var(--space-2) 0 0;
-    accent-color: var(--color-moss);
+    accent-color: var(--color-ink);
     cursor: pointer;
 }
 

@@ -29,15 +29,12 @@ defineProps({
 .language-switch {
     --switch-ink: var(--color-ink);
     --switch-ground: var(--color-paper);
-    --switch-current-ink: var(--color-ink);
-    --switch-current-ground: var(--color-leaf);
+    --switch-current-ink: var(--color-paper);
+    --switch-current-ground: var(--color-ink);
 }
 
-.language-switch--forest {
-    --switch-ink: var(--color-on-forest);
+.language-switch--band {
     --switch-ground: transparent;
-    --switch-current-ink: var(--color-forest);
-    --switch-current-ground: var(--color-on-forest);
 }
 
 .language-switch__list {
@@ -74,8 +71,8 @@ defineProps({
     background: var(--switch-current-ground);
 }
 
-.language-switch--forest .language-switch__link--current:focus-visible {
-    outline-color: var(--color-forest);
+.language-switch__link--current:focus-visible {
+    outline-color: var(--color-paper);
 }
 
 li + li .language-switch__link {

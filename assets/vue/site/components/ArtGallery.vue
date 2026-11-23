@@ -45,7 +45,7 @@ defineProps({
     position: relative;
     padding: var(--space-2);
     background: var(--color-fur);
-    border: 0.0625rem solid var(--color-line);
+    border: 0.0625rem solid var(--color-edge);
     box-shadow: 0 0.0625rem 0.125rem var(--color-shadow), 0 0.75rem 1.25rem -0.75rem var(--color-shadow);
 }
 

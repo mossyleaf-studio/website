@@ -27,7 +27,7 @@ defineProps({
     text-decoration: none;
     color: var(--color-text);
     background: var(--color-card);
-    border: 0.0625rem solid var(--color-line);
+    border: 0.0625rem solid var(--color-edge);
     border-radius: 0.1875rem;
     box-shadow: 0 0.0625rem 0.125rem var(--color-shadow), 0 0.75rem 1.5rem -0.75rem var(--color-shadow);
     transition: translate var(--transition), box-shadow var(--transition);

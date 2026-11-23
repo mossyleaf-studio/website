@@ -55,12 +55,12 @@ defineProps({
 .filter-chips__chip--current {
     padding-left: var(--space-3);
     font-weight: 600;
-    background: var(--color-leaf);
+    background: var(--color-meadow);
     border: var(--border-strong);
 }
 
 .filter-chips__chip--current:hover {
-    background: var(--color-leaf);
+    background: var(--color-meadow);
 }
 
 .filter-chips__check {
@@ -75,7 +75,7 @@ defineProps({
     color: var(--color-muted);
 }
 
-.filter-chips__chip--current .filter-chips__hidden {
+.filter-chips__chip:is(:hover, .filter-chips__chip--current) .filter-chips__hidden {
     color: var(--color-ink);
 }
 

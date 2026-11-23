@@ -34,7 +34,7 @@ const year = new Date().getFullYear();
                     </li>
                 </ul>
             </nav>
-            <LanguageSwitch class="site-footer__languages" :languages="languages" :landmark="false" />
+            <LanguageSwitch class="site-footer__languages" :languages="languages" :landmark="false" tone="band" />
             <p class="site-footer__copyright">{{ $t('footer.copyright', { year, studio: studioName }) }}</p>
         </div>
     </footer>
@@ -43,7 +43,7 @@ const year = new Date().getFullYear();
 <style scoped>
 .site-footer {
     color: var(--color-ink);
-    background: var(--color-meadow);
+    background: var(--color-bark);
 }
 
 .site-footer__inner {
@@ -95,7 +95,7 @@ const year = new Date().getFullYear();
 .site-footer__copyright {
     padding-top: var(--space-4);
     font-size: var(--font-size-xs);
-    border-top: 0.0625rem solid var(--color-edge);
+    border-top: 0.0625rem solid color-mix(in oklch, var(--color-ink) 65%, var(--color-bark));
 }
 
 @media (min-width: 56rem) {

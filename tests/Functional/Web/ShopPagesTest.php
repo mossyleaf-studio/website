@@ -75,6 +75,7 @@ final class ShopPagesTest extends WebTestCase
         self::assertTrue($client->getResponse()->headers->hasCacheControlDirective('no-store'));
         self::assertResponseHeaderSame('X-Robots-Tag', 'noindex, nofollow');
         self::assertSame('noindex, nofollow', $crawler->filter('meta[name="robots"]')->attr('content'));
+        self::assertSame('#cbd3a0', $crawler->filter('meta[name="theme-color"]')->attr('content'));
 
         $props = Json::decode($crawler->filter('#site-content')->text());
         self::assertSame(['layout', 'data'], array_keys($props));

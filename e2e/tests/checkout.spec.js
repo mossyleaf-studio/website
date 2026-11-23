@@ -17,6 +17,7 @@ test('a paid order says so, is mailed to the customer and the studio, takes the 
     await expect(page).toHaveURL(/\/beta\/en\/order\//);
     await expect(page.getByTestId('order-status')).toHaveAttribute('data-state', 'paid');
     await expect(page.getByTestId('order-test')).toBeVisible();
+    expect(await page.getByTestId('order-test').evaluate((label) => getComputedStyle(label).color)).toBe('rgb(88, 62, 47)');
     const reference = (await page.getByTestId('order-reference').textContent()).match(REFERENCE)[0];
 
     await expect.poll(async () => (await messages(request)).length).toBe(2);

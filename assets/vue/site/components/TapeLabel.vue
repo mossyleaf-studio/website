@@ -28,6 +28,11 @@ defineProps({
 }
 
 .tape-label--blossom {
+    color: var(--color-paper);
     background: color-mix(in oklch, var(--color-tape-blossom) 85%, white);
+}
+
+.tape-label--star {
+    background: var(--color-wash-star);
 }
 </style>

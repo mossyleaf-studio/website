@@ -106,5 +106,5 @@ async function submit() {
 
 .link-editor__swatch { width: 2rem; height: 0.75rem; border-radius: 0.125rem; }
 .link-editor__tape--leaf .link-editor__swatch { background: repeating-linear-gradient(-45deg, #b9d39a 0 0.25rem, #dce9cc 0.25rem 0.5rem); }
-.link-editor__tape--blossom .link-editor__swatch { background: radial-gradient(circle, #e3f4ff 0 0.1rem, transparent 0.12rem) 0 0 / 0.4rem 0.4rem, #b2e0ff; }
+.link-editor__tape--blossom .link-editor__swatch { background: radial-gradient(circle, #e5ebd4 0 0.1rem, transparent 0.12rem) 0 0 / 0.4rem 0.4rem, #bfcd93; }
 </style>

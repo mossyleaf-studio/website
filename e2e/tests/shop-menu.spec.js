@@ -140,3 +140,67 @@ test('without JavaScript the phone header keeps the menu in wrapped rows and its
     expect(await crawler.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
     await context.close();
 });
+
+const INK = '88 62 47';
+const PAPER = '255 253 244';
+const BAND = '203 211 160';
+
+const look = (page, scope) =>
+    page.evaluate(async (scope) => {
+        await document.fonts.ready;
+        const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+        const rgb = (color) => {
+            context.clearRect(0, 0, 1, 1);
+            context.fillStyle = color;
+            context.fillRect(0, 0, 1, 1);
+            return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).join(' ');
+        };
+        const style = (selector, pseudo) => getComputedStyle(document.querySelector(selector), pseudo);
+        return {
+            band: rgb(style(scope.header, '::before').backgroundColor),
+            footer: rgb(style(scope.footer).backgroundColor),
+            menu: rgb(style(scope.menu).color),
+            cart: rgb(style(scope.cart).color),
+            current: [rgb(style(scope.current).color), rgb(style(scope.current).backgroundColor)],
+            heading: [style('#shop main h1').fontFamily, style('#shop main h1').fontWeight],
+            body: [style('body').fontFamily, style('body').fontWeight],
+            theme: document.querySelector('meta[name="theme-color"]').content,
+            loaded: [...document.fonts].filter((face) => face.status === 'loaded').map((face) => face.family.replaceAll('"', '')),
+        };
+    }, scope);
+
+const near = (seen, expected) => seen.split(' ').every((channel, index) => Math.abs(channel - expected.split(' ')[index]) <= 3);
+
+const sheet = (seen) => {
+    expect(near(seen.band, BAND), seen.band).toBe(true);
+    expect(seen.footer).toBe(seen.band);
+    expect(seen.theme).toBe('#cbd3a0');
+    expect(seen.menu).toBe(INK);
+    expect(seen.cart).toBe(INK);
+    expect(seen.current).toEqual([PAPER, INK]);
+    expect(seen.heading).toEqual([expect.stringMatching(/^"?Quicksand Variable"?, "?Quicksand"?, sans-serif$/), '300']);
+    expect(seen.body).toEqual([expect.stringMatching(/^"?Huninn"?, sans-serif$/), '400']);
+};
+
+test('the band, the footer and the type follow the studio sheet, with and without JavaScript', async ({ browser, page }) => {
+    const hosts = new Set();
+    const fonts = [];
+    page.on('request', (request) => {
+        hosts.add(new URL(request.url()).host);
+        if (/\/huninn-/.test(request.url())) fonts.push(new URL(request.url()).pathname.split('/').pop());
+    });
+    await page.goto('/beta/en/');
+    const scripted = await look(page, { header: '#shop .site-header', footer: '#shop .site-footer', menu: '#shop .site-header__link', cart: '#shop [data-test="cart-link"]', current: '#shop .site-header .language-switch__link--current' });
+    sheet(scripted);
+    expect(scripted.loaded).toEqual(expect.arrayContaining(['Huninn', 'Quicksand Variable']));
+    expect(scripted.loaded).not.toContain('Kalam');
+    expect([...hosts]).toEqual([new URL(page.url()).host]);
+    expect(fonts[0]).toMatch(/^huninn-latin-400-normal/);
+    expect(fonts.filter((font) => !/^huninn-latin(-ext)?-400-normal/.test(font))).toEqual([]);
+
+    const context = await browser.newContext({ javaScriptEnabled: false, storageState: await page.context().storageState() });
+    const crawler = await context.newPage();
+    await crawler.goto('/beta/en/');
+    sheet(await look(crawler, { header: '.shop-prerender__header', footer: '.shop-prerender__footer', menu: '.shop-prerender__navigation a', cart: '.shop-prerender__cart', current: '.shop-prerender__header .shop-prerender__languages a[aria-current]' }));
+    await context.close();
+});

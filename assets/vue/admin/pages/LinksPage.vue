@@ -128,7 +128,7 @@ function confirmRemove(link) {
 
 .links-page__tape { flex-shrink: 0; width: 0.5rem; align-self: stretch; border-radius: 0.125rem; }
 .links-page__tape--leaf { background: repeating-linear-gradient(-45deg, #b9d39a 0 0.25rem, #dce9cc 0.25rem 0.5rem); }
-.links-page__tape--blossom { background: radial-gradient(circle, #e3f4ff 0 0.1rem, transparent 0.12rem) 0 0 / 0.4rem 0.4rem, #b2e0ff; }
+.links-page__tape--blossom { background: radial-gradient(circle, #e5ebd4 0 0.1rem, transparent 0.12rem) 0 0 / 0.4rem 0.4rem, #bfcd93; }
 
 .links-page__text { display: flex; flex-direction: column; gap: 0.125rem; min-width: 0; flex: 1; }
 .links-page__title { color: var(--color-ink); font-weight: 600; }

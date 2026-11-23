@@ -69,7 +69,7 @@ const blocks = computed(() => parseRichBlocks(props.text));
     left: var(--space-2);
     width: 0.4375rem;
     height: 0.4375rem;
-    background: var(--color-leaf);
+    background: var(--color-meadow);
     border: 0.0625rem solid var(--color-ink);
     border-radius: 50%;
 }

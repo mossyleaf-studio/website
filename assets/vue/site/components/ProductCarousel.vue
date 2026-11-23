@@ -118,7 +118,7 @@ onBeforeUnmount(() => {
     scroll-snap-type: x mandatory;
     scroll-padding-inline: var(--bleed-inline);
     scrollbar-width: thin;
-    scrollbar-color: var(--color-bark) transparent;
+    scrollbar-color: var(--color-muted) transparent;
     list-style: none;
 }
 

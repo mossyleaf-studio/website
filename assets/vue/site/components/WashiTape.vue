@@ -23,7 +23,7 @@ defineProps({
 
 .washi--blossom {
     background:
-        radial-gradient(circle, color-mix(in oklch, var(--color-tape-blossom) 40%, white) 0 0.14rem, transparent 0.16rem) 0 0 / 0.7rem 0.7rem,
-        var(--color-tape-blossom);
+        radial-gradient(circle, color-mix(in oklch, var(--color-meadow) 40%, white) 0 0.14rem, transparent 0.16rem) 0 0 / 0.7rem 0.7rem,
+        var(--color-meadow);
 }
 </style>

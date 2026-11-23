@@ -1,7 +1,7 @@
 <script setup>
 defineProps({
     href: { type: String, default: null },
-    tone: { type: String, default: 'leaf' },
+    tone: { type: String, default: 'meadow' },
 });
 </script>
 
@@ -36,12 +36,12 @@ defineProps({
     opacity: 0.7;
 }
 
-.pill--leaf {
-    background: var(--color-leaf);
+.pill--meadow {
+    background: var(--color-meadow);
 }
 
-.pill--leaf:hover {
-    background: color-mix(in oklch, var(--color-leaf) 75%, var(--color-paper));
+.pill--meadow:hover {
+    background: color-mix(in oklch, var(--color-meadow) 60%, var(--color-paper));
 }
 
 .pill--paper {

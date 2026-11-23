@@ -1,26 +1,19 @@
 :root {
-    --color-paper: #fef9e7;
-    --color-meadow: #e0e3be;
+    --color-paper: #fffdf4;
+    --color-meadow: #BFCD93;
     --color-fur: #ffeddb;
-    --color-bark: #a58361;
+    --color-bark: color-mix(in oklch, var(--color-meadow) 85%, var(--color-paper));
     --color-ink: #583e2f;
     --color-leaf: #c2da5a;
-    --color-star: #b2e0ff;
-    --color-forest: #4f5a24;
-    --color-on-forest: var(--color-paper);
-    --color-on-forest-muted: #d8d6bc;
+    --color-star: #D45B27;
 
     --color-card: color-mix(in oklch, var(--color-paper) 55%, white);
     --color-text: var(--color-ink);
-    --color-muted: color-mix(in oklch, var(--color-ink) 80%, var(--color-paper));
-    --color-line: color-mix(in oklch, var(--color-bark) 30%, var(--color-paper));
+    --color-muted: color-mix(in oklch, var(--color-ink) 60%, var(--color-paper));
     --color-shadow: color-mix(in oklch, var(--color-ink) 18%, transparent);
-    --color-sprout: color-mix(in oklch, var(--color-leaf) 60%, var(--color-meadow));
-    --color-moss: color-mix(in oklch, var(--color-leaf) 78%, var(--color-ink));
 
     --color-tape-leaf: var(--color-leaf);
     --color-tape-blossom: var(--color-star);
-
 
     --radius: 0.5rem;
     --radius-sm: 0.25rem;
@@ -36,10 +29,10 @@
     --space-8: 4.5rem;
     --space-9: 7rem;
 
-    --font-body: "Quicksand Variable", "Quicksand", sans-serif;
-    --font-body-weight: 500;
-    --font-display: "Kalam", cursive;
-    --font-display-weight: 700;
+    --font-body: "Huninn", sans-serif;
+    --font-body-weight: 400;
+    --font-display: "Quicksand Variable", "Quicksand", sans-serif;
+    --font-display-weight: 300;
     --font-size: 1.0625rem;
     --font-size-sm: 0.9375rem;
     --font-size-xs: 0.875rem;

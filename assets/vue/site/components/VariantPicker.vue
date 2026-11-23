@@ -67,7 +67,7 @@ const sku = defineModel({ type: String, required: true });
 
 .variant-picker__option:has(:checked:not(:disabled)) {
     font-weight: 600;
-    background: var(--color-leaf);
+    background: var(--color-meadow);
     border: var(--border-strong);
 }
 

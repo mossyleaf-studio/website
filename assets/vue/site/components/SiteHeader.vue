@@ -36,7 +36,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
 <template>
     <header class="site-header">
         <div class="site-header__bar">
-            <LanguageSwitch class="site-header__languages" :languages="languages" tone="forest" />
+            <LanguageSwitch class="site-header__languages" :languages="languages" tone="band" />
             <a class="site-header__home" :href="home" data-home>
                 <template v-if="logo">
                     <img class="site-header__logo" :src="logo.url" :width="logo.width" :height="logo.height" alt="" />
@@ -103,7 +103,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     --deckle: 1.5rem;
     position: relative;
     z-index: 20;
-    color: var(--color-on-forest);
+    color: var(--color-ink);
     padding-bottom: var(--deckle);
 }
 
@@ -114,15 +114,11 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     z-index: -1;
     background:
         url('../../../styles/site/paper/tooth.svg') 0 0 / 20rem 20rem,
-        var(--color-forest);
+        var(--color-bark);
     background-blend-mode: multiply, normal;
     mask:
         linear-gradient(#000 0 0) top / 100% calc(100% - var(--deckle) + 0.25rem) no-repeat,
         url('../../../styles/site/paper/deckle.svg') bottom / 37.5rem var(--deckle) repeat-x;
-}
-
-.site-header :deep(:focus-visible) {
-    outline-color: var(--color-on-forest);
 }
 
 .site-header__bar {
@@ -148,7 +144,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     justify-self: center;
     max-width: 100%;
     display: block;
-    color: var(--color-on-forest);
+    color: var(--color-ink);
     text-decoration: none;
     border-radius: var(--radius-sm);
 }
@@ -193,16 +189,16 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     font-family: var(--font-ui);
     font-size: 1rem;
     font-weight: 600;
-    color: var(--color-on-forest);
+    color: var(--color-ink);
     background: transparent;
-    border: 0.125rem solid var(--color-on-forest);
+    border: var(--border-strong);
     border-radius: var(--radius-pill);
     cursor: pointer;
 }
 
 .site-header__menu:hover,
 .site-header__menu[aria-expanded='true'] {
-    background: color-mix(in oklch, var(--color-on-forest) 14%, transparent);
+    background: color-mix(in oklch, var(--color-ink) 12%, transparent);
 }
 
 .site-header__menu-icon {
@@ -229,15 +225,14 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     font-family: var(--font-ui);
     font-size: 1rem;
     font-weight: 500;
-    color: var(--color-on-forest-muted);
+    color: var(--color-ink);
     text-decoration: none;
-    transition: color var(--transition), box-shadow var(--transition);
+    transition: box-shadow var(--transition);
 }
 
 .site-header__link:hover,
 .site-header__link--current {
-    color: var(--color-on-forest);
-    box-shadow: inset 0 0.25rem 0 var(--color-leaf);
+    box-shadow: inset 0 0.25rem 0 var(--color-ink);
 }
 
 .site-header__shop {
@@ -314,7 +309,11 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
 
 .site-header__category--current {
     font-weight: 700;
-    box-shadow: inset 0.25rem 0 0 var(--color-forest);
+    box-shadow: inset 0.25rem 0 0 var(--color-ink);
+}
+
+.site-header__category:hover .site-header__hidden {
+    color: var(--color-ink);
 }
 
 .site-header__hidden {

@@ -57,7 +57,7 @@ html[data-layout="shop"] :focus-visible {
 }
 
 html[data-layout="shop"] ::selection {
-    background: var(--color-star);
+    background: var(--color-wash-star);
     color: var(--color-ink);
 }
 
@@ -92,7 +92,7 @@ html[data-layout="shop"] .progress-bar {
     width: 100%;
     height: 0.1875rem;
     background: var(--color-ink);
-    box-shadow: 0 0 0.5rem var(--color-moss);
+    box-shadow: 0 0 0.5rem var(--color-meadow);
     transform-origin: left;
     transform: scaleX(0);
     opacity: 0;
@@ -127,7 +127,7 @@ html[data-layout="shop"] .shop-prerender__draft {
     gap: var(--space-2) var(--space-5);
     padding: var(--space-2) var(--page-gutter);
     font-size: var(--font-size-xs);
-    background: color-mix(in oklch, var(--color-star) 55%, var(--color-card));
+    background: var(--color-wash-star);
     border-bottom: 0.0625rem solid color-mix(in oklch, var(--color-ink) 25%, transparent);
 }
 
@@ -173,7 +173,7 @@ html[data-layout="shop"] .shop-prerender__header {
     position: relative;
     z-index: 20;
     padding: var(--space-4) var(--page-gutter) calc(var(--deckle) + var(--space-3));
-    color: var(--color-on-forest);
+    color: var(--color-ink);
 }
 
 html[data-layout="shop"] .shop-prerender__header::before {
@@ -183,15 +183,11 @@ html[data-layout="shop"] .shop-prerender__header::before {
     z-index: -1;
     background:
         url("./paper/tooth.svg") 0 0 / 20rem 20rem,
-        var(--color-forest);
+        var(--color-bark);
     background-blend-mode: multiply, normal;
     mask:
         linear-gradient(#000 0 0) top / 100% calc(100% - var(--deckle) + 0.25rem) no-repeat,
         url("./paper/deckle.svg") bottom / 37.5rem var(--deckle) repeat-x;
-}
-
-html[data-layout="shop"] .shop-prerender__header :focus-visible {
-    outline-color: var(--color-on-forest);
 }
 
 html[data-layout="shop"] .shop-prerender__bar {
@@ -223,12 +219,12 @@ html[data-layout="shop"] .shop-prerender__cart {
     font-size: var(--font-size-sm);
     font-weight: 600;
     text-decoration: none;
-    border: 0.0625rem solid var(--color-on-forest);
+    border: 0.0625rem solid var(--color-ink);
     border-radius: var(--radius-pill);
 }
 
 html[data-layout="shop"] .shop-prerender__cart:is(:hover, [aria-current]) {
-    background: color-mix(in oklch, var(--color-on-forest) 14%, transparent);
+    background: color-mix(in oklch, var(--color-ink) 12%, transparent);
 }
 
 html[data-layout="shop"] .shop-prerender__cart-icon {
@@ -286,13 +282,12 @@ html[data-layout="shop"] .shop-prerender__navigation a {
     font-family: var(--font-ui);
     font-size: 1rem;
     font-weight: 500;
-    color: var(--color-on-forest-muted);
+    color: var(--color-ink);
     text-decoration: none;
 }
 
 html[data-layout="shop"] .shop-prerender__navigation a:is(:hover, [aria-current]) {
-    color: var(--color-on-forest);
-    box-shadow: inset 0 0.25rem 0 var(--color-leaf);
+    box-shadow: inset 0 0.25rem 0 var(--color-ink);
 }
 
 html[data-layout="shop"] .shop-prerender__shop > a {
@@ -363,7 +358,11 @@ html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__categories
 html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__categories a[aria-current] {
     font-weight: 700;
     color: var(--color-ink);
-    box-shadow: inset 0.25rem 0 0 var(--color-forest);
+    box-shadow: inset 0.25rem 0 0 var(--color-ink);
+}
+
+html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__categories a:hover .shop-prerender__quiet {
+    color: var(--color-ink);
 }
 
 html[data-layout="shop"] .shop-prerender__categories a:focus-visible {
@@ -401,16 +400,9 @@ html[data-layout="shop"] .shop-prerender__shop:is(:hover, :focus-within) .shop-p
 
 html[data-layout="shop"] .shop-prerender__languages {
     --switch-ink: var(--color-ink);
-    --switch-ground: var(--color-paper);
-    --switch-current-ink: var(--color-ink);
-    --switch-current-ground: var(--color-leaf);
-}
-
-html[data-layout="shop"] .shop-prerender__header .shop-prerender__languages {
-    --switch-ink: var(--color-on-forest);
     --switch-ground: transparent;
-    --switch-current-ink: var(--color-forest);
-    --switch-current-ground: var(--color-on-forest);
+    --switch-current-ink: var(--color-paper);
+    --switch-current-ground: var(--color-ink);
 }
 
 html[data-layout="shop"] .shop-prerender .shop-prerender__languages ul {
@@ -446,8 +438,8 @@ html[data-layout="shop"] .shop-prerender__languages a[aria-current] {
     background: var(--switch-current-ground);
 }
 
-html[data-layout="shop"] .shop-prerender__header .shop-prerender__languages a[aria-current]:focus-visible {
-    outline-color: var(--color-forest);
+html[data-layout="shop"] .shop-prerender__languages a[aria-current]:focus-visible {
+    outline-color: var(--color-paper);
 }
 
 html[data-layout="shop"] .shop-prerender__languages li + li a {
@@ -638,7 +630,7 @@ html[data-layout="shop"] .shop-prerender__footer {
     gap: var(--space-4);
     padding: var(--space-6) var(--page-gutter) var(--space-5);
     font-size: var(--font-size-sm);
-    background: var(--color-meadow);
+    background: var(--color-bark);
 }
 
 html[data-layout="shop"] .shop-prerender__footer .shop-prerender__languages ul {
@@ -748,6 +740,7 @@ html[data-layout="shop"] .shop-prerender__tape {
 }
 
 html[data-layout="shop"] .shop-prerender__tape--blossom {
+    color: var(--color-paper);
     background: color-mix(in oklch, var(--color-tape-blossom) 85%, white);
 }
 
@@ -772,7 +765,7 @@ html[data-layout="shop"] .shop-prerender__variants li {
 
 html[data-layout="shop"] .shop-prerender__variants .shop-prerender__variant--chosen {
     font-weight: 600;
-    background: var(--color-leaf);
+    background: var(--color-meadow);
     border: var(--border-strong);
 }
 
@@ -829,11 +822,11 @@ html[data-layout="shop"] .shop-prerender__filters a:hover {
 html[data-layout="shop"] .shop-prerender__filters a[aria-current] {
     padding-left: var(--space-3);
     font-weight: 600;
-    background: var(--color-leaf);
+    background: var(--color-meadow);
     border: var(--border-strong);
 }
 
-html[data-layout="shop"] .shop-prerender__filters a[aria-current] .shop-prerender__quiet {
+html[data-layout="shop"] .shop-prerender__filters a:is(:hover, [aria-current]) .shop-prerender__quiet {
     color: var(--color-ink);
 }
 
@@ -1005,7 +998,7 @@ html[data-layout="shop"] :is([data-picks], [data-latest]) > .shop-prerender__car
     scroll-snap-type: x mandatory;
     scroll-padding-inline: var(--bleed-inline);
     scrollbar-width: thin;
-    scrollbar-color: var(--color-bark) transparent;
+    scrollbar-color: var(--color-muted) transparent;
 }
 
 html[data-layout="shop"] :is([data-picks], [data-latest]) > .shop-prerender__cards > li {
@@ -1049,9 +1042,13 @@ html[data-layout="shop"] .shop-prerender__pill {
     font-size: var(--font-size-sm);
     font-weight: 600;
     text-decoration: none;
-    background: var(--color-leaf);
+    background: var(--color-meadow);
     border: var(--border-strong);
     border-radius: var(--radius-pill);
+}
+
+html[data-layout="shop"] .shop-prerender__pill:hover {
+    background: color-mix(in oklch, var(--color-meadow) 60%, var(--color-paper));
 }
 
 html[data-layout="shop"] .shop-prerender__links {

@@ -20,10 +20,10 @@ const parts = computed(() => props.name.split(/(?=\.)/));
 .studio-header {
     --deckle: 1.5rem;
     padding: var(--space-6) var(--gutter) calc(var(--space-6) + var(--deckle));
-    color: var(--color-on-forest);
+    color: var(--color-ink);
     background:
         url('../../../styles/site/paper/tooth.svg') 0 0 / 20rem 20rem,
-        var(--color-forest);
+        var(--color-bark);
     background-blend-mode: multiply, normal;
     mask:
         linear-gradient(#000 0 0) top / 100% calc(100% - var(--deckle) + 0.25rem) no-repeat,

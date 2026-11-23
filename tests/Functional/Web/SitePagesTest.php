@@ -42,6 +42,7 @@ final class SitePagesTest extends WebTestCase
         self::assertCount(1, $crawler->filter('#site .prerender__note > .prerender__tape'));
         self::assertCount(1, $crawler->filter('#site .prerender > footer.prerender__footer'));
         self::assertSame('index, follow, max-image-preview:large', $crawler->filter('meta[name="robots"]')->attr('content'));
+        self::assertSame('#cbd3a0', $crawler->filter('meta[name="theme-color"]')->attr('content'));
         self::assertSame('note', $crawler->filter('#site')->attr('data-page'));
         self::assertNull($crawler->filter('#site')->attr('data-draft'));
         $content = Json::decode($crawler->filter('#site-content')->text());

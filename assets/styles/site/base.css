@@ -51,12 +51,12 @@ a {
 }
 
 :focus-visible {
-    outline: 0.1875rem solid var(--color-bark);
+    outline: 0.1875rem solid var(--color-ink);
     outline-offset: 0.25rem;
 }
 
 ::selection {
-    background: var(--color-star);
+    background: var(--color-wash-star);
     color: var(--color-ink);
 }
 
@@ -69,10 +69,10 @@ a {
 .prerender__band {
     --deckle: 1.5rem;
     padding: var(--space-6) var(--gutter) calc(var(--space-6) + var(--deckle));
-    color: var(--color-on-forest);
+    color: var(--color-ink);
     background:
         url("./paper/tooth.svg") 0 0 / 20rem 20rem,
-        var(--color-forest);
+        var(--color-bark);
     background-blend-mode: multiply, normal;
     mask:
         linear-gradient(#000 0 0) top / 100% calc(100% - var(--deckle) + 0.25rem) no-repeat,
@@ -132,7 +132,7 @@ a {
     position: relative;
     padding: var(--space-3);
     background: var(--color-fur);
-    border: 0.0625rem solid var(--color-line);
+    border: 0.0625rem solid var(--color-edge);
     box-shadow: 0 0.0625rem 0.125rem var(--color-shadow), 0 1rem 2rem -1rem var(--color-shadow);
 }
 
@@ -156,8 +156,8 @@ a {
 
 .prerender__tape--blossom {
     background:
-        radial-gradient(circle, color-mix(in oklch, var(--color-tape-blossom) 40%, white) 0 0.14rem, transparent 0.16rem) 0 0 / 0.7rem 0.7rem,
-        var(--color-tape-blossom);
+        radial-gradient(circle, color-mix(in oklch, var(--color-meadow) 40%, white) 0 0.14rem, transparent 0.16rem) 0 0 / 0.7rem 0.7rem,
+        var(--color-meadow);
 }
 
 .prerender__featured .prerender__tape {
@@ -225,8 +225,8 @@ a {
     height: 2.5rem;
     font-size: var(--font-size-lg);
     line-height: 1;
-    color: var(--color-bark);
-    border: 0.125rem solid var(--color-bark);
+    color: var(--color-ink);
+    border: 0.125rem solid var(--color-ink);
     border-radius: 50%;
     rotate: -8deg;
 }

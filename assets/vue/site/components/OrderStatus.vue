@@ -25,7 +25,7 @@ const tracking = computed(() => trackingOf(props.order));
     <PaperSheet tag="section" tape="leaf" :class="['order-status', `order-status--${view.state}`]" aria-labelledby="order-status-title" data-test="order-status" :data-state="view.state">
         <div class="order-status__top">
             <p class="order-status__reference" data-test="order-reference">{{ $t('order.reference', { reference: order.reference }) }}</p>
-            <TapeLabel v-if="order.test" class="order-status__test" tone="blossom" data-test="order-test">{{ $t('order.test') }}</TapeLabel>
+            <TapeLabel v-if="order.test" class="order-status__test" tone="star" data-test="order-test">{{ $t('order.test') }}</TapeLabel>
         </div>
 
         <div class="order-status__state" aria-live="polite">
@@ -131,7 +131,7 @@ const tracking = computed(() => trackingOf(props.order));
 .order-status__progress span {
     width: 0.625rem;
     height: 0.625rem;
-    background: var(--color-leaf);
+    background: var(--color-meadow);
     border: 0.125rem solid var(--color-ink);
     border-radius: 50%;
     animation: order-status-breathe 1.8s ease-in-out infinite;
