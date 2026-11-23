@@ -14,7 +14,7 @@
 {% if data.products is defined %}
     <section aria-labelledby="latest-title" data-latest>
         <h2 id="latest-title">{{ 'home.latest'|site_t }}</h2>
-        {% include 'shop/prerender/_cards.html.twig' with {products: data.products, eager: false, columns: 4} %}
+        {% include 'shop/prerender/_cards.html.twig' with {products: data.products, eager: false} %}
     </section>
 {% endif %}
 <section class="shop-prerender__sheet" aria-labelledby="about-title" data-about>
@@ -27,10 +27,10 @@
         <h2 id="categories-title">{{ 'home.categories'|site_t }}</h2>
         <ul class="shop-prerender__tiles" data-tiles>
             {% for tile in data.categories %}
-                <li style="--ratio: {{ tile.image ? (tile.image.width / tile.image.height)|round(4) : 0.8 }}">
+                <li>
                     <a href="{{ tile.url }}">
                         {% if tile.image %}
-                            <img src="{{ tile.image.src }}" srcset="{{ tile.image.srcset }}" sizes="(min-width: 56rem) 25vw, 50vw" alt="" width="{{ tile.image.width }}" height="{{ tile.image.height }}" loading="lazy">
+                            <img src="{{ tile.image.src }}" srcset="{{ tile.image.srcset }}" sizes="(min-width: 87.5rem) 16rem, (min-width: 56rem) 20vw, (min-width: 40rem) 33vw, 50vw" alt="" width="{{ tile.image.width }}" height="{{ tile.image.height }}" loading="lazy">
                         {% else %}
                             <span class="shop-prerender__blank"></span>
                         {% endif %}

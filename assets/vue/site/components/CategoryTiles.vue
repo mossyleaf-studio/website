@@ -2,26 +2,24 @@
 defineProps({
     categories: { type: Array, required: true },
 });
-
-const ratio = (category) => (category.image ? category.image.width / category.image.height : 0.8);
 </script>
 
 <template>
     <ul class="category-tiles" data-tiles>
-        <li v-for="category in categories" :key="category.key" class="category-tiles__item" :style="{ '--ratio': ratio(category) }">
+        <li v-for="category in categories" :key="category.key" class="category-tiles__item">
             <a class="category-tiles__tile" :href="category.url" data-test="category-tile">
                 <img
                     v-if="category.image"
                     class="category-tiles__photo"
                     :src="category.image.src"
                     :srcset="category.image.srcset"
-                    sizes="(min-width: 56rem) 25vw, 50vw"
+                    sizes="(min-width: 87.5rem) 16rem, (min-width: 56rem) 20vw, (min-width: 40rem) 33vw, 50vw"
                     alt=""
                     :width="category.image.width"
                     :height="category.image.height"
                     loading="lazy"
                 />
-                <span v-else class="category-tiles__photo category-tiles__photo--blank" />
+                <span v-else class="category-tiles__photo" />
                 <span class="category-tiles__label">{{ category.label }}</span>
             </a>
         </li>
@@ -30,27 +28,22 @@ const ratio = (category) => (category.image ? category.image.width / category.im
 
 <style scoped>
 .category-tiles {
-    --row: 8rem;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-5) 0.9375rem;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.category-tiles::after {
-    content: '';
-    flex: 1e9 1 0;
-}
-
 .category-tiles__item {
-    flex: var(--ratio) 1 calc(var(--ratio) * var(--row));
+    display: grid;
     min-width: 0;
 }
 
 .category-tiles__tile {
     display: grid;
+    grid-template-rows: auto 1fr;
     gap: var(--space-2);
     color: var(--color-ink);
     text-decoration: none;
@@ -62,15 +55,14 @@ const ratio = (category) => (category.image ? category.image.width / category.im
 }
 
 .category-tiles__photo {
+    display: block;
     width: 100%;
     height: auto;
-    border-radius: var(--radius-photo);
-}
-
-.category-tiles__photo--blank {
-    display: block;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 1;
+    object-fit: cover;
+    object-position: center;
     background: var(--color-meadow);
+    border-radius: var(--radius-photo);
 }
 
 .category-tiles__label {
@@ -78,6 +70,7 @@ const ratio = (category) => (category.image ? category.image.width / category.im
     font-weight: var(--font-display-weight);
     font-size: var(--font-size-lg);
     line-height: 1.2;
+    overflow-wrap: anywhere;
     text-underline-offset: 0.2em;
 }
 
@@ -87,13 +80,14 @@ const ratio = (category) => (category.image ? category.image.width / category.im
 
 @media (min-width: 40rem) {
     .category-tiles {
-        --row: 11rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
 @media (min-width: 56rem) {
     .category-tiles {
-        --row: 14rem;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        row-gap: var(--space-6);
     }
 }
 </style>

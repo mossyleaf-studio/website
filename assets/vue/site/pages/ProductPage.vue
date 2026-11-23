@@ -65,7 +65,7 @@ const paragraphs = computed(() =>
         </div>
         <section v-if="data.related.length" class="product__related" aria-labelledby="related-title" data-related>
             <h2 id="related-title" class="product__related-title">{{ $t('product.related') }}</h2>
-            <ProductGrid :products="data.related" :columns="4" />
+            <ProductGrid :products="data.related" />
         </section>
     </article>
 </template>

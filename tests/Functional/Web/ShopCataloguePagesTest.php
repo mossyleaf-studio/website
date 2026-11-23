@@ -318,18 +318,19 @@ final class ShopCataloguePagesTest extends WebTestCase
         self::assertSame(['/beta/en/shop/prints-fox', '/beta/en/shop/prints-owl', '/beta/en/shop/stickers-moth'], $main->filter('[data-latest] [data-products] a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
         self::assertSame(['lazy'], $main->filter('[data-latest] [data-products] img')->each(static fn (Crawler $image): string => (string) $image->attr('loading')));
         self::assertCount(0, $main->filter('[data-latest] > p'));
+        self::assertCount(0, $main->filter('[data-products] [style], [data-tiles] [style]'));
         self::assertSame([['Prints', '/beta/en/category/prints'], ['Stickers', '/beta/en/category/stickers']], $main->filter('[data-tiles] a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]));
         self::assertEveryInternalLinkIsAPreviewLink($crawler);
     }
 
-    public function testTheHomeKeepsAtMostEightProducts(): void
+    public function testTheHomeKeepsAtMostTenProducts(): void
     {
         $client = self::signedInClient();
-        foreach (self::push(array_map(static fn (int $number): PushedProduct => self::product($number, 'Prints', 'Fern'.$number, 900), range(1, 9))) as $id) {
+        foreach (self::push(array_map(static fn (int $number): PushedProduct => self::product($number, 'Prints', 'Fern'.$number, 900), range(1, 11))) as $id) {
             self::show($client, $id);
         }
 
-        self::assertCount(8, Json::array(self::data($client->request('GET', '/beta/en/')), 'products'));
+        self::assertCount(10, Json::array(self::data($client->request('GET', '/beta/en/')), 'products'));
     }
 
     public function testTheHomeLeavesTheShopSectionsOutWhenTheCatalogueShowsNothing(): void

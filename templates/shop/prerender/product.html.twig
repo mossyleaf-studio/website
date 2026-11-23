@@ -51,6 +51,6 @@
 {% if data.related is not empty %}
     <section aria-labelledby="related-title" data-related>
         <h2 id="related-title">{{ 'product.related'|site_t }}</h2>
-        {% include 'shop/prerender/_cards.html.twig' with {products: data.related, eager: false, columns: 4} %}
+        {% include 'shop/prerender/_cards.html.twig' with {products: data.related, eager: false} %}
     </section>
 {% endif %}

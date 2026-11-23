@@ -1,9 +1,9 @@
 <ul class="shop-prerender__cards" data-products>
     {% for product in products %}
-        <li style="--ratio: {{ product.image ? (product.image.width / product.image.height)|round(4) : 0.8 }}">
+        <li>
             <a class="shop-prerender__card" href="{{ product.url }}">
                 {% if product.image %}
-                    <img src="{{ product.image.src }}" srcset="{{ product.image.srcset }}" sizes="(min-width: 56rem) {{ (columns ?? 3) == 4 ? '25vw' : '34vw' }}, 50vw" alt="{{ product.image.alt }}" width="{{ product.image.width }}" height="{{ product.image.height }}" loading="{{ eager and loop.first ? 'eager' : 'lazy' }}">
+                    <img src="{{ product.image.src }}" srcset="{{ product.image.srcset }}" sizes="(min-width: 87.5rem) 16rem, (min-width: 56rem) 20vw, (min-width: 40rem) 33vw, 50vw" alt="{{ product.image.alt }}" width="{{ product.image.width }}" height="{{ product.image.height }}" loading="{{ eager and loop.first ? 'eager' : 'lazy' }}">
                 {% else %}
                     <span class="shop-prerender__blank"></span>
                 {% endif %}

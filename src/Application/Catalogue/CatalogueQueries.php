@@ -15,7 +15,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 final readonly class CatalogueQueries
 {
-    private const int RELATED = 4;
+    private const int RELATED = 5;
 
     public function __construct(
         private ProductRepository $products,

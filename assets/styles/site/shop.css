@@ -631,19 +631,13 @@ html[data-layout="shop"] .shop-prerender__footer .shop-prerender__languages ul {
 
 html[data-layout="shop"] .shop-prerender__cards,
 html[data-layout="shop"] .shop-prerender__tiles {
-    --row: 8rem;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-5) 0.9375rem;
 }
 
-html[data-layout="shop"] :is(.shop-prerender__cards, .shop-prerender__tiles)::after {
-    content: '';
-    flex: 1e9 1 0;
-}
-
 html[data-layout="shop"] :is(.shop-prerender__cards, .shop-prerender__tiles) > li {
-    flex: var(--ratio) 1 calc(var(--ratio) * var(--row));
+    display: grid;
     min-width: 0;
 }
 
@@ -651,14 +645,23 @@ html[data-layout="shop"] .shop-prerender__card,
 html[data-layout="shop"] .shop-prerender__tiles a {
     position: relative;
     display: grid;
+    grid-template-rows: auto 1fr auto;
     gap: var(--space-1);
     text-decoration: none;
 }
 
+html[data-layout="shop"] .shop-prerender__tiles a {
+    grid-template-rows: auto 1fr;
+    gap: var(--space-2);
+}
+
 html[data-layout="shop"] .shop-prerender__card > span[data-card-title] {
+    display: -webkit-box;
+    line-height: 1.35;
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 html[data-layout="shop"] .shop-prerender__card:hover [data-card-title],
@@ -669,11 +672,18 @@ html[data-layout="shop"] .shop-prerender__tiles a:hover span:last-child {
 html[data-layout="shop"] :is(.shop-prerender__card, .shop-prerender__tiles a) :is(img, .shop-prerender__blank) {
     display: block;
     width: 100%;
-    margin-bottom: var(--space-2);
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    object-position: center;
+    background: var(--color-meadow);
     border-radius: var(--radius-photo);
 }
 
-html[data-layout="shop"] :is(.shop-prerender__card, .shop-prerender__tiles a) .shop-prerender__blank,
+html[data-layout="shop"] .shop-prerender__card > :is(img, .shop-prerender__blank) {
+    margin-bottom: var(--space-2);
+}
+
 html[data-layout="shop"] .shop-prerender__product-body > .shop-prerender__blank {
     display: block;
     width: 100%;
@@ -686,6 +696,8 @@ html[data-layout="shop"] .shop-prerender__tiles span:not(.shop-prerender__blank)
     font-family: var(--font-display);
     font-weight: var(--font-display-weight);
     font-size: var(--font-size-lg);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
 }
 
 html[data-layout="shop"] .shop-prerender__labels {
@@ -832,23 +844,15 @@ html[data-layout="shop"] .shop-prerender__main section {
 }
 
 @media (min-width: 40rem) {
-    html[data-layout="shop"] .shop-prerender__cards {
-        --row: 13rem;
-    }
-
-    html[data-layout="shop"] .shop-prerender__tiles {
-        --row: 11rem;
+    html[data-layout="shop"] :is(.shop-prerender__cards, .shop-prerender__tiles) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
 @media (min-width: 56rem) {
-    html[data-layout="shop"] .shop-prerender__cards {
-        --row: 18rem;
+    html[data-layout="shop"] :is(.shop-prerender__cards, .shop-prerender__tiles) {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         row-gap: var(--space-6);
-    }
-
-    html[data-layout="shop"] .shop-prerender__tiles {
-        --row: 14rem;
     }
 
     html[data-layout="shop"] .shop-prerender__product-body {

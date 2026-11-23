@@ -26,7 +26,7 @@ defineProps({
 
         <section v-if="data.products" class="home__shelf" aria-labelledby="latest-title" data-latest>
             <h2 id="latest-title" class="home__heading">{{ $t('home.latest') }}</h2>
-            <ProductGrid :products="data.products" :columns="4" />
+            <ProductGrid :products="data.products" />
         </section>
 
         <PaperSheet tag="section" tape="blossom" class="home__about" aria-labelledby="about-title">

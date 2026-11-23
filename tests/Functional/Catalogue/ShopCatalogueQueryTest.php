@@ -103,10 +103,10 @@ final class ShopCatalogueQueryTest extends WebTestCase
         }
     }
 
-    public function testRelatedProductsShareTheCategoryLeaveTheProductOutAndStopAtFour(): void
+    public function testRelatedProductsShareTheCategoryLeaveTheProductOutAndStopAtFive(): void
     {
         $client = self::signedInClient();
-        $ids = self::push([...self::demo(), ...array_map(static fn (int $number): PushedProduct => self::product(10 + $number, 'Prints', 'Fern'.$number, 900), range(1, 5))]);
+        $ids = self::push([...self::demo(), ...array_map(static fn (int $number): PushedProduct => self::product(10 + $number, 'Prints', 'Fern'.$number, 900), range(1, 6))]);
         foreach ($ids as $id) {
             self::show($client, $id);
         }
@@ -114,7 +114,7 @@ final class ShopCatalogueQueryTest extends WebTestCase
 
         $fox = $queries->shopProduct('prints-fox', false);
         self::assertNotNull($fox);
-        self::assertSame(['prints-owl', 'prints-fern1', 'prints-fern2', 'prints-fern3'], array_column(self::slugs($queries->related($fox, false)), 0));
+        self::assertSame(['prints-owl', 'prints-fern1', 'prints-fern2', 'prints-fern3', 'prints-fern4'], array_column(self::slugs($queries->related($fox, false)), 0));
 
         $moth = $queries->shopProduct('stickers-moth', true);
         self::assertNotNull($moth);

@@ -7,7 +7,6 @@ import TapeLabel from './TapeLabel.vue';
 const props = defineProps({
     product: { type: Object, required: true },
     eager: { type: Boolean, default: false },
-    sizes: { type: String, default: '(min-width: 56rem) 33vw, 50vw' },
 });
 
 const { locale } = useI18n();
@@ -21,14 +20,14 @@ const price = computed(() => formatPrice(props.product.price, locale.value));
             class="product-card__photo"
             :src="product.image.src"
             :srcset="product.image.srcset"
-            :sizes="sizes"
+            sizes="(min-width: 87.5rem) 16rem, (min-width: 56rem) 20vw, (min-width: 40rem) 33vw, 50vw"
             :alt="product.image.alt"
             :width="product.image.width"
             :height="product.image.height"
             :loading="eager ? 'eager' : 'lazy'"
             :fetchpriority="eager ? 'high' : undefined"
         />
-        <span v-else class="product-card__photo product-card__photo--blank" />
+        <span v-else class="product-card__photo" />
         <span class="product-card__title" data-card-title>{{ product.title }}</span>
         <span class="product-card__price" data-card-price>{{ price }}</span>
         <span v-if="product.soldOut || product.hidden" class="product-card__labels">
@@ -42,6 +41,7 @@ const price = computed(() => formatPrice(props.product.price, locale.value));
 .product-card {
     position: relative;
     display: grid;
+    grid-template-rows: auto 1fr auto;
     gap: var(--space-1);
     color: var(--color-ink);
     text-decoration: none;
@@ -53,24 +53,25 @@ const price = computed(() => formatPrice(props.product.price, locale.value));
 }
 
 .product-card__photo {
+    display: block;
     width: 100%;
     height: auto;
+    aspect-ratio: 1;
     margin-bottom: var(--space-2);
+    object-fit: cover;
+    object-position: center;
+    background: var(--color-meadow);
     border-radius: var(--radius-photo);
 }
 
-.product-card__photo--blank {
-    display: block;
-    aspect-ratio: 4 / 5;
-    background: var(--color-meadow);
-}
-
 .product-card__title {
+    display: -webkit-box;
     overflow: hidden;
     font-size: var(--font-size);
     line-height: 1.35;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     text-decoration-thickness: 0.0625rem;
     text-underline-offset: 0.2em;
 }

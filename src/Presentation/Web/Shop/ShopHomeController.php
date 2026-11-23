@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/{_locale}/', name: 'shop_home', requirements: ['_locale' => 'en|fr'], methods: ['GET'], stateless: true)]
 final readonly class ShopHomeController
 {
-    private const int LATEST = 8;
+    private const int LATEST = 10;
 
     public function __construct(
         private ShopDoor $door,
