@@ -6,6 +6,7 @@ namespace App\Presentation\Web\Shop;
 
 use App\Application\Catalogue\CatalogueQueries;
 use App\Application\Catalogue\ShopCategoryView;
+use App\Application\Catalogue\ShopCollectionView;
 use App\Application\Content\ShopContentView;
 use App\Application\Content\ShopLegalPageView;
 use App\Application\Content\ShopLinkView;
@@ -18,9 +19,11 @@ final readonly class ShopPage
 {
     public const int SAFE_IN_HTML = \JSON_HEX_TAG | \JSON_HEX_AMP | \JSON_HEX_APOS | \JSON_HEX_QUOT | \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES;
     private const array NAVIGATION = ['home' => 'shop_home', 'shop' => 'shop_listing', 'conventions' => 'shop_conventions', 'about' => 'shop_about', 'contact' => 'shop_contact'];
-    private const array CURRENT = ['shop_category' => 'shop_listing', 'shop_product' => 'shop_listing'];
+    private const array CURRENT = ['shop_category' => 'shop_listing', 'shop_collection' => 'shop_listing', 'shop_product' => 'shop_listing'];
+    private const array KEPT_QUERY = ['shop_category' => [CatalogueFilters::COLLECTION], 'shop_collection' => [CatalogueFilters::CATEGORY]];
     private const string SHOP = 'shop';
     private const string CATEGORY = 'shop_category';
+    private const string COLLECTION = 'shop_collection';
     private const array OPEN_GRAPH_LOCALES = ['en' => 'en_GB', 'fr' => 'fr_FR'];
     private const string INDEXABLE = 'index';
 
@@ -41,8 +44,9 @@ final readonly class ShopPage
         $locale = ShopUrls::locale($request);
         $route = ShopUrls::route($request);
         $parameters = ShopUrls::parameters($request);
-        $layout = $this->layout($content, $locale, $preview, Response::HTTP_OK === $status ? $route : '', $route, $parameters);
-        $seo = [...$this->seo($content, $locale, $preview, $route, $parameters, $title, Response::HTTP_OK === $status), ...$seo];
+        $found = Response::HTTP_OK === $status;
+        $layout = $this->layout($content, $locale, $preview, $found ? $route : '', $route, $parameters, $found ? self::keptQuery($request, $route) : []);
+        $seo = [...$this->seo($content, $locale, $preview, $route, $parameters, $title, $found), ...$seo];
         $props = json_encode(['layout' => $layout, 'data' => $data], self::SAFE_IN_HTML | \JSON_THROW_ON_ERROR);
 
         $response = new Response($this->twig->render('shop.html.twig', [
@@ -69,12 +73,27 @@ final readonly class ShopPage
         return $response;
     }
 
+    /** @return array<string, string> */
+    private static function keptQuery(Request $request, string $route): array
+    {
+        $kept = [];
+        foreach (self::KEPT_QUERY[$route] ?? [] as $name) {
+            $value = $request->query->all()[$name] ?? null;
+            if (\is_string($value)) {
+                $kept[$name] = $value;
+            }
+        }
+
+        return $kept;
+    }
+
     /**
      * @param array<string, string> $parameters
+     * @param array<string, string> $query
      *
      * @return array<string, mixed>
      */
-    private function layout(ShopContentView $content, Locale $locale, bool $preview, string $shown, string $route, array $parameters): array
+    private function layout(ShopContentView $content, Locale $locale, bool $preview, string $shown, string $route, array $parameters, array $query): array
     {
         return [
             'locale' => $locale->value,
@@ -85,7 +104,7 @@ final readonly class ShopPage
             'announcement' => $content->announcement->in($locale),
             'navigation' => $this->navigation($locale, $preview, $shown, $parameters),
             'languages' => array_map(
-                fn (Locale $language): array => ['locale' => $language->value, 'url' => $this->urls->to($route, $language, $preview, $parameters), 'current' => $language === $locale],
+                fn (Locale $language): array => ['locale' => $language->value, 'url' => $this->urls->to($route, $language, $preview, [...$parameters, ...$query]), 'current' => $language === $locale],
                 Locale::cases(),
             ),
             'cartUrl' => $this->urls->to('shop_cart', $locale, $preview),
@@ -115,12 +134,16 @@ final readonly class ShopPage
             fn (ShopCategoryView $category): array => [...$this->props->category($category, $locale, $preview), 'current' => self::CATEGORY === $route && $category->key === ($parameters['category'] ?? null)],
             $this->catalogue->shopCategories($preview),
         );
+        $collections = array_map(
+            fn (ShopCollectionView $collection): array => [...$this->props->collection($collection, $locale, $preview), 'current' => self::COLLECTION === $route && $collection->key === ($parameters['collection'] ?? null)],
+            $this->catalogue->shopCollections($preview),
+        );
         $navigation = [];
         foreach (self::NAVIGATION as $key => $target) {
             if (self::SHOP === $key && [] === $children) {
                 continue;
             }
-            $navigation[] = ['key' => $key, 'url' => $this->urls->to($target, $locale, $preview), 'current' => $target === $current, ...(self::SHOP === $key ? ['children' => $children] : [])];
+            $navigation[] = ['key' => $key, 'url' => $this->urls->to($target, $locale, $preview), 'current' => $target === $current, ...(self::SHOP === $key ? ['children' => $children, 'collections' => $collections] : [])];
         }
 
         return $navigation;

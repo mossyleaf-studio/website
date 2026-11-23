@@ -543,3 +543,35 @@ test('screenshots of the admin layout', async ({ page }) => {
         }
     }
 });
+
+test('screenshots of the collections', async ({ page }) => {
+    await signIn(page);
+    for (const [size, viewport] of Object.entries(VIEWPORTS)) {
+        await page.setViewportSize(viewport);
+        for (const [name, path] of Object.entries({ category: '/beta/en/category/cards', filtered: '/beta/fr/category/prints?collection=forest-critters', collection: '/beta/en/collection/forest-critters', 'collection-hidden': '/beta/en/collection/autumn-market', product: '/beta/en/shop/moss-print' })) {
+            await page.goto(path);
+            await expect(page.locator('#shop main h1')).toBeVisible();
+            await page.screenshot({ path: `shots/collections-${name}-${size}.png`, fullPage: true, animations: 'disabled' });
+        }
+        await page.goto('/beta/en/collection/forest-critters');
+        const header = page.locator('header.site-header');
+        if (size === 'desktop') {
+            await header.locator('[data-shop-menu]').click();
+            await page.mouse.move(0, 0);
+            await page.screenshot({ path: 'shots/collections-panel-desktop.png', animations: 'disabled' });
+        } else {
+            await page.locator('#shop .site-header__menu').click();
+            await expect(header.locator('[data-collections]')).toBeVisible();
+            await header.screenshot({ path: 'shots/collections-menu-phone.png', animations: 'disabled' });
+        }
+        const crawler = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport, storageState: await page.context().storageState() })).newPage();
+        for (const [name, path] of Object.entries({ category: '/beta/en/category/cards', collection: '/beta/en/collection/autumn-market', product: '/beta/en/shop/moss-print' })) {
+            await crawler.goto(path);
+            await crawler.screenshot({ path: `shots/collections-${name}-without-javascript-${size}.png`, fullPage: true });
+        }
+        await crawler.goto('/beta/en/collection/forest-critters');
+        await crawler.locator('.shop-prerender__navigation [data-shop-menu]').hover();
+        await crawler.screenshot({ path: `shots/collections-panel-without-javascript-${size}.png` });
+        await crawler.context().close();
+    }
+});

@@ -6,6 +6,7 @@ namespace App\Presentation\Web\Shop;
 
 use App\Application\Catalogue\PhotoView;
 use App\Application\Catalogue\ShopCategoryView;
+use App\Application\Catalogue\ShopCollectionView;
 use App\Application\Catalogue\ShopProductView;
 use App\Domain\Shared\Locale;
 
@@ -36,6 +37,18 @@ final readonly class CatalogueProps
     public function category(ShopCategoryView $category, Locale $locale, bool $preview): array
     {
         return ['key' => $category->key, 'label' => $category->label->in($locale), 'url' => $this->urls->to('shop_category', $locale, $preview, ['category' => $category->key])];
+    }
+
+    /** @return array<string, string|true> */
+    public function collection(ShopCollectionView $collection, Locale $locale, bool $preview): array
+    {
+        return ['key' => $collection->key, 'label' => $collection->label->in($locale), 'url' => $this->urls->to('shop_collection', $locale, $preview, ['collection' => $collection->key]), ...self::hidden($collection, $preview)];
+    }
+
+    /** @return array{hidden?: true} */
+    public static function hidden(ShopCollectionView $collection, bool $preview): array
+    {
+        return $preview && !$collection->shown ? ['hidden' => true] : [];
     }
 
     /**

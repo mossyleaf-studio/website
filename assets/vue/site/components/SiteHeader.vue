@@ -61,7 +61,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
                             :class="['site-header__link', 'site-header__shop-button', { 'site-header__link--current': entry.current }]"
                             type="button"
                             :aria-expanded="shopOpen"
-                            aria-controls="shop-categories"
+                            aria-controls="shop-panel"
                             :aria-current="entry.current ? 'true' : undefined"
                             data-shop-menu
                             @click="shopOpen = !shopOpen"
@@ -70,11 +70,24 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
                             <ChevronDown class="site-header__chevron" aria-hidden="true" />
                         </button>
                         <a id="shop-categories-label" :class="['site-header__link', 'site-header__label', { 'site-header__link--current': entry.current }]" :href="entry.url" :aria-current="entry.current ? 'true' : undefined">{{ $t('nav.shop') }}</a>
-                        <ul id="shop-categories" aria-labelledby="shop-categories-label" :class="['site-header__categories', { 'site-header__categories--open': shopOpen }]" data-categories>
-                            <li v-for="child in entry.children" :key="child.key">
-                                <a :class="['site-header__category', { 'site-header__category--current': child.current }]" :href="child.url" :aria-current="child.current ? 'page' : undefined">{{ child.label }}</a>
-                            </li>
-                        </ul>
+                        <div id="shop-panel" :class="['site-header__panel', { 'site-header__panel--open': shopOpen }]">
+                            <ul id="shop-categories" aria-labelledby="shop-categories-label" class="site-header__categories" data-categories>
+                                <li v-for="child in entry.children" :key="child.key">
+                                    <a :class="['site-header__category', { 'site-header__category--current': child.current }]" :href="child.url" :aria-current="child.current ? 'page' : undefined">{{ child.label }}</a>
+                                </li>
+                            </ul>
+                            <template v-if="entry.collections.length">
+                                <h2 id="shop-collections-label" class="site-header__group">{{ $t('shop.collections') }}</h2>
+                                <ul aria-labelledby="shop-collections-label" class="site-header__categories" data-collections>
+                                    <li v-for="collection in entry.collections" :key="collection.key">
+                                        <a :class="['site-header__category', { 'site-header__category--current': collection.current }]" :href="collection.url" :aria-current="collection.current ? 'page' : undefined">
+                                            <span data-collection-label>{{ collection.label }}</span>
+                                            <template v-if="collection.hidden">{{ ' ' }}<span class="site-header__hidden" data-label>{{ $t('product.hidden') }}</span></template>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </template>
+                        </div>
                     </li>
                     <li v-else>
                         <a :class="['site-header__link', { 'site-header__link--current': entry.current }]" :href="entry.url" :aria-current="entry.current ? 'page' : undefined">{{ $t(`nav.${entry.key}`) }}</a>
@@ -253,7 +266,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     rotate: 180deg;
 }
 
-.site-header__categories {
+.site-header__panel {
     display: grid;
     width: min(100%, 18rem);
     margin: var(--space-1) 0 var(--space-2);
@@ -264,9 +277,25 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     box-shadow: var(--shadow-sheet);
 }
 
+.site-header__categories {
+    display: grid;
+}
+
+.site-header__group {
+    margin: var(--space-2) var(--space-5) 0;
+    padding: var(--space-3) 0 var(--space-1);
+    font-family: var(--font-ui);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-muted);
+    border-top: 0.0625rem solid var(--color-edge);
+}
+
 .site-header__category {
     display: flex;
     align-items: center;
+    gap: var(--space-2);
     min-height: var(--tap);
     padding: 0 var(--space-5);
     font-family: var(--font-ui);
@@ -288,6 +317,12 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     box-shadow: inset 0.25rem 0 0 var(--color-forest);
 }
 
+.site-header__hidden {
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--color-muted);
+}
+
 .site-header__category:focus-visible {
     outline-color: var(--color-ink);
     outline-offset: -0.1875rem;
@@ -299,7 +334,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
         text-decoration: underline;
     }
 
-    .site-header__categories {
+    .site-header__panel {
         border: 0.0625rem solid CanvasText;
     }
 }
@@ -347,7 +382,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
         display: none;
     }
 
-    .site-header__categories {
+    .site-header__panel {
         position: absolute;
         top: 100%;
         left: 50%;
@@ -355,12 +390,12 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
         display: none;
         width: max-content;
         min-width: 13rem;
-        max-width: calc(100vw - 2 * var(--page-gutter));
+        max-width: min(22rem, 100vw - 2 * var(--page-gutter));
         margin: 0;
         translate: -50% 0;
     }
 
-    .site-header__categories--open {
+    .site-header__panel--open {
         display: grid;
     }
 }

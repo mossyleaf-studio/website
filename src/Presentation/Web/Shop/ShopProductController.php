@@ -47,6 +47,7 @@ final readonly class ShopProductController
             'price' => $product->price,
             'priceNote' => $content->priceNote->in($locale),
             'category' => $this->props->category($product->category, $locale, $preview),
+            ...(null === $product->collection ? [] : ['collection' => $this->props->collection($product->collection, $locale, $preview)]),
             'photos' => array_map(static fn (PhotoView $photo): array => CatalogueProps::image($photo, $title), $product->photos),
             'variants' => $product->variants,
             'soldOut' => $product->soldOut,

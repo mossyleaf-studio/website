@@ -22,7 +22,12 @@
             {% if data.hidden ?? false %}
                 <p data-hidden><span class="shop-prerender__tape" data-label>{{ 'product.hidden'|site_t }}</span> {{ 'product.hiddenNote'|site_t }}</p>
             {% endif %}
-            <h1>{{ data.title }}</h1>
+            <div class="shop-prerender__heading">
+                <h1>{{ data.title }}</h1>
+                {% if data.collection is defined %}
+                    <p class="shop-prerender__collection" data-product-collection><span class="shop-prerender__quiet">{{ 'product.collection'|site_t }}</span> <a href="{{ data.collection.url }}">{{ data.collection.label }}</a>{% if data.collection.hidden ?? false %} <span class="shop-prerender__quiet" data-label>{{ 'product.hidden'|site_t }}</span>{% endif %}</p>
+                {% endif %}
+            </div>
             <div>
                 <p class="shop-prerender__price" data-price>{{ data.price|money }}</p>
                 {% if data.priceNote %}

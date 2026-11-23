@@ -258,7 +258,7 @@ final class ShopPagesTest extends WebTestCase
         $children = null === $entry ? [] : Json::array($entry, 'children');
         self::assertSame(
             array_map(static fn (mixed $child): array => [Json::string($child, 'label'), Json::string($child, 'url'), true === Json::at($child, 'current') ? 'page' : ''], $children),
-            $shop->filter('nav[data-navigation] > ul > li > ul[data-categories] > li > a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href'), (string) $link->attr('aria-current')]),
+            $shop->filter('nav[data-navigation] > ul > li > div > ul[data-categories] > li > a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href'), (string) $link->attr('aria-current')]),
         );
         self::assertCount([] === $children ? 0 : 1, $shop->filter('[data-categories]'));
         self::assertSame(self::label($locale, 'layout.navigation'), $shop->filter('nav[data-navigation]')->attr('aria-label'));

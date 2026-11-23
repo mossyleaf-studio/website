@@ -375,7 +375,7 @@
     },
     "collections": {
         "title": "Collections",
-        "hint": "Les collections affichées auront une page, un filtre et une place dans le menu Boutique, dans cet ordre.",
+        "hint": "Une collection affichée a sa page, une pastille de filtre et une place dans le menu Boutique, dans cet ordre.",
         "moveUp": "Monter « {name} »",
         "moveDown": "Descendre « {name} »",
         "emptyHint": "Vide : la boutique utilise « {name} ».",

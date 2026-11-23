@@ -7,6 +7,7 @@ namespace App\Application\Catalogue;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogueHandler;
 use App\Domain\Catalogue\Category;
 use App\Domain\Catalogue\CategoryRepository;
+use App\Domain\Catalogue\Collection;
 use App\Domain\Catalogue\CollectionRepository;
 use App\Domain\Catalogue\Product;
 use App\Domain\Catalogue\ProductRepository;
@@ -49,10 +50,11 @@ final readonly class CatalogueQueries
     /** @return list<ShopProductView> */
     public function shop(bool $preview): array
     {
-        $keys = $this->categoryKeys();
+        $categoryKeys = $this->categoryKeys();
+        $collectionKeys = $this->collectionKeys();
         $held = $this->held();
 
-        return array_map(fn (Product $product): ShopProductView => $this->shopView($product, $keys, $held), $this->products->forSale($preview));
+        return array_map(fn (Product $product): ShopProductView => $this->shopView($product, $preview, $categoryKeys, $collectionKeys, $held), $this->products->forSale($preview));
     }
 
     /** @return list<ShopCategoryView> */
@@ -63,11 +65,19 @@ final readonly class CatalogueQueries
         return ShopCategoryView::ordered(array_map(static fn (Category $category): ShopCategoryView => ShopCategoryView::of($category, $keys[(string) $category->id()]), $this->categories->forSale($preview)));
     }
 
+    /** @return list<ShopCollectionView> */
+    public function shopCollections(bool $preview): array
+    {
+        $keys = $this->collectionKeys();
+
+        return ShopCollectionView::ordered(array_map(static fn (Collection $collection): ShopCollectionView => ShopCollectionView::of($collection, $keys[(string) $collection->id()]), $this->collections->forSale($preview)));
+    }
+
     public function shopProduct(string $slug, bool $preview): ?ShopProductView
     {
         $product = $this->products->withSlug($slug);
 
-        return null !== $product && self::shows($product, $preview) ? $this->shopView($product, $this->categoryKeys(), $this->held()) : null;
+        return null !== $product && self::shows($product, $preview) ? $this->shopView($product, $preview, $this->categoryKeys(), $this->collectionKeys(), $this->held()) : null;
     }
 
     /** @return list<ShopProductView> */
@@ -85,14 +95,17 @@ final readonly class CatalogueQueries
     }
 
     /**
-     * @param array<string, string> $keys
+     * @param array<string, string> $categoryKeys
+     * @param array<string, string> $collectionKeys
      * @param array<string, int>    $held
      */
-    private function shopView(Product $product, array $keys, array $held): ShopProductView
+    private function shopView(Product $product, bool $preview, array $categoryKeys, array $collectionKeys, array $held): ShopProductView
     {
         $category = $product->category();
+        $collection = $product->collection();
+        $seen = null !== $collection && ($preview || $collection->isShown());
 
-        return ShopProductView::of($product, ShopCategoryView::of($category, $keys[(string) $category->id()]), $held);
+        return ShopProductView::of($product, ShopCategoryView::of($category, $categoryKeys[(string) $category->id()]), $seen ? ShopCollectionView::of($collection, $collectionKeys[(string) $collection->id()]) : null, $held);
     }
 
     /** @return array<string, int> */
@@ -104,12 +117,26 @@ final readonly class CatalogueQueries
     /** @return array<string, string> */
     private function categoryKeys(): array
     {
-        $categories = $this->categories->all();
-        usort($categories, static fn (Category $a, Category $b): int => strcmp((string) $a->id(), (string) $b->id()));
+        return $this->keys(array_map(static fn (Category $category): array => [(string) $category->id(), $category->name()], $this->categories->all()));
+    }
+
+    /** @return array<string, string> */
+    private function collectionKeys(): array
+    {
+        return $this->keys(array_map(static fn (Collection $collection): array => [(string) $collection->id(), $collection->name()], $this->collections->all()));
+    }
+
+    /**
+     * @param list<array{string, string}> $named
+     *
+     * @return array<string, string>
+     */
+    private function keys(array $named): array
+    {
+        usort($named, static fn (array $a, array $b): int => strcmp($a[0], $b[0]));
         $keys = [];
-        foreach ($categories as $category) {
-            $id = (string) $category->id();
-            $slug = $this->slugger->slug($category->name(), '-', ReplaceCatalogueHandler::SLUG_LOCALE)->lower()->toString();
+        foreach ($named as [$id, $name]) {
+            $slug = $this->slugger->slug($name, '-', ReplaceCatalogueHandler::SLUG_LOCALE)->lower()->toString();
             $keys[$id] = '' === $slug || \in_array($slug, $keys, true) ? strtolower($id) : $slug;
         }
 

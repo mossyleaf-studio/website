@@ -53,7 +53,16 @@
         "seeCart": "Voir le panier",
         "quantityOf": "Quantité de {product}",
         "lessOf": "Un de moins : {product}",
-        "moreOf": "Un de plus : {product}"
+        "moreOf": "Un de plus : {product}",
+        "collection": "Collection :"
+    },
+    "shop": {
+        "collections": "Collections"
+    },
+    "filter": {
+        "all": "Tout",
+        "collections": "Filtrer par collection",
+        "categories": "Filtrer par catégorie"
     },
     "cart": {
         "title": "Panier",

@@ -59,6 +59,9 @@ final readonly class SitemapController
         foreach ($this->catalogue->shopCategories(false) as $category) {
             $pages[] = ['shop_category', ['category' => $category->key]];
         }
+        foreach ($this->catalogue->shopCollections(false) as $collection) {
+            $pages[] = ['shop_collection', ['collection' => $collection->key]];
+        }
         foreach ($this->catalogue->shop(false) as $product) {
             $pages[] = ['shop_product', ['slug' => $product->slug]];
         }

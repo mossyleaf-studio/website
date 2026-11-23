@@ -25,6 +25,7 @@ final readonly class ShopCategoryController
         private ContentQueries $content,
         private CatalogueQueries $catalogue,
         private CatalogueProps $props,
+        private CatalogueFilters $filters,
         private ShopPage $page,
     ) {
     }
@@ -39,11 +40,13 @@ final readonly class ShopCategoryController
         $products = array_values(array_filter($this->catalogue->shop($preview), static fn (ShopProductView $product): bool => $product->category->key === $category));
         $shown = ShopCategoryView::shownIn($products)[0] ?? throw new NotFoundHttpException();
         $title = $shown->label->in($locale);
+        [$products, $filters] = $this->filters->apply($request, CatalogueFilters::COLLECTION, $products, $preview);
 
         return $this->page->render($request, $preview, $this->content->shop($preview), [
             'page' => 'category',
             'title' => $title,
             'category' => ['key' => $shown->key, 'label' => $title],
+            ...$filters,
             'products' => $this->props->cards($products, $locale, $preview),
         ], $title);
     }

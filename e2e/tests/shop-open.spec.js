@@ -3,7 +3,7 @@ import { fillForm, MAILPIT, messages, pay, REFERENCE } from './support/orders.js
 import { signIn } from './support/session.js';
 
 const ZONES = { france: { price: 450, freeFrom: 4000, enabled: true }, eu: { price: 900, freeFrom: null, enabled: true }, world: { price: 1500, freeFrom: null, enabled: true } };
-const PUBLIC_PAGES = ['/en/', '/fr/', '/en/category/prints', '/fr/category/stickers', '/en/shop/moss-print', '/fr/conventions', '/fr/contact', '/en/legal/terms', '/fr/about'];
+const PUBLIC_PAGES = ['/en/', '/fr/', '/en/category/prints', '/fr/category/stickers', '/en/collection/forest-critters', '/en/shop/moss-print', '/fr/conventions', '/fr/contact', '/en/legal/terms', '/fr/about'];
 
 async function setZones(request, enabled) {
     for (const [code, body] of Object.entries(ZONES)) {
@@ -112,6 +112,25 @@ test('the studio opens the shop, a visitor buys a postcard set, then the studio 
         const etag = listing.headers().etag;
         expect(etag).toBeTruthy();
         expect((await english.request.get('/en/category/prints', { headers: { 'If-None-Match': etag } })).status()).toBe(304);
+        await noCookie();
+    });
+
+    await test.step('the public sees the shown collection only', async () => {
+        await visitor.goto('/en/collection/forest-critters');
+        await expect(visitor.locator('#shop nav[data-filters] a[data-filter]').first()).toHaveText('All');
+        await visitor.goto('/en/category/cards');
+        await expect(visitor.locator('#shop main')).not.toContainText('Autumn market');
+        await visitor.locator('#shop [data-shop-menu]').click();
+        await expect(visitor.locator('#shop [data-collections]').getByRole('link')).toHaveText(['Forest critters']);
+        await expect(visitor.locator('#shop [data-label]')).toHaveCount(0);
+        const hidden = await visitor.goto('/en/collection/autumn-market');
+        expect(hidden.status()).toBe(404);
+        await expect(visitor.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+        await visitor.goto('/en/shop/moss-print');
+        await expect(visitor.locator('[data-product-collection]')).toContainText('Forest critters');
+        const sitemap = await (await english.request.get('/sitemap.xml')).text();
+        expect(sitemap).toContain('/en/collection/forest-critters');
+        expect(sitemap).not.toContain('autumn-market');
         await noCookie();
     });
 

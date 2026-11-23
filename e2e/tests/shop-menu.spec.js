@@ -13,7 +13,9 @@ test.beforeEach(async ({ page }) => {
 test('the shop entry opens the list of categories and closes it again', async ({ page }) => {
     await page.goto('/beta/en/');
     await expect(button(page)).toHaveAttribute('aria-expanded', 'false');
-    await expect(button(page)).toHaveAttribute('aria-controls', await panel(page).getAttribute('id'));
+    const controlled = header(page).locator(`#${await button(page).getAttribute('aria-controls')}`);
+    await expect(controlled.locator('[data-categories]')).toHaveCount(1);
+    await expect(controlled.locator('[data-collections]')).toHaveCount(1);
     await expect(button(page)).not.toHaveAttribute('aria-current');
     await expect(panel(page)).toBeHidden();
 
@@ -41,7 +43,7 @@ test('the shop entry opens the list of categories and closes it again', async ({
     await expect(panel(page)).toBeHidden();
 
     await button(page).click();
-    await panel(page).getByRole('link', { name: 'Paper goods' }).focus();
+    await header(page).locator('[data-categories] a, [data-collections] a').last().focus();
     await page.keyboard.press('Tab');
     await expect(panel(page)).toBeHidden();
 });
@@ -103,7 +105,9 @@ test('without JavaScript the shop entry shows its categories on hover and on foc
     await crawler.goto('/beta/en/');
     const nav = crawler.locator('.shop-prerender__navigation');
     const entry = nav.locator('[data-shop-menu]');
-    const categories = nav.locator('[data-categories]');
+    const categories = nav.locator('.shop-prerender__panel');
+    await expect(categories.locator('[data-categories]')).toHaveCount(1);
+    await expect(categories.locator('[data-collections]')).toHaveCount(1);
     await expect(entry).toHaveAttribute('href', '/beta/en/shop');
     expect(await height(categories)).toBeLessThanOrEqual(1);
     await entry.hover();
@@ -124,7 +128,7 @@ test('without JavaScript the phone header keeps the menu in wrapped rows and its
     const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 }, storageState: await page.context().storageState() });
     const crawler = await context.newPage();
     await crawler.goto('/beta/en/category/prints');
-    const categories = crawler.locator('.shop-prerender__navigation [data-categories]');
+    const categories = crawler.locator('.shop-prerender__navigation .shop-prerender__panel');
     expect(await height(categories)).toBeLessThanOrEqual(1);
     expect(await height(crawler.locator('.shop-prerender__header'))).toBeLessThanOrEqual(scripted + 48);
     await crawler.locator('.shop-prerender__navigation [data-shop-menu]').focus();

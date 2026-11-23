@@ -23,6 +23,7 @@ final readonly class ShopProductView
         public LocalizedText $description,
         public int $price,
         public ShopCategoryView $category,
+        public ?ShopCollectionView $collection,
         public array $photos,
         public array $variants,
         public bool $hidden,
@@ -32,7 +33,7 @@ final readonly class ShopProductView
     }
 
     /** @param array<string, int> $held */
-    public static function of(Product $product, ShopCategoryView $category, array $held): self
+    public static function of(Product $product, ShopCategoryView $category, ?ShopCollectionView $collection, array $held): self
     {
         $several = \count($product->variants()) > 1;
         $variants = array_map(static fn (ProductVariant $variant): ShopVariantView => ShopVariantView::of($variant, $several, $held[$variant->sku()] ?? 0), $product->variants());
@@ -45,6 +46,7 @@ final readonly class ShopProductView
             new LocalizedText($product->description()->in(Locale::En), $product->description()->in(Locale::Fr)),
             $product->price(),
             $category,
+            $collection,
             array_map(PhotoView::of(...), $product->photos()),
             $variants,
             !$product->isVisible(),

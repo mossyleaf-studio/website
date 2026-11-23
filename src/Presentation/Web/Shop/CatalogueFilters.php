@@ -1,0 +1,55 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Web\Shop;
+
+use App\Application\Catalogue\ShopCategoryView;
+use App\Application\Catalogue\ShopCollectionView;
+use App\Application\Catalogue\ShopProductView;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+final readonly class CatalogueFilters
+{
+    public const string COLLECTION = 'collection';
+    public const string CATEGORY = 'category';
+
+    public function __construct(
+        private ShopUrls $urls,
+        private CatalogueProps $props,
+        private SiteLabels $labels,
+    ) {
+    }
+
+    /**
+     * @param self::COLLECTION|self::CATEGORY $kind
+     * @param list<ShopProductView>           $products
+     *
+     * @return array{list<ShopProductView>, array{filters?: array{kind: string, items: list<array<string, mixed>>}}}
+     */
+    public function apply(Request $request, string $kind, array $products, bool $preview): array
+    {
+        $chosen = $request->query->all()[$kind] ?? null;
+        $key = static fn (ShopProductView $product): ?string => self::COLLECTION === $kind ? $product->collection?->key : $product->category->key;
+        $options = self::COLLECTION === $kind ? ShopCollectionView::shownIn($products) : ShopCategoryView::shownIn($products);
+        if (null !== $chosen && null === array_find($options, static fn (ShopCollectionView|ShopCategoryView $option): bool => $option->key === $chosen)) {
+            throw new NotFoundHttpException();
+        }
+        if ([] === $options || (1 === \count($options) && array_all($products, static fn (ShopProductView $product): bool => $key($product) === $options[0]->key))) {
+            return [$products, []];
+        }
+
+        $locale = ShopUrls::locale($request);
+        $route = ShopUrls::route($request);
+        $parameters = ShopUrls::parameters($request);
+        $items = [['key' => null, 'label' => $this->labels->label($locale->value, 'filter.all'), 'url' => $this->urls->to($route, $locale, $preview, $parameters), 'current' => null === $chosen]];
+        foreach ($options as $option) {
+            $link = $option instanceof ShopCollectionView ? $this->props->collection($option, $locale, $preview) : $this->props->category($option, $locale, $preview);
+            $items[] = [...$link, 'url' => $this->urls->to($route, $locale, $preview, [...$parameters, $kind => $option->key]), 'current' => $option->key === $chosen];
+        }
+        $shown = null === $chosen ? $products : array_values(array_filter($products, static fn (ShopProductView $product): bool => $key($product) === $chosen));
+
+        return [$shown, ['filters' => ['kind' => $kind, 'items' => $items]]];
+    }
+}

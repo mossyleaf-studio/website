@@ -1,0 +1,9 @@
+{% if data.filters is defined %}
+    <nav class="shop-prerender__filters" aria-label="{{ ('filter.' ~ (data.filters.kind == 'collection' ? 'collections' : 'categories'))|site_t }}" data-filters>
+        <ul>
+            {% for item in data.filters.items %}
+                <li><a href="{{ item.url }}"{% if item.current %} aria-current="true"{% endif %} data-filter>{% if item.current %}<svg class="shop-prerender__check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>{% endif %}<span data-filter-label>{{ item.label }}</span>{% if item.hidden ?? false %} <span class="shop-prerender__quiet" data-label>{{ 'product.hidden'|site_t }}</span>{% endif %}</a></li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endif %}

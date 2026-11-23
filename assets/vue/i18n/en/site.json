@@ -53,7 +53,16 @@
         "seeCart": "See the cart",
         "quantityOf": "Quantity of {product}",
         "lessOf": "One less: {product}",
-        "moreOf": "One more: {product}"
+        "moreOf": "One more: {product}",
+        "collection": "Collection:"
+    },
+    "shop": {
+        "collections": "Collections"
+    },
+    "filter": {
+        "all": "All",
+        "collections": "Filter by collection",
+        "categories": "Filter by category"
     },
     "cart": {
         "title": "Cart",

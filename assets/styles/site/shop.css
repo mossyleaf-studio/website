@@ -305,7 +305,7 @@ html[data-layout="shop"] .shop-prerender__chevron {
     transition: rotate var(--transition);
 }
 
-html[data-layout="shop"] .shop-prerender__categories {
+html[data-layout="shop"] .shop-prerender__panel {
     position: absolute;
     top: 100%;
     left: 50%;
@@ -313,7 +313,7 @@ html[data-layout="shop"] .shop-prerender__categories {
     display: grid;
     width: max-content;
     min-width: 13rem;
-    max-width: calc(100vw - 2 * var(--page-gutter));
+    max-width: min(22rem, 100vw - 2 * var(--page-gutter));
     padding: var(--space-2) 0;
     translate: -50% 0;
     color: var(--color-ink);
@@ -322,8 +322,31 @@ html[data-layout="shop"] .shop-prerender__categories {
     box-shadow: var(--shadow-sheet);
 }
 
+html[data-layout="shop"] .shop-prerender__categories {
+    display: grid;
+}
+
+html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__group {
+    margin: var(--space-2) var(--space-5) 0;
+    padding: var(--space-3) 0 var(--space-1);
+    font-family: var(--font-ui);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-muted);
+    border-top: 0.0625rem solid var(--color-edge);
+}
+
+html[data-layout="shop"] .shop-prerender__quiet {
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--color-muted);
+}
+
 html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__categories a {
     display: flex;
+    align-items: center;
+    gap: var(--space-2);
     padding: 0 var(--space-5);
     line-height: 1.3;
     color: var(--color-ink);
@@ -348,7 +371,7 @@ html[data-layout="shop"] .shop-prerender__categories a:focus-visible {
     outline-offset: -0.1875rem;
 }
 
-html[data-layout="shop"] .shop-prerender__shop:not(:hover, :focus-within) > .shop-prerender__categories {
+html[data-layout="shop"] .shop-prerender__shop:not(:hover, :focus-within) > .shop-prerender__panel {
     width: 1px;
     min-width: 0;
     height: 1px;
@@ -367,8 +390,12 @@ html[data-layout="shop"] .shop-prerender__shop:is(:hover, :focus-within) .shop-p
         text-decoration: underline;
     }
 
-    html[data-layout="shop"] .shop-prerender__categories {
+    html[data-layout="shop"] .shop-prerender__panel {
         border: 0.0625rem solid CanvasText;
+    }
+
+    html[data-layout="shop"] .shop-prerender__filters a[aria-current] {
+        text-decoration: underline;
     }
 }
 
@@ -752,6 +779,88 @@ html[data-layout="shop"] .shop-prerender__variants .shop-prerender__variant--cho
 html[data-layout="shop"] .shop-prerender__variants .shop-prerender__variant--sold-out {
     color: var(--color-muted);
     border-style: dashed;
+}
+
+html[data-layout="shop"] .shop-prerender__catalogue {
+    display: grid;
+    gap: var(--space-7);
+}
+
+html[data-layout="shop"] .shop-prerender__catalogue-head {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-5);
+}
+
+html[data-layout="shop"] .shop-prerender__catalogue-hidden {
+    margin-bottom: calc(-1 * var(--space-3));
+}
+
+html[data-layout="shop"] .shop-prerender__filters ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+html[data-layout="shop"] .shop-prerender__filters a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    padding: 0 var(--space-4);
+    font-family: var(--font-ui);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--color-ink);
+    text-decoration: none;
+    background: var(--color-paper);
+    border: 0.0625rem solid var(--color-ink);
+    border-radius: var(--radius-pill);
+}
+
+html[data-layout="shop"] .shop-prerender__filters a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 0.0625rem;
+    text-underline-offset: 0.2em;
+    background: var(--color-wash-leaf);
+}
+
+html[data-layout="shop"] .shop-prerender__filters a[aria-current] {
+    padding-left: var(--space-3);
+    font-weight: 600;
+    background: var(--color-leaf);
+    border: var(--border-strong);
+}
+
+html[data-layout="shop"] .shop-prerender__filters a[aria-current] .shop-prerender__quiet {
+    color: var(--color-ink);
+}
+
+html[data-layout="shop"] .shop-prerender__check {
+    width: 1rem;
+    height: 1rem;
+    flex: none;
+}
+
+html[data-layout="shop"] .shop-prerender__heading {
+    display: grid;
+    gap: var(--space-2);
+}
+
+html[data-layout="shop"] .shop-prerender__collection {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-2);
+    font-size: var(--font-size-sm);
+}
+
+html[data-layout="shop"] .shop-prerender__collection a {
+    font-weight: 600;
+    color: var(--color-ink);
+    text-decoration-thickness: 0.0625rem;
+    text-underline-offset: 0.2em;
 }
 
 html[data-layout="shop"] .shop-prerender__product {

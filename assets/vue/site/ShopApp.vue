@@ -3,7 +3,7 @@ import { computed, provide } from 'vue';
 import ShopLayout from './components/ShopLayout.vue';
 import AboutPage from './pages/AboutPage.vue';
 import CartPage from './pages/CartPage.vue';
-import CategoryPage from './pages/CategoryPage.vue';
+import CataloguePage from './pages/CataloguePage.vue';
 import CheckoutPage from './pages/CheckoutPage.vue';
 import ConventionsPage from './pages/ConventionsPage.vue';
 import ContactPage from './pages/ContactPage.vue';
@@ -25,7 +25,7 @@ const home = computed(() => props.layout.navigation.find((entry) => entry.key ==
 <template>
     <ShopLayout :layout="layout" :home="home" :cart-current="data.page === 'cart'">
         <HomePage v-if="data.page === 'home'" :data="data" />
-        <CategoryPage v-else-if="data.page === 'category'" :data="data" />
+        <CataloguePage v-else-if="data.page === 'category' || data.page === 'collection'" :data="data" />
         <ProductPage v-else-if="data.page === 'product'" :data="data" :home="home" :cart-url="layout.cartUrl" />
         <CartPage v-else-if="data.page === 'cart'" :data="data" />
         <CheckoutPage v-else-if="data.page === 'checkout'" :data="data" />

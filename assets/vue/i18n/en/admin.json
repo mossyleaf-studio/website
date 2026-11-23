@@ -375,7 +375,7 @@
     },
     "collections": {
         "title": "Collections",
-        "hint": "Shown collections will get a page, a filter and a place in the Shop menu, in this order.",
+        "hint": "A shown collection has its own page, a filter chip and a place in the Shop menu, in this order.",
         "moveUp": "Move “{name}” up",
         "moveDown": "Move “{name}” down",
         "emptyHint": "Empty: the shop uses “{name}”.",

@@ -39,6 +39,7 @@ test('a collection gets its two labels and is shown then hidden', async ({ page 
     await Promise.all([page.waitForResponse((response) => response.url().endsWith('/visibility') && response.request().method() === 'DELETE' && response.ok()), toggle.click()]);
     await expect(toggle).toHaveAttribute('aria-checked', 'false');
     expect((await (await page.request.get('/api/admin/collections')).json()).find((collection) => collection.name === 'Autumn market').shown).toBe(false);
+    expect((await page.request.put(`/api/admin/collections/${autumn.id}`, { data: { label: '', labelFr: '' } })).ok()).toBe(true);
 });
 
 test('moving a collection up keeps the order after a reload', async ({ page }) => {
@@ -80,13 +81,4 @@ test('the product editor shows its collection', async ({ page }) => {
     await page.goto('/admin/products');
     await page.locator('[data-test="product-row"][data-reference="PRT-002"]').getByTestId('product-edit').click();
     await expect(page.getByTestId('product-collection')).toContainText('None');
-});
-
-test('the public preview shows nothing of the collections yet', async ({ page }) => {
-    for (const path of ['/beta/en/', '/beta/fr/', '/beta/en/shop']) {
-        const html = await (await page.request.get(path)).text();
-        expect(html).not.toContain('Forest critters');
-        expect(html).not.toContain('Bestioles de la forêt');
-        expect(html).not.toContain('Autumn market');
-    }
 });

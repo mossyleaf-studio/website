@@ -1,0 +1,10 @@
+<div class="shop-prerender__catalogue">
+    <div class="shop-prerender__catalogue-head">
+        {% if data.collection.hidden ?? false %}
+            <p class="shop-prerender__catalogue-hidden" data-hidden><span class="shop-prerender__tape" data-label>{{ 'product.hidden'|site_t }}</span></p>
+        {% endif %}
+        <h1>{{ data.title }}</h1>
+        {% include 'shop/prerender/_filters.html.twig' %}
+    </div>
+    {% include 'shop/prerender/_cards.html.twig' with {products: data.products, eager: true} %}
+</div>

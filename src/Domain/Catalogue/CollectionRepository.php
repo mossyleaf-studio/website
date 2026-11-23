@@ -17,6 +17,9 @@ interface CollectionRepository
     /** @return list<Collection> */
     public function all(): array;
 
+    /** @return list<Collection> */
+    public function forSale(bool $hiddenToo): array;
+
     /** @return array<string, int> */
     public function productsOnSale(): array;
 }

@@ -44,7 +44,14 @@ const paragraphs = computed(() =>
                     <TapeLabel tone="leaf">{{ $t('product.hidden') }}</TapeLabel>
                     <span>{{ $t('product.hiddenNote') }}</span>
                 </p>
-                <h1 class="product__title">{{ data.title }}</h1>
+                <div class="product__heading">
+                    <h1 class="product__title">{{ data.title }}</h1>
+                    <p v-if="data.collection" class="product__collection" data-product-collection>
+                        <span class="product__collection-label">{{ $t('product.collection') }}</span>{{ ' ' }}
+                        <a class="product__collection-link" :href="data.collection.url">{{ data.collection.label }}</a>
+                        <template v-if="data.collection.hidden">{{ ' ' }}<span class="product__collection-hidden" data-label>{{ $t('product.hidden') }}</span></template>
+                    </p>
+                </div>
                 <div class="product__price">
                     <p class="product__amount" data-price>{{ price }}</p>
                     <p v-if="data.priceNote" class="product__note" data-price-note>{{ data.priceNote }}</p>
@@ -102,6 +109,32 @@ const paragraphs = computed(() =>
     font-size: clamp(2rem, 1.5rem + 2vw, var(--font-size-3xl));
     line-height: 1.08;
     text-wrap: balance;
+}
+
+.product__heading {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.product__collection {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-2);
+    font-size: var(--font-size-sm);
+}
+
+.product__collection-label,
+.product__collection-hidden {
+    font-size: var(--font-size-xs);
+    color: var(--color-muted);
+}
+
+.product__collection-link {
+    font-weight: 600;
+    color: var(--color-ink);
+    text-decoration-thickness: 0.0625rem;
+    text-underline-offset: 0.2em;
 }
 
 .product__price {

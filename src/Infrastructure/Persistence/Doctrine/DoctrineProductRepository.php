@@ -49,7 +49,7 @@ final readonly class DoctrineProductRepository implements ProductRepository
     public function forSale(bool $hiddenToo): array
     {
         return $this->entityManager
-            ->createQuery('SELECT p, c, v, ph FROM '.Product::class.' p JOIN p.category c LEFT JOIN p.variants v LEFT JOIN p.photos ph WHERE p.retiredAt IS NULL AND p.price > 0'.($hiddenToo ? '' : ' AND p.visible = true').' ORDER BY p.position ASC, p.id ASC')
+            ->createQuery('SELECT p, c, co, v, ph FROM '.Product::class.' p JOIN p.category c LEFT JOIN p.collection co LEFT JOIN p.variants v LEFT JOIN p.photos ph WHERE p.retiredAt IS NULL AND p.price > 0'.($hiddenToo ? '' : ' AND p.visible = true').' ORDER BY p.position ASC, p.id ASC')
             ->getResult();
     }
 

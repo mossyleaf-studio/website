@@ -37,6 +37,13 @@ final readonly class DoctrineCollectionRepository implements CollectionRepositor
         return $this->entityManager->getRepository(Collection::class)->findBy([], ['position' => 'ASC', 'id' => 'ASC']);
     }
 
+    public function forSale(bool $hiddenToo): array
+    {
+        return $this->entityManager
+            ->createQuery('SELECT co FROM '.Collection::class.' co WHERE '.($hiddenToo ? '' : 'co.shown = true AND ').'EXISTS (SELECT p.id FROM '.Product::class.' p WHERE p.collection = co AND p.retiredAt IS NULL AND p.price > 0'.($hiddenToo ? '' : ' AND p.visible = true').')')
+            ->getResult();
+    }
+
     public function productsOnSale(): array
     {
         /** @var list<array{id: string, products: int|string}> $rows */
