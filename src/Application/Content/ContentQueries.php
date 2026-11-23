@@ -39,6 +39,15 @@ final readonly class ContentQueries
         return null === $site ? $this->draft() : new PublicSnapshot($site->content(), $site->publishedAt());
     }
 
+    public function publicLogoUrl(): ?string
+    {
+        $site = json_decode($this->public()->content, true, flags: \JSON_THROW_ON_ERROR);
+        $logo = \is_array($site) ? ($site['logo'] ?? null) : null;
+        $url = \is_array($logo) ? ($logo['url'] ?? null) : null;
+
+        return \is_string($url) ? $url : null;
+    }
+
     public function shopIsOpen(): bool
     {
         return $this->published->current()?->opensShop() ?? false;

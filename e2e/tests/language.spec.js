@@ -48,3 +48,23 @@ test('the draft banner speaks the language of the shop and the note keeps its ow
     await expect(page).toHaveURL(/\/beta\/en\/$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });
+
+test('the current menu entry is marked and Home leads to the shop home', async ({ page }) => {
+    await signIn(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/beta/en/about');
+    const navigation = page.locator('#shop .site-header__navigation');
+    await expect(navigation.locator('[aria-current="page"]')).toHaveCount(1);
+    await expect(navigation.getByRole('link', { name: 'About' })).toHaveAttribute('aria-current', 'page');
+    await navigation.getByRole('link', { name: 'Home' }).click();
+    await expect(page).toHaveURL(/\/beta\/en\/$/);
+    await expect(navigation.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
+    await expect(navigation.getByRole('link', { name: 'About' })).not.toHaveAttribute('aria-current', 'page');
+});
+
+test('the favicon address redirects without a cookie', async ({ request }) => {
+    const response = await request.get('/favicon', { maxRedirects: 0 });
+    expect(response.status()).toBe(302);
+    expect(response.headers().location).toMatch(/^\/(favicon\.svg|media\/artworks\/[0-9a-z]+\.webp)$/i);
+    expect(response.headers()['set-cookie']).toBeUndefined();
+});

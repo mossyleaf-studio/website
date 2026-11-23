@@ -2,11 +2,13 @@
 defineProps({
     categories: { type: Array, required: true },
 });
+
+const ratio = (category) => (category.image ? category.image.width / category.image.height : 0.8);
 </script>
 
 <template>
     <ul class="category-tiles" data-tiles>
-        <li v-for="category in categories" :key="category.key">
+        <li v-for="category in categories" :key="category.key" class="category-tiles__item" :style="{ '--ratio': ratio(category) }">
             <a class="category-tiles__tile" :href="category.url" data-test="category-tile">
                 <img
                     v-if="category.image"
@@ -28,12 +30,23 @@ defineProps({
 
 <style scoped>
 .category-tiles {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
-    gap: var(--space-5) var(--grid-gap);
+    --row: 8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5) 0.9375rem;
     margin: 0;
     padding: 0;
     list-style: none;
+}
+
+.category-tiles::after {
+    content: '';
+    flex: 1e9 1 0;
+}
+
+.category-tiles__item {
+    flex: var(--ratio) 1 calc(var(--ratio) * var(--row));
+    min-width: 0;
 }
 
 .category-tiles__tile {
@@ -51,16 +64,13 @@ defineProps({
 .category-tiles__photo {
     width: 100%;
     height: auto;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    background: var(--color-fur);
-    border: 0.0625rem solid var(--color-edge);
     border-radius: var(--radius-photo);
 }
 
 .category-tiles__photo--blank {
     display: block;
-    background: var(--color-card);
+    aspect-ratio: 4 / 5;
+    background: var(--color-meadow);
 }
 
 .category-tiles__label {
@@ -73,5 +83,17 @@ defineProps({
 
 .category-tiles__tile:hover .category-tiles__label {
     text-decoration-line: underline;
+}
+
+@media (min-width: 40rem) {
+    .category-tiles {
+        --row: 11rem;
+    }
+}
+
+@media (min-width: 56rem) {
+    .category-tiles {
+        --row: 14rem;
+    }
 }
 </style>

@@ -46,7 +46,7 @@ watch(available, (max) => {
 .buy-box__stock {
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .buy-box__stock--lastPieces,

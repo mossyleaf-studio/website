@@ -98,7 +98,7 @@ const stub = computed(() => stubOf(props.convention.startsOn, props.convention.e
 .ticket__month {
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.2;
 }
 
@@ -136,7 +136,7 @@ const stub = computed(() => stubOf(props.convention.startsOn, props.convention.e
 
 .ticket__place {
     font-family: var(--font-ui);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .ticket__note {

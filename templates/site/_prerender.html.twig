@@ -1,24 +1,36 @@
-<main class="prerender">
-    <header class="prerender__header">
-        {% if site.logo %}
-            <img src="{{ site.logo.url }}" alt="" width="{{ site.logo.width }}" height="{{ site.logo.height }}">
-        {% endif %}
-        <h1>{{ site.studioName }}</h1>
-        <p>{{ site.intro }}</p>
+<div class="prerender">
+    <header class="prerender__band">
+        <h1 class="prerender__wordmark">{% for part in site.studioName|split('.') %}{% if not loop.first %}<wbr>.{% endif %}{{ part }}{% endfor %}</h1>
     </header>
 
-    {% if site.featured %}
-        <figure>
-            <img src="{{ site.featured.url }}" alt="{{ site.featured.alt }}" width="{{ site.featured.width }}" height="{{ site.featured.height }}" fetchpriority="high">
-        </figure>
-    {% endif %}
+    <main class="prerender__page">
+        <div class="prerender__intro">
+            {% if site.logo %}
+                <img class="prerender__logo" src="{{ site.logo.url }}" alt="" width="{{ site.logo.width }}" height="{{ site.logo.height }}">
+            {% endif %}
+            <p>{{ site.intro }}</p>
+        </div>
 
-            <section aria-labelledby="note-title">
+        {% if site.featured %}
+            <figure class="prerender__featured">
+                <span class="prerender__tape prerender__tape--leaf prerender__tape--left" aria-hidden="true"></span>
+                <span class="prerender__tape prerender__tape--blossom prerender__tape--right" aria-hidden="true"></span>
+                <img src="{{ site.featured.url }}" alt="{{ site.featured.alt }}" width="{{ site.featured.width }}" height="{{ site.featured.height }}" fetchpriority="high">
+            </figure>
+        {% endif %}
+
+        <section class="prerender__note" aria-labelledby="note-title">
+            <span class="prerender__tape prerender__tape--blossom" aria-hidden="true"></span>
             <h2 id="note-title">{{ site.homeNote.title }}</h2>
             <p>{{ site.homeNote.text|rich_text }}</p>
         </section>
-    
-    <footer>
+    </main>
+
+    <footer class="prerender__footer">
+        <span class="prerender__mark" aria-hidden="true">
+            <span class="prerender__stamp">m</span>
+            <span class="prerender__star">✦</span>
+        </span>
         <p>© {{ 'now'|date('Y') }} {{ site.studioName }}</p>
     </footer>
-</main>
+</div>

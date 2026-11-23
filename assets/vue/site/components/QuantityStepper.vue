@@ -45,7 +45,7 @@ const typed = (event) => {
 .quantity-stepper__label {
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .quantity-stepper__controls {
@@ -83,7 +83,7 @@ const typed = (event) => {
     padding: 0;
     font-family: var(--font-ui);
     font-size: var(--font-size);
-    font-weight: 700;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
     color: var(--color-ink);
     text-align: center;

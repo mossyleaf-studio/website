@@ -85,3 +85,20 @@ test('the language switch keeps the product page', async ({ page }) => {
     await expect(page).toHaveURL(/\/beta\/en\/shop\/moss-print$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Moss print' })).toBeVisible();
 });
+
+test('showing another photo keeps the gallery the same size', async ({ page }) => {
+    await page.goto('/beta/en/shop/moss-print');
+    const thumbs = page.getByTestId('gallery-thumb');
+    const cover = page.getByTestId('product-gallery').locator('img').first();
+    const thumbsTop = () => thumbs.first().evaluate((thumb) => thumb.getBoundingClientRect().top + window.scrollY);
+    await expect(thumbs).toHaveCount(2);
+    await expect(cover).toHaveJSProperty('complete', true);
+    const before = await thumbsTop();
+    await thumbs.nth(1).click();
+    await expect(thumbs.nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await expect(cover).toHaveJSProperty('complete', true);
+    expect(await thumbsTop()).toBe(before);
+    await thumbs.first().click();
+    await expect(cover).toHaveJSProperty('complete', true);
+    expect(await thumbsTop()).toBe(before);
+});

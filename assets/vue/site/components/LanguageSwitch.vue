@@ -2,11 +2,12 @@
 defineProps({
     languages: { type: Array, required: true },
     landmark: { type: Boolean, default: true },
+    tone: { type: String, default: 'paper' },
 });
 </script>
 
 <template>
-    <component :is="landmark ? 'nav' : 'div'" class="language-switch" :aria-label="landmark ? $t('layout.languages') : undefined" data-languages>
+    <component :is="landmark ? 'nav' : 'div'" :class="['language-switch', `language-switch--${tone}`]" :aria-label="landmark ? $t('layout.languages') : undefined" data-languages>
         <ul class="language-switch__list">
             <li v-for="language in languages" :key="language.locale">
                 <a
@@ -25,9 +26,23 @@ defineProps({
 </template>
 
 <style scoped>
+.language-switch {
+    --switch-ink: var(--color-ink);
+    --switch-ground: var(--color-paper);
+    --switch-current-ink: var(--color-ink);
+    --switch-current-ground: var(--color-leaf);
+}
+
+.language-switch--forest {
+    --switch-ink: var(--color-on-forest);
+    --switch-ground: transparent;
+    --switch-current-ink: var(--color-forest);
+    --switch-current-ground: var(--color-on-forest);
+}
+
 .language-switch__list {
     display: flex;
-    border: 0.0625rem solid var(--color-ink);
+    border: 0.0625rem solid var(--switch-ink);
     border-radius: var(--radius-pill);
     overflow: hidden;
 }
@@ -40,10 +55,10 @@ defineProps({
     padding-inline: var(--space-3);
     font-family: var(--font-ui);
     font-size: var(--font-size-xs);
-    font-weight: 700;
-    color: var(--color-ink);
+    font-weight: 600;
+    color: var(--switch-ink);
     text-decoration: none;
-    background: var(--color-paper);
+    background: var(--switch-ground);
 }
 
 .language-switch__link:hover {
@@ -55,10 +70,15 @@ defineProps({
 }
 
 .language-switch__link--current {
-    background: var(--color-leaf);
+    color: var(--switch-current-ink);
+    background: var(--switch-current-ground);
+}
+
+.language-switch--forest .language-switch__link--current:focus-visible {
+    outline-color: var(--color-forest);
 }
 
 li + li .language-switch__link {
-    border-left: 0.0625rem solid var(--color-ink);
+    border-left: 0.0625rem solid var(--switch-ink);
 }
 </style>

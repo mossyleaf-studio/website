@@ -43,7 +43,7 @@ defineProps({
 }
 
 .category-filter__chip--current {
-    font-weight: 700;
+    font-weight: 600;
     background: var(--color-leaf);
     border: var(--border-strong);
 }

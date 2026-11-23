@@ -1,7 +1,7 @@
 import '@hotwired/turbo';
 import { createApp, effectScope } from 'vue';
-import '@fontsource/kalam/latin-400.css';
 import '@fontsource/kalam/latin-700.css';
+import '@fontsource-variable/quicksand/wght.css';
 import './styles/site/tokens.css';
 import './styles/site/shop.css';
 import './vue/site/progressBar.js';

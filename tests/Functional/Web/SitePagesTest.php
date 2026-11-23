@@ -35,7 +35,12 @@ final class SitePagesTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextSame('title', 'mossyleaf.studio');
-        self::assertSame('Illustrations of little critters among leaves and moss, drawn by hand.', $crawler->filter('#site header p')->text());
+        self::assertSame('mossyleaf.studio', $crawler->filter('#site > .prerender > header.prerender__band h1')->text());
+        self::assertCount(0, $crawler->filter('#site header p, #site header img'));
+        self::assertSame('Illustrations of little critters among leaves and moss, drawn by hand.', $crawler->filter('#site main .prerender__intro p')->text());
+        self::assertSame('The website is still growing', $crawler->filter('#site main section.prerender__note[aria-labelledby="note-title"] h2')->text());
+        self::assertCount(1, $crawler->filter('#site .prerender__note > .prerender__tape'));
+        self::assertCount(1, $crawler->filter('#site .prerender > footer.prerender__footer'));
         self::assertSame('index, follow, max-image-preview:large', $crawler->filter('meta[name="robots"]')->attr('content'));
         self::assertSame('note', $crawler->filter('#site')->attr('data-page'));
         self::assertNull($crawler->filter('#site')->attr('data-draft'));

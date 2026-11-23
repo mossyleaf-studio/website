@@ -51,7 +51,6 @@ defineProps({
     font-size: var(--font-size-xl);
     line-height: 1.1;
     color: var(--color-ink);
-    filter: url(#graphite);
 }
 
 .card__description {
@@ -59,10 +58,6 @@ defineProps({
     font-weight: 400;
     line-height: 1.45;
     color: var(--color-muted);
-}
-
-html[data-layout="shop"] .card__title {
-    filter: none;
 }
 
 html[data-layout="shop"] .card__description {

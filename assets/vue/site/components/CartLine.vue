@@ -120,7 +120,7 @@ const quantity = computed({
     justify-self: end;
     font-family: var(--font-ui);
     font-size: var(--font-size);
-    font-weight: 700;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 
@@ -134,7 +134,7 @@ const quantity = computed({
     padding: 0 var(--space-3) 0 var(--space-2);
     font-family: var(--font-ui);
     font-size: var(--font-size-xs);
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-ink);
     background: transparent;
     border: 0.0625rem solid var(--color-edge);

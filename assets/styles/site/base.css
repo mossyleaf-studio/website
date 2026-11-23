@@ -4,7 +4,8 @@
     box-sizing: border-box;
 }
 
-html {
+:root {
+    --font-size-lg: 1.3125rem;
     color-scheme: light;
     -webkit-text-size-adjust: 100%;
     background: var(--color-paper);
@@ -21,13 +22,9 @@ body {
     background:
         url("./paper/tooth.svg") 0 0 / 20rem 20rem,
         url("./paper/mottle.svg") 0 0 / 56rem 56rem,
-        linear-gradient(180deg, var(--color-paper) 35%, var(--color-meadow));
+        var(--color-paper);
     background-blend-mode: multiply, multiply, normal;
     -webkit-font-smoothing: antialiased;
-}
-
-[data-v-app] :is(h1, h2) {
-    filter: url(#graphite);
 }
 
 h1,
@@ -64,32 +61,206 @@ a {
 }
 
 .prerender {
+    min-height: 100vh;
     display: grid;
-    gap: var(--space-6);
-    max-width: calc(var(--column) + 2 * var(--gutter));
-    margin-inline: auto;
-    padding: var(--space-8) var(--gutter);
+    grid-template-rows: auto 1fr auto;
 }
 
-.prerender img {
-    max-width: min(100%, 36rem);
+.prerender__band {
+    --deckle: 1.5rem;
+    padding: var(--space-6) var(--gutter) calc(var(--space-6) + var(--deckle));
+    color: var(--color-on-forest);
+    background:
+        url("./paper/tooth.svg") 0 0 / 20rem 20rem,
+        var(--color-forest);
+    background-blend-mode: multiply, normal;
+    mask:
+        linear-gradient(#000 0 0) top / 100% calc(100% - var(--deckle) + 0.25rem) no-repeat,
+        url("./paper/deckle.svg") bottom / 37.5rem var(--deckle) repeat-x;
+}
+
+.prerender__wordmark,
+.prerender__note h2,
+.prerender__stamp {
+    font-family: var(--font-display);
+    font-weight: var(--font-display-weight);
+}
+
+.prerender__wordmark {
+    font-size: clamp(2.5rem, 1.75rem + 3.5vw, 4.5rem);
+    line-height: 1;
+    text-align: center;
+    overflow-wrap: break-word;
+}
+
+.prerender__page,
+.prerender__footer {
+    width: 100%;
+    max-width: calc(var(--column) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+}
+
+.prerender__page {
+    display: grid;
+    gap: var(--space-7);
+    align-content: start;
+    padding-block: var(--space-7) var(--space-8);
+}
+
+.prerender__intro {
+    display: grid;
+    gap: var(--space-5);
+}
+
+.prerender__intro p {
+    max-width: 32ch;
+    font-size: var(--font-size-lg);
+    line-height: 1.45;
+}
+
+.prerender__logo {
+    width: auto;
+    height: auto;
+    max-width: min(60%, 12rem);
+    max-height: 7rem;
+    object-fit: contain;
+    object-position: left center;
+}
+
+.prerender__featured {
+    position: relative;
+    padding: var(--space-3);
+    background: var(--color-fur);
+    border: 0.0625rem solid var(--color-line);
+    box-shadow: 0 0.0625rem 0.125rem var(--color-shadow), 0 1rem 2rem -1rem var(--color-shadow);
+}
+
+.prerender__featured img {
+    width: 100%;
     height: auto;
 }
 
-.prerender h1 {
-    font-family: var(--font-display);
-    font-weight: var(--font-display-weight);
-    font-size: clamp(3rem, 15vw, 6rem);
-    line-height: 0.92;
+.prerender__tape {
+    position: absolute;
+    display: block;
+    width: 5.5rem;
+    height: 1.5rem;
+    opacity: 0.9;
+    clip-path: polygon(0 0, 100% 0, 97% 25%, 100% 50%, 97% 75%, 100% 100%, 0 100%, 3% 75%, 0 50%, 3% 25%);
 }
 
-.prerender h2 {
-    font-family: var(--font-display);
-    font-weight: var(--font-display-weight);
-    font-size: var(--font-size-xl);
+.prerender__tape--leaf {
+    background: repeating-linear-gradient(-45deg, var(--color-tape-leaf) 0 0.4rem, color-mix(in oklch, var(--color-tape-leaf) 55%, white) 0.4rem 0.8rem);
 }
 
-.prerender__header img {
-    width: auto;
-    max-height: 7rem;
+.prerender__tape--blossom {
+    background:
+        radial-gradient(circle, color-mix(in oklch, var(--color-tape-blossom) 40%, white) 0 0.14rem, transparent 0.16rem) 0 0 / 0.7rem 0.7rem,
+        var(--color-tape-blossom);
+}
+
+.prerender__featured .prerender__tape {
+    top: -0.5rem;
+    z-index: 1;
+}
+
+.prerender__tape--left {
+    left: -1.25rem;
+    rotate: -35deg;
+}
+
+.prerender__tape--right {
+    right: -1.25rem;
+    rotate: 35deg;
+}
+
+.prerender__note {
+    position: relative;
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+    padding: var(--space-6) var(--space-5) var(--space-5);
+    background: var(--color-card);
+    border: 0.0625rem solid var(--color-edge);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sheet);
+}
+
+.prerender__note > .prerender__tape {
+    top: -0.75rem;
+    left: 50%;
+    translate: -50% 0;
+    rotate: -2deg;
+}
+
+.prerender__note h2 {
+    font-size: var(--font-size-2xl);
+    line-height: 1.15;
+}
+
+.prerender__note p {
+    max-width: var(--measure);
+    white-space: pre-line;
+}
+
+.prerender__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding-block: var(--space-6) var(--space-7);
+    font-size: var(--font-size-xs);
+    color: var(--color-muted);
+}
+
+.prerender__mark {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.prerender__stamp {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: var(--font-size-lg);
+    line-height: 1;
+    color: var(--color-bark);
+    border: 0.125rem solid var(--color-bark);
+    border-radius: 50%;
+    rotate: -8deg;
+}
+
+.prerender__star {
+    position: absolute;
+    top: -0.7rem;
+    left: 0.75rem;
+    font-size: 1.05rem;
+    line-height: 1;
+    color: var(--color-star);
+    -webkit-text-stroke: 0.04rem var(--color-ink);
+    rotate: 12deg;
+}
+
+@media (min-width: 40rem) {
+    .prerender__intro:has(.prerender__logo) {
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        column-gap: var(--space-6);
+    }
+
+    .prerender__logo {
+        max-width: 9rem;
+        max-height: 9rem;
+    }
+
+    .prerender__note {
+        padding: var(--space-7) var(--space-6) var(--space-6);
+    }
+}
+
+@media (min-width: 56rem) {
+    .prerender__band {
+        padding-block-start: var(--space-7);
+    }
 }

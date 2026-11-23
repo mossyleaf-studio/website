@@ -112,7 +112,7 @@ const paragraphs = computed(() =>
 .product__amount {
     font-family: var(--font-ui);
     font-size: var(--font-size-xl);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.1;
     font-variant-numeric: tabular-nums;
 }
@@ -132,7 +132,7 @@ const paragraphs = computed(() =>
 }
 
 .product__added a {
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
 }
 

@@ -26,6 +26,15 @@ test('the introduction and the home note are edited from the texts page', async 
     await expect(page.getByRole('link', { name: 'shop' })).toHaveAttribute('href', 'https://www.etsy.com/shop/mossyleafstudio');
 });
 
+test('the note footer signs with the studio name', async ({ page }) => {
+    const texts = await (await page.request.get('/api/admin/texts')).json();
+    const studio = Object.fromEntries(['studioName', 'intro', 'metaDescription', 'searchTitle', 'introFr', 'metaDescriptionFr', 'searchTitleFr'].map((key) => [key, texts[key]]));
+    await page.request.put('/api/admin/texts/identity', { data: { ...studio, studioName: 'Fern & Moss' } });
+    await page.goto('/beta/note/');
+    await expect(page.locator('footer').getByText(/© \d{4} Fern & Moss/)).toBeVisible();
+    await page.request.put('/api/admin/texts/identity', { data: studio });
+});
+
 test('an empty title is refused next to the field', async ({ page }) => {
     const about = page.getByTestId('section-about');
     await about.getByLabel('Title (English)').fill('   ');
@@ -95,6 +104,10 @@ test('any Google font is typed on the texts page and used by the draft', async (
     await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('font-family', /Caveat/);
     await expect(page.locator('body')).toHaveCSS('font-family', /Patrick Hand/);
 
+    await page.goto('/beta/en/');
+    await expect(page.locator('#site-navigation a').first()).toHaveCSS('font-family', /Patrick Hand/);
+    await expect(page.getByRole('heading', { level: 1 }).first()).toHaveCSS('font-family', /Caveat/);
+
     await page.goto('/admin/texts');
     await fonts.getByLabel('Titles').fill('Nope Sans');
     await fonts.getByRole('button', { name: 'Save' }).click();
@@ -160,7 +173,7 @@ test('a logo is added to the header, then removed', async ({ page }) => {
     await expect(logo.getByRole('img', { name: 'Current logo' })).toBeVisible();
 
     await page.goto('/');
-    await expect(page.locator('.studio-header__logo')).toBeVisible();
+    await expect(page.locator('.note__logo')).toBeVisible();
 
     await page.goto('/admin/texts');
     await logo.getByRole('button', { name: 'Remove the logo' }).click();
@@ -168,7 +181,7 @@ test('a logo is added to the header, then removed', async ({ page }) => {
     await expect(logo.getByText('No logo yet')).toBeVisible();
 
     await page.goto('/');
-    await expect(page.locator('.studio-header__logo')).toHaveCount(0);
+    await expect(page.locator('.note__logo')).toHaveCount(0);
 });
 
 test('an image is uploaded, featured without losing the description being typed, described, then deleted', async ({ page }) => {

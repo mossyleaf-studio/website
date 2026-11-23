@@ -1,9 +1,4 @@
 html[data-layout="shop"] {
-    --font-display: "Kalam", cursive;
-    --font-display-weight: 700;
-    --font-body: "Kalam", cursive;
-    --font-body-weight: 400;
-    --font-size: 1.125rem;
     color-scheme: light;
     -webkit-text-size-adjust: 100%;
     background: var(--color-paper);
@@ -23,8 +18,17 @@ html[data-layout="shop"] body {
     font-weight: var(--font-body-weight);
     line-height: var(--line-height);
     color: var(--color-ink);
-    background: var(--color-paper);
+    background:
+        url("./paper/tooth.svg") 0 0 / 20rem 20rem,
+        url("./paper/mottle.svg") 0 0 / 56rem 56rem,
+        var(--color-paper);
+    background-blend-mode: multiply, multiply, normal;
     -webkit-font-smoothing: antialiased;
+}
+
+html[data-layout="shop"] :is(h1, h2, h3) {
+    font-family: var(--font-display);
+    font-weight: var(--font-display-weight);
 }
 
 html[data-layout="shop"] :is(h1, h2, h3, p, figure, ul) {
@@ -154,42 +158,200 @@ html[data-layout="shop"] .shop-prerender__skip:focus-visible {
 
 html[data-layout="shop"] .shop-prerender__announcement {
     padding: var(--space-2) var(--page-gutter);
-    font-size: var(--font-size-sm);
+    font-family: var(--font-ui);
+    font-size: var(--font-size-xs);
+    line-height: 1.4;
     text-align: center;
     background: var(--color-meadow);
-    border-bottom: 0.0625rem solid var(--color-edge);
 }
 
 html[data-layout="shop"] .shop-prerender__header {
+    --deckle: 1.5rem;
     display: grid;
     justify-items: center;
-    gap: var(--space-4);
-    padding: var(--space-5) var(--page-gutter) var(--space-4);
-    border-bottom: 0.0625rem solid var(--color-edge);
+    gap: var(--space-2);
+    padding: var(--space-4) var(--page-gutter) calc(var(--deckle) + var(--space-3));
+    color: var(--color-on-forest);
+    background:
+        url("./paper/tooth.svg") 0 0 / 20rem 20rem,
+        var(--color-forest);
+    background-blend-mode: multiply, normal;
+    mask:
+        linear-gradient(#000 0 0) top / 100% calc(100% - var(--deckle) + 0.25rem) no-repeat,
+        url("./paper/deckle.svg") bottom / 37.5rem var(--deckle) repeat-x;
+}
+
+html[data-layout="shop"] .shop-prerender__header :focus-visible {
+    outline-color: var(--color-on-forest);
+}
+
+html[data-layout="shop"] .shop-prerender__bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        'languages cart'
+        'home home';
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+    width: 100%;
+    max-width: var(--page);
+}
+
+html[data-layout="shop"] .shop-prerender__header .shop-prerender__languages {
+    grid-area: languages;
+    justify-self: start;
+}
+
+html[data-layout="shop"] .shop-prerender__cart {
+    grid-area: cart;
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+    font-family: var(--font-ui);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-decoration: none;
+    border: 0.0625rem solid var(--color-on-forest);
+    border-radius: var(--radius-pill);
+}
+
+html[data-layout="shop"] .shop-prerender__cart:is(:hover, [aria-current]) {
+    background: color-mix(in oklch, var(--color-on-forest) 14%, transparent);
+}
+
+html[data-layout="shop"] .shop-prerender__cart-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+html[data-layout="shop"] .shop-prerender__cart-word {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 html[data-layout="shop"] .shop-prerender__home {
+    grid-area: home;
+    justify-self: center;
     font-family: var(--font-display);
     font-weight: var(--font-display-weight);
-    font-size: var(--font-size-2xl);
+    font-size: clamp(1.75rem, 1.25rem + 2.5vw, var(--font-size-3xl));
     line-height: 1;
     text-decoration: none;
 }
 
 html[data-layout="shop"] .shop-prerender__home img {
     width: auto;
+    max-width: min(11rem, 50vw);
     max-height: 4rem;
+    object-fit: contain;
 }
 
 html[data-layout="shop"] .shop-prerender :is(.shop-prerender__navigation, .shop-prerender__languages) ul {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: var(--space-2) var(--space-5);
+    gap: 0 var(--space-3);
+}
+
+html[data-layout="shop"] .shop-prerender__navigation a {
+    padding: 0.25rem var(--space-3) 0;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-on-forest-muted);
+    text-decoration: none;
+}
+
+html[data-layout="shop"] .shop-prerender__navigation a:is(:hover, [aria-current]) {
+    color: var(--color-on-forest);
+    box-shadow: inset 0 0.25rem 0 var(--color-leaf);
+}
+
+html[data-layout="shop"] .shop-prerender__languages {
+    --switch-ink: var(--color-ink);
+    --switch-ground: var(--color-paper);
+    --switch-current-ink: var(--color-ink);
+    --switch-current-ground: var(--color-leaf);
+}
+
+html[data-layout="shop"] .shop-prerender__header .shop-prerender__languages {
+    --switch-ink: var(--color-on-forest);
+    --switch-ground: transparent;
+    --switch-current-ink: var(--color-forest);
+    --switch-current-ground: var(--color-on-forest);
+}
+
+html[data-layout="shop"] .shop-prerender .shop-prerender__languages ul {
+    flex-wrap: nowrap;
+    gap: 0;
+    width: fit-content;
+    border: 0.0625rem solid var(--switch-ink);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+
+html[data-layout="shop"] .shop-prerender__languages a {
+    justify-content: center;
+    padding-inline: var(--space-3);
+    font-family: var(--font-ui);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--switch-ink);
+    text-decoration: none;
+    background: var(--switch-ground);
+}
+
+html[data-layout="shop"] .shop-prerender__languages a:hover {
+    text-decoration: underline;
+}
+
+html[data-layout="shop"] .shop-prerender__languages a:focus-visible {
+    outline-offset: -0.25rem;
 }
 
 html[data-layout="shop"] .shop-prerender__languages a[aria-current] {
-    text-decoration-thickness: 0.125rem;
+    color: var(--switch-current-ink);
+    background: var(--switch-current-ground);
+}
+
+html[data-layout="shop"] .shop-prerender__header .shop-prerender__languages a[aria-current]:focus-visible {
+    outline-color: var(--color-forest);
+}
+
+html[data-layout="shop"] .shop-prerender__languages li + li a {
+    border-left: 0.0625rem solid var(--switch-ink);
+}
+
+@media (min-width: 40rem) {
+    html[data-layout="shop"] .shop-prerender__cart-word {
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip-path: none;
+    }
+
+    html[data-layout="shop"] .shop-prerender__bar {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-areas: 'languages home cart';
+    }
+}
+
+@media (min-width: 56rem) {
+    html[data-layout="shop"] .shop-prerender__header {
+        padding-top: var(--space-5);
+    }
+
+    html[data-layout="shop"] .shop-prerender__home img {
+        max-height: 5.5rem;
+    }
 }
 
 html[data-layout="shop"] .shop-prerender__main {
@@ -285,14 +447,10 @@ html[data-layout="shop"] .shop-prerender__ticket {
     box-shadow: var(--shadow-sheet);
 }
 
-html[data-layout="shop"] .shop-prerender__tape {
+html[data-layout="shop"] .shop-prerender__ticket .shop-prerender__tape {
     position: absolute;
     top: -0.875rem;
     right: var(--space-5);
-    padding: 0 var(--space-4);
-    font-weight: 700;
-    background: color-mix(in oklch, var(--color-tape-leaf) 85%, white);
-    rotate: -2deg;
 }
 
 html[data-layout="shop"] .shop-prerender__actions {
@@ -349,9 +507,9 @@ html[data-layout="shop"] .shop-prerender__legal [data-blocks] ul {
 html[data-layout="shop"] .shop-prerender__footer {
     display: grid;
     gap: var(--space-4);
-    padding: var(--space-7) var(--page-gutter) var(--space-6);
+    padding: var(--space-6) var(--page-gutter) var(--space-5);
+    font-size: var(--font-size-sm);
     background: var(--color-meadow);
-    border-top: 0.0625rem solid var(--color-edge);
 }
 
 html[data-layout="shop"] .shop-prerender__footer .shop-prerender__languages ul {
@@ -371,9 +529,20 @@ html[data-layout="shop"] .shop-prerender__footer .shop-prerender__languages ul {
 
 html[data-layout="shop"] .shop-prerender__cards,
 html[data-layout="shop"] .shop-prerender__tiles {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-6) var(--grid-gap);
+    --row: 8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5) 0.9375rem;
+}
+
+html[data-layout="shop"] :is(.shop-prerender__cards, .shop-prerender__tiles)::after {
+    content: '';
+    flex: 1e9 1 0;
+}
+
+html[data-layout="shop"] :is(.shop-prerender__cards, .shop-prerender__tiles) > li {
+    flex: var(--ratio) 1 calc(var(--ratio) * var(--row));
+    min-width: 0;
 }
 
 html[data-layout="shop"] .shop-prerender__card,
@@ -384,20 +553,31 @@ html[data-layout="shop"] .shop-prerender__tiles a {
     text-decoration: none;
 }
 
-html[data-layout="shop"] :is(.shop-prerender__card, .shop-prerender__tiles a) :is(img, .shop-prerender__blank),
-html[data-layout="shop"] .shop-prerender__product-body > .shop-prerender__blank {
+html[data-layout="shop"] .shop-prerender__card > span[data-card-title] {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+html[data-layout="shop"] .shop-prerender__card:hover [data-card-title],
+html[data-layout="shop"] .shop-prerender__tiles a:hover span:last-child {
+    text-decoration: underline;
+}
+
+html[data-layout="shop"] :is(.shop-prerender__card, .shop-prerender__tiles a) :is(img, .shop-prerender__blank) {
     display: block;
     width: 100%;
-    aspect-ratio: 1;
     margin-bottom: var(--space-2);
-    object-fit: cover;
-    background: var(--color-card);
-    border: 0.0625rem solid var(--color-edge);
     border-radius: var(--radius-photo);
 }
 
-html[data-layout="shop"] .shop-prerender__tiles a :is(img, .shop-prerender__blank) {
-    aspect-ratio: 4 / 3;
+html[data-layout="shop"] :is(.shop-prerender__card, .shop-prerender__tiles a) .shop-prerender__blank,
+html[data-layout="shop"] .shop-prerender__product-body > .shop-prerender__blank {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    background: var(--color-meadow);
+    border-radius: var(--radius-photo);
 }
 
 html[data-layout="shop"] .shop-prerender__tiles span:not(.shop-prerender__blank) {
@@ -418,8 +598,9 @@ html[data-layout="shop"] .shop-prerender__labels {
 html[data-layout="shop"] .shop-prerender__tape {
     display: inline-block;
     padding: var(--space-1) var(--space-4);
+    font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-ink);
     background: color-mix(in oklch, var(--color-tape-leaf) 85%, white);
     rotate: -2deg;
@@ -451,13 +632,13 @@ html[data-layout="shop"] .shop-prerender__variants li {
 }
 
 html[data-layout="shop"] .shop-prerender__chips a[aria-current] {
-    font-weight: 700;
+    font-weight: 600;
     background: var(--color-leaf);
     border: var(--border-strong);
 }
 
 html[data-layout="shop"] .shop-prerender__variants .shop-prerender__variant--chosen {
-    font-weight: 700;
+    font-weight: 600;
     background: var(--color-leaf);
     border: var(--border-strong);
 }
@@ -509,9 +690,8 @@ html[data-layout="shop"] .shop-prerender__description {
 }
 
 html[data-layout="shop"] .shop-prerender__photos img {
-    width: 100%;
-    background: var(--color-card);
-    border: 0.0625rem solid var(--color-edge);
+    max-height: 80vh;
+    width: auto;
     border-radius: var(--radius-photo);
 }
 
@@ -520,12 +700,17 @@ html[data-layout="shop"] .shop-prerender__details h1 {
 }
 
 html[data-layout="shop"] :is(.shop-prerender__card strong, .shop-prerender__price) {
+    font-family: var(--font-ui);
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
+}
+
+html[data-layout="shop"] .shop-prerender__card strong {
+    font-size: var(--font-size-sm);
 }
 
 html[data-layout="shop"] .shop-prerender__price {
     font-size: var(--font-size-xl);
-    font-weight: 700;
     line-height: 1.1;
 }
 
@@ -536,7 +721,7 @@ html[data-layout="shop"] .shop-prerender :is(.shop-prerender__note, [data-hidden
 
 html[data-layout="shop"] .shop-prerender__stock {
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 html[data-layout="shop"] .shop-prerender__description {
@@ -552,14 +737,24 @@ html[data-layout="shop"] .shop-prerender__main section {
     gap: var(--space-5);
 }
 
-@media (min-width: 56rem) {
+@media (min-width: 40rem) {
     html[data-layout="shop"] .shop-prerender__cards {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        --row: 13rem;
     }
 
-    html[data-layout="shop"] .shop-prerender__cards--4,
     html[data-layout="shop"] .shop-prerender__tiles {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        --row: 11rem;
+    }
+}
+
+@media (min-width: 56rem) {
+    html[data-layout="shop"] .shop-prerender__cards {
+        --row: 18rem;
+        row-gap: var(--space-6);
+    }
+
+    html[data-layout="shop"] .shop-prerender__tiles {
+        --row: 14rem;
     }
 
     html[data-layout="shop"] .shop-prerender__product-body {
@@ -579,7 +774,9 @@ html[data-layout="shop"] .shop-prerender__pill {
     align-items: center;
     min-height: var(--control-height);
     padding: 0 var(--space-5);
-    font-weight: 700;
+    font-family: var(--font-ui);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
     text-decoration: none;
     background: var(--color-leaf);
     border: var(--border-strong);

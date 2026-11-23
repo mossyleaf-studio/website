@@ -35,7 +35,7 @@ const sku = defineModel({ type: String, required: true });
     margin-bottom: var(--space-2);
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .variant-picker__options {
@@ -66,7 +66,7 @@ const sku = defineModel({ type: String, required: true });
 }
 
 .variant-picker__option:has(:checked:not(:disabled)) {
-    font-weight: 700;
+    font-weight: 600;
     background: var(--color-leaf);
     border: var(--border-strong);
 }

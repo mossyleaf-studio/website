@@ -1,9 +1,9 @@
 <script setup>
 import FeaturedArt from '../components/FeaturedArt.vue';
+import PaperSheet from '../components/PaperSheet.vue';
 import RichText from '../components/RichText.vue';
 import SketchbookPage from '../components/SketchbookPage.vue';
 import StudioHeader from '../components/StudioHeader.vue';
-import WashiTape from '../components/WashiTape.vue';
 
 defineProps({
     site: { type: Object, required: true },
@@ -11,49 +11,68 @@ defineProps({
 </script>
 
 <template>
-    <SketchbookPage>
-        <StudioHeader :name="site.studioName" :intro="site.intro" :logo="site.logo" />
+    <SketchbookPage :studio-name="site.studioName">
+        <template #band>
+            <StudioHeader :name="site.studioName" />
+        </template>
+
+        <div :class="['note__intro', { 'note__intro--with-logo': site.logo }]">
+            <img v-if="site.logo" class="note__logo" :src="site.logo.url" :width="site.logo.width" :height="site.logo.height" alt="" />
+            <p class="note__lead">{{ site.intro }}</p>
+        </div>
 
         <FeaturedArt v-if="site.featured" :artwork="site.featured" />
 
-        <section class="note" aria-labelledby="note-title">
-            <WashiTape class="note__tape" tone="blossom" />
+        <PaperSheet tag="section" tape="blossom" aria-labelledby="note-title">
             <h2 id="note-title" class="note__title">{{ site.homeNote.title }}</h2>
             <p class="note__text"><RichText :text="site.homeNote.text" /></p>
-        </section>
+        </PaperSheet>
     </SketchbookPage>
 </template>
 
 <style scoped>
-.note {
-    position: relative;
+.note__intro {
     display: grid;
-    gap: var(--space-3);
-    padding: var(--space-6) var(--space-5) var(--space-5);
-    background: var(--color-card);
-    border: 0.0625rem solid var(--color-line);
-    border-radius: 0.1875rem;
-    box-shadow: 0 0.0625rem 0.125rem var(--color-shadow), 0 0.75rem 1.5rem -0.75rem var(--color-shadow);
+    gap: var(--space-5);
 }
 
-.note__tape {
-    position: absolute;
-    top: -0.75rem;
-    left: 50%;
-    translate: -50% 0;
-    rotate: 2deg;
+.note__logo {
+    width: auto;
+    height: auto;
+    max-width: min(60%, 12rem);
+    max-height: 7rem;
+    object-fit: contain;
+    object-position: left center;
+}
+
+.note__lead {
+    max-width: 32ch;
+    font-size: var(--font-size-lg);
+    line-height: 1.45;
 }
 
 .note__title {
     font-family: var(--font-display);
     font-weight: var(--font-display-weight);
-    font-size: var(--font-size-xl);
-    line-height: 1.2;
-    color: var(--color-ink);
+    font-size: var(--font-size-2xl);
+    line-height: 1.15;
 }
 
 .note__text {
-    color: var(--color-muted);
+    max-width: var(--measure);
     white-space: pre-line;
+}
+
+@media (min-width: 40rem) {
+    .note__intro--with-logo {
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        column-gap: var(--space-6);
+    }
+
+    .note__logo {
+        max-width: 9rem;
+        max-height: 9rem;
+    }
 }
 </style>

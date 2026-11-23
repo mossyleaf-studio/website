@@ -182,7 +182,7 @@ const tracking = computed(() => trackingOf(props.order));
 .order-status__subtitle {
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .order-status__amounts {
@@ -198,7 +198,7 @@ const tracking = computed(() => trackingOf(props.order));
 }
 
 .order-status__row dd {
-    font-weight: 700;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 

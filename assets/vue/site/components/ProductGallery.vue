@@ -7,11 +7,12 @@ const props = defineProps({
 
 const shown = ref(0);
 const cover = computed(() => props.photos[shown.value] ?? null);
+const tallest = computed(() => (props.photos.length ? Math.min(...props.photos.map((photo) => photo.width / photo.height)) : null));
 </script>
 
 <template>
     <section class="product-gallery" :aria-label="$t('product.photos')" data-test="product-gallery">
-        <div class="product-gallery__frame">
+        <div class="product-gallery__frame" :style="tallest ? { '--tallest': tallest } : undefined">
             <img
                 v-if="cover"
                 :key="cover.src"
@@ -44,23 +45,22 @@ const cover = computed(() => props.photos[shown.value] ?? null);
 
 <style scoped>
 .product-gallery {
+    container-type: inline-size;
     display: grid;
     gap: var(--space-4);
     align-content: start;
 }
 
 .product-gallery__frame {
-    aspect-ratio: 1;
-    padding: var(--space-4);
-    background: var(--color-card);
-    border: 0.0625rem solid var(--color-edge);
-    border-radius: var(--radius-photo);
+    height: min(80vh, 100cqi / var(--tallest));
 }
 
 .product-gallery__cover {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+    border-radius: var(--radius-photo);
 }
 
 .product-gallery__thumbs {
@@ -76,7 +76,7 @@ const cover = computed(() => props.photos[shown.value] ?? null);
     display: block;
     width: 4.5rem;
     padding: 0.1875rem;
-    background: var(--color-card);
+    background: transparent;
     border: 0.0625rem solid var(--color-edge);
     border-radius: var(--radius-photo);
     cursor: pointer;

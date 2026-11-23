@@ -118,6 +118,20 @@ async function shootTheCart(page, size) {
     await fillTheCart(page, null);
 }
 
+async function shootTheHeader(page, size) {
+    await page.goto('/beta/en/');
+    const header = page.locator('header.site-header');
+    if (size === 'desktop') {
+        await header.getByRole('link', { name: 'About' }).hover();
+        await header.screenshot({ path: 'shots/shop-header-hover-desktop.png', animations: 'disabled' });
+        await page.mouse.move(0, 0);
+    } else {
+        await page.locator('#shop .site-header__menu').click();
+        await expect(page.locator('#site-navigation').getByRole('link', { name: 'About' })).toBeVisible();
+        await header.screenshot({ path: 'shots/shop-header-menu-phone.png', animations: 'disabled' });
+    }
+}
+
 async function shootTheContactForm(page, size) {
     const api = '**/api/shop/fr/contact';
     await page.goto('/beta/fr/contact');
@@ -408,6 +422,7 @@ test('screenshots of the site and the admin', async ({ page }) => {
     for (const [size, viewport] of Object.entries(VIEWPORTS)) {
         await page.setViewportSize(viewport);
         await shootTheLoadingBar(page, size);
+        await shootTheHeader(page, size);
         await shootTheContactForm(page, size);
         await shootTheCart(page, size);
         order = await shootTheCheckout(page, size);

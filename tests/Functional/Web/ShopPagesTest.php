@@ -89,7 +89,7 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame('Petites bêtes dessinées.', $crawler->filter('#shop main h1')->text());
         self::assertSame('A tiny studio.', $crawler->filter('#shop main section p')->first()->text());
         self::assertSame('Livraison offerte', $crawler->filter('#shop [data-announcement]')->text());
-        self::assertSame(['Boutique', 'Conventions', 'À propos', 'Contact'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
+        self::assertSame(['Accueil', 'Boutique', 'Conventions', 'À propos', 'Contact'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
         self::assertSame('Aller au contenu', $crawler->filter('#shop a[href="#main"]')->text());
         self::assertSame('Aperçu du brouillon', $crawler->filter('#shop aside[data-draft]')->attr('aria-label'));
         self::assertSame('Brouillon Seuls les admins voient cette page. Les textes, liens, images et pages légales attendent « Publier » ; les produits, conventions et frais de port sont déjà en ligne.', $crawler->filter('#shop aside[data-draft] p')->text());
@@ -224,7 +224,7 @@ final class ShopPagesTest extends WebTestCase
     private static function assertLayoutMatches(Crawler $shop, array $layout): void
     {
         $locale = Json::string($layout, 'locale');
-        $navigation = array_values(array_filter(Json::array($layout, 'navigation'), static fn (mixed $entry): bool => 'home' !== Json::string($entry, 'key')));
+        $navigation = Json::array($layout, 'navigation');
 
         self::assertSame(self::label($locale, 'layout.skip'), $shop->filter('a[href="#main"]')->text());
         self::assertSame(array_filter([Json::string($layout, 'announcement')]), $shop->filter('[data-announcement]')->each(static fn (Crawler $bar): string => $bar->text()));

@@ -55,7 +55,7 @@ final class PublicationApiTest extends WebTestCase
         $crawler = $client->request('GET', '/');
         self::assertSame('note', $crawler->filter('#site')->attr('data-page'));
         self::assertSame('Frogs in the ferns', Json::string(Json::decode($crawler->filter('#site-content')->text()), 'intro'));
-        self::assertSame('Frogs in the ferns', $crawler->filter('#site header p')->text());
+        self::assertSame('Frogs in the ferns', $crawler->filter('#site .prerender__intro p')->text());
 
         $crawler = $client->request('GET', '/beta/note/');
         self::assertSame('Snails on the moss', Json::string(Json::decode($crawler->filter('#site-content')->text()), 'intro'));

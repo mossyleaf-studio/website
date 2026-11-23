@@ -1,12 +1,14 @@
 <script setup>
-import LeafWashes from './LeafWashes.vue';
+defineProps({
+    studioName: { type: String, required: true },
+});
 
 const year = new Date().getFullYear();
 </script>
 
 <template>
     <div class="sketchbook">
-        <LeafWashes />
+        <slot name="band" />
 
         <main class="sketchbook__page">
             <slot />
@@ -17,23 +19,20 @@ const year = new Date().getFullYear();
                 <span class="sketchbook__stamp">m</span>
                 <span class="sketchbook__star">✦</span>
             </span>
-            <p>© {{ year }} mossyleaf.studio</p>
+            <p>© {{ year }} {{ studioName }}</p>
         </footer>
     </div>
 </template>
 
 <style scoped>
 .sketchbook {
-    position: relative;
     min-height: 100vh;
-    overflow-x: clip;
     display: grid;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: auto 1fr auto;
 }
 
 .sketchbook__page,
 .sketchbook__footer {
-    position: relative;
     width: 100%;
     max-width: calc(var(--column) + 2 * var(--gutter));
     margin-inline: auto;
@@ -41,9 +40,9 @@ const year = new Date().getFullYear();
 }
 
 .sketchbook__page {
-    padding-block: var(--space-8);
+    padding-block: var(--space-7) var(--space-8);
     display: grid;
-    gap: var(--space-8);
+    gap: var(--space-7);
     align-content: start;
 }
 
@@ -53,7 +52,6 @@ const year = new Date().getFullYear();
     gap: var(--space-4);
     padding-block: var(--space-6) var(--space-7);
     font-size: var(--font-size-xs);
-    font-weight: 400;
     color: var(--color-muted);
 }
 
@@ -75,7 +73,6 @@ const year = new Date().getFullYear();
     border: 0.125rem solid var(--color-bark);
     border-radius: 50%;
     rotate: -8deg;
-    filter: url(#ink-stamp);
 }
 
 .sketchbook__star {
@@ -87,11 +84,5 @@ const year = new Date().getFullYear();
     color: var(--color-star);
     -webkit-text-stroke: 0.04rem var(--color-ink);
     rotate: 12deg;
-}
-
-@media (min-width: 56rem) {
-    .sketchbook__page {
-        padding-block-start: var(--space-9);
-    }
 }
 </style>

@@ -1,8 +1,8 @@
 <script setup>
 import { computed, reactive, ref, watch, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
-import '@fontsource/gaegu/latin-700.css';
-import '@fontsource/kalam/latin-300.css';
+import '@fontsource/kalam/latin-700.css';
+import '@fontsource-variable/quicksand/wght.css';
 import BaseButton from '../../components/ui/BaseButton.vue';
 import FormField from '../../components/ui/FormField.vue';
 import { useToast } from '../../composables/useToast.js';
@@ -18,8 +18,8 @@ const toast = useToast();
 const { chooseFont, fontFamilies, loadFontFamilies } = useTexts();
 
 const ROLES = {
-    heading: { source: 'headingFont', site: 'Gaegu', siteWeight: 700, weight: 700 },
-    body: { source: 'bodyFont', site: 'Kalam', siteWeight: 300, weight: 400 },
+    heading: { source: 'headingFont', site: 'Kalam', siteWeight: 700, weight: 700 },
+    body: { source: 'bodyFont', site: 'Quicksand Variable', siteWeight: 500, weight: 400 },
 };
 
 const form = reactive({ heading: '', body: '' });

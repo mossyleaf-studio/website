@@ -112,7 +112,7 @@ defineProps({
     min-height: var(--tap);
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-ink);
     text-decoration-thickness: 0.125rem;
     text-underline-offset: 0.3em;

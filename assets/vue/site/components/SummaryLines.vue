@@ -71,7 +71,7 @@ const { locale } = useI18n();
 }
 
 .summary-lines__title {
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .summary-lines__variant {
@@ -85,7 +85,7 @@ const { locale } = useI18n();
 }
 
 .summary-lines__total {
-    font-weight: 700;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
     text-align: end;
 }

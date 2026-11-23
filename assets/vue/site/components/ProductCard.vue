@@ -55,22 +55,22 @@ const price = computed(() => formatPrice(props.product.price, locale.value));
 .product-card__photo {
     width: 100%;
     height: auto;
-    aspect-ratio: 1;
     margin-bottom: var(--space-2);
-    object-fit: cover;
-    background: var(--color-fur);
-    border: 0.0625rem solid var(--color-edge);
     border-radius: var(--radius-photo);
 }
 
 .product-card__photo--blank {
     display: block;
-    background: var(--color-card);
+    aspect-ratio: 4 / 5;
+    background: var(--color-meadow);
 }
 
 .product-card__title {
+    overflow: hidden;
     font-size: var(--font-size);
-    line-height: 1.3;
+    line-height: 1.35;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     text-decoration-thickness: 0.0625rem;
     text-underline-offset: 0.2em;
 }
@@ -82,7 +82,7 @@ const price = computed(() => formatPrice(props.product.price, locale.value));
 .product-card__price {
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 

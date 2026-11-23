@@ -36,7 +36,7 @@ const control = computed(() => ({
 
 .field__label {
     font-family: var(--font-ui);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.3;
 }
 
@@ -78,7 +78,7 @@ const control = computed(() => ({
     gap: var(--space-2);
     align-items: start;
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.35;
 }
 

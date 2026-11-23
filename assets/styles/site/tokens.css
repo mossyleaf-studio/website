@@ -6,6 +6,9 @@
     --color-ink: #583e2f;
     --color-leaf: #c2da5a;
     --color-star: #b2e0ff;
+    --color-forest: #4f5a24;
+    --color-on-forest: var(--color-paper);
+    --color-on-forest-muted: #d8d6bc;
 
     --color-card: color-mix(in oklch, var(--color-paper) 55%, white);
     --color-text: var(--color-ink);
@@ -33,17 +36,17 @@
     --space-8: 4.5rem;
     --space-9: 7rem;
 
-    --font-body: "Kalam", cursive;
-    --font-body-weight: 300;
-    --font-display: "Gaegu", cursive;
+    --font-body: "Quicksand Variable", "Quicksand", sans-serif;
+    --font-body-weight: 500;
+    --font-display: "Kalam", cursive;
     --font-display-weight: 700;
-    --font-size: 1.1875rem;
-    --font-size-sm: 1.0625rem;
-    --font-size-xs: 0.9375rem;
+    --font-size: 1.0625rem;
+    --font-size-sm: 0.9375rem;
+    --font-size-xs: 0.875rem;
     --font-size-lg: 1.4rem;
     --font-size-xl: 1.9rem;
     --font-size-2xl: 2.075rem;
-    --line-height: 1.6;
+    --line-height: 1.65;
 
     --measure: 60ch;
     --column: 36rem;
@@ -62,7 +65,7 @@
     --color-wash-leaf: color-mix(in oklch, var(--color-leaf) 35%, var(--color-paper));
     --color-wash-star: color-mix(in oklch, var(--color-star) 35%, var(--color-paper));
     --shadow-sheet: 0 0.0625rem 0.125rem var(--color-shadow), 0 0.75rem 1.5rem -0.75rem var(--color-shadow);
-    --font-ui: "Kalam", cursive;
+    --font-ui: var(--font-body);
     --font-size-3xl: 3.25rem;
     --x-height: 0.52em;
 }

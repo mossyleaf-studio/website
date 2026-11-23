@@ -1,8 +1,9 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { Menu } from '@lucide/vue';
+import { ref } from 'vue';
 import LanguageSwitch from './LanguageSwitch.vue';
 
-const props = defineProps({
+defineProps({
     home: { type: String, required: true },
     studioName: { type: String, required: true },
     logo: { type: Object, default: null },
@@ -11,13 +12,12 @@ const props = defineProps({
 });
 
 const open = ref(false);
-const entries = computed(() => props.navigation.filter((entry) => entry.key !== 'home'));
 </script>
 
 <template>
     <header class="site-header">
         <div class="site-header__bar">
-            <LanguageSwitch class="site-header__languages" :languages="languages" />
+            <LanguageSwitch class="site-header__languages" :languages="languages" tone="forest" />
             <a class="site-header__home" :href="home" data-home>
                 <template v-if="logo">
                     <img class="site-header__logo" :src="logo.url" :width="logo.width" :height="logo.height" alt="" />
@@ -32,10 +32,11 @@ const entries = computed(() => props.navigation.filter((entry) => entry.key !== 
 
         <nav class="site-header__navigation" :aria-label="$t('layout.navigation')" data-navigation>
             <button class="site-header__menu" type="button" :aria-expanded="open" aria-controls="site-navigation" @click="open = !open">
+                <Menu class="site-header__menu-icon" aria-hidden="true" />
                 {{ $t('layout.menu') }}
             </button>
             <ul id="site-navigation" :class="['site-header__links', { 'site-header__links--open': open }]">
-                <li v-for="entry in entries" :key="entry.key">
+                <li v-for="entry in navigation" :key="entry.key">
                     <a :class="['site-header__link', { 'site-header__link--current': entry.current }]" :href="entry.url" :aria-current="entry.current ? 'page' : undefined">{{ $t(`nav.${entry.key}`) }}</a>
                 </li>
             </ul>
@@ -45,7 +46,20 @@ const entries = computed(() => props.navigation.filter((entry) => entry.key !== 
 
 <style scoped>
 .site-header {
-    border-bottom: 0.0625rem solid var(--color-edge);
+    --deckle: 1.5rem;
+    color: var(--color-on-forest);
+    background:
+        url('../../../styles/site/paper/tooth.svg') 0 0 / 20rem 20rem,
+        var(--color-forest);
+    background-blend-mode: multiply, normal;
+    padding-bottom: var(--deckle);
+    mask:
+        linear-gradient(#000 0 0) top / 100% calc(100% - var(--deckle) + 0.25rem) no-repeat,
+        url('../../../styles/site/paper/deckle.svg') bottom / 37.5rem var(--deckle) repeat-x;
+}
+
+.site-header :deep(:focus-visible) {
+    outline-color: var(--color-on-forest);
 }
 
 .site-header__bar {
@@ -55,10 +69,10 @@ const entries = computed(() => props.navigation.filter((entry) => entry.key !== 
         'languages end'
         'home home';
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-3) var(--space-4);
     max-width: calc(var(--page) + 2 * var(--page-gutter));
     margin-inline: auto;
-    padding: var(--space-5) var(--page-gutter) var(--space-4);
+    padding: var(--space-4) var(--page-gutter) var(--space-2);
 }
 
 .site-header__languages {
@@ -71,7 +85,7 @@ const entries = computed(() => props.navigation.filter((entry) => entry.key !== 
     justify-self: center;
     max-width: 100%;
     display: block;
-    color: var(--color-ink);
+    color: var(--color-on-forest);
     text-decoration: none;
     border-radius: var(--radius-sm);
 }
@@ -80,7 +94,7 @@ const entries = computed(() => props.navigation.filter((entry) => entry.key !== 
     width: auto;
     height: auto;
     max-height: 4rem;
-    max-width: min(11rem, 40vw);
+    max-width: min(11rem, 50vw);
     object-fit: contain;
 }
 
@@ -88,9 +102,8 @@ const entries = computed(() => props.navigation.filter((entry) => entry.key !== 
     display: block;
     font-family: var(--font-display);
     font-weight: var(--font-display-weight);
-    font-size: clamp(1.5rem, 1rem + 2.5vw, var(--font-size-3xl));
+    font-size: clamp(1.75rem, 1.25rem + 2.5vw, var(--font-size-3xl));
     line-height: 1;
-    letter-spacing: -0.01em;
     text-align: center;
 }
 
@@ -102,25 +115,36 @@ const entries = computed(() => props.navigation.filter((entry) => entry.key !== 
 .site-header__navigation {
     display: grid;
     justify-items: center;
-    gap: var(--space-3);
-    padding: 0 var(--page-gutter) var(--space-4);
+    gap: var(--space-2);
+    max-width: calc(var(--page) + 2 * var(--page-gutter));
+    margin-inline: auto;
+    padding: var(--space-2) var(--page-gutter) var(--space-3);
 }
 
 .site-header__menu {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
     min-height: var(--control-height);
-    padding: 0 var(--space-5);
+    padding: 0 var(--space-5) 0 var(--space-4);
     font-family: var(--font-ui);
-    font-size: var(--font-size-sm);
-    font-weight: 700;
-    color: var(--color-ink);
-    background: var(--color-paper);
-    border: var(--border-strong);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-on-forest);
+    background: transparent;
+    border: 0.125rem solid var(--color-on-forest);
     border-radius: var(--radius-pill);
     cursor: pointer;
 }
 
+.site-header__menu:hover,
 .site-header__menu[aria-expanded='true'] {
-    background: var(--color-wash-leaf);
+    background: color-mix(in oklch, var(--color-on-forest) 14%, transparent);
+}
+
+.site-header__menu-icon {
+    width: 1.125rem;
+    height: 1.125rem;
 }
 
 .site-header__links {
@@ -137,17 +161,25 @@ const entries = computed(() => props.navigation.filter((entry) => entry.key !== 
     display: flex;
     align-items: center;
     min-height: var(--tap);
-    padding-inline: var(--space-4);
-    font-size: var(--font-size);
-    color: var(--color-ink);
+    padding: 0.25rem var(--space-4) 0;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-on-forest-muted);
     text-decoration: none;
-    text-underline-offset: 0.3em;
+    transition: color var(--transition), box-shadow var(--transition);
 }
 
 .site-header__link:hover,
 .site-header__link--current {
-    text-decoration: underline;
-    text-decoration-thickness: 0.125rem;
+    color: var(--color-on-forest);
+    box-shadow: inset 0 0.25rem 0 var(--color-leaf);
+}
+
+@media (forced-colors: active) {
+    .site-header__link--current {
+        text-decoration: underline;
+    }
 }
 
 @media (min-width: 40rem) {
@@ -159,7 +191,7 @@ const entries = computed(() => props.navigation.filter((entry) => entry.key !== 
 
 @media (min-width: 56rem) {
     .site-header__bar {
-        padding-block: var(--space-6) var(--space-4);
+        padding-top: var(--space-5);
     }
 
     .site-header__logo {
@@ -173,7 +205,11 @@ const entries = computed(() => props.navigation.filter((entry) => entry.key !== 
     .site-header__links {
         display: flex;
         justify-content: center;
-        gap: var(--space-5);
+        gap: var(--space-3);
+    }
+
+    .site-header__link {
+        padding-inline: var(--space-4);
     }
 }
 </style>

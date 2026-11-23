@@ -26,7 +26,7 @@
         <h2 id="categories-title">{{ 'home.categories'|site_t }}</h2>
         <ul class="shop-prerender__tiles" data-tiles>
             {% for tile in data.categories %}
-                <li>
+                <li style="--ratio: {{ tile.image ? (tile.image.width / tile.image.height)|round(4) : 0.8 }}">
                     <a href="{{ tile.url }}">
                         {% if tile.image %}
                             <img src="{{ tile.image.src }}" srcset="{{ tile.image.srcset }}" sizes="(min-width: 56rem) 25vw, 50vw" alt="" width="{{ tile.image.width }}" height="{{ tile.image.height }}" loading="lazy">

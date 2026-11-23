@@ -14,7 +14,7 @@ defineProps({
     padding: var(--space-1) var(--space-4);
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.5;
     color: var(--color-ink);
     white-space: nowrap;

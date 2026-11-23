@@ -9,22 +9,24 @@
     {% endif %}
 
     <header class="shop-prerender__header">
-        {% include 'shop/prerender/_languages.html.twig' %}
-        <a class="shop-prerender__home" href="{{ home }}" data-home>
-            {%- if layout.logo -%}
-                <img src="{{ layout.logo.url }}" alt="" width="{{ layout.logo.width }}" height="{{ layout.logo.height }}"><span class="visually-hidden">{{ layout.studioName }}</span>
-            {%- else -%}
-                {{ layout.studioName }}
-            {%- endif -%}
-        </a>
+        <div class="shop-prerender__bar">
+            {% include 'shop/prerender/_languages.html.twig' %}
+            <a class="shop-prerender__home" href="{{ home }}" data-home>
+                {%- if layout.logo -%}
+                    <img src="{{ layout.logo.url }}" alt="" width="{{ layout.logo.width }}" height="{{ layout.logo.height }}"><span class="visually-hidden">{{ layout.studioName }}</span>
+                {%- else -%}
+                    {{ layout.studioName }}
+                {%- endif -%}
+            </a>
+            <a class="shop-prerender__cart" href="{{ layout.cartUrl }}"{% if data.page == 'cart' %} aria-current="page"{% endif %} data-cart><svg class="shop-prerender__cart-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 10a4 4 0 0 1-8 0"/><path d="M3.103 6.034h17.794"/><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"/></svg><span class="shop-prerender__cart-word">{{ 'cart.link'|site_t }}</span></a>
+        </div>
         <nav class="shop-prerender__navigation" aria-label="{{ 'layout.navigation'|site_t }}" data-navigation>
             <ul>
-                {% for entry in layout.navigation|filter(entry => entry.key != 'home') %}
+                {% for entry in layout.navigation %}
                     <li><a href="{{ entry.url }}"{% if entry.current %} aria-current="page"{% endif %}>{{ ('nav.' ~ entry.key)|site_t }}</a></li>
                 {% endfor %}
             </ul>
         </nav>
-        <a href="{{ layout.cartUrl }}"{% if data.page == 'cart' %} aria-current="page"{% endif %} data-cart>{{ 'cart.link'|site_t }}</a>
     </header>
 
     <main id="main" class="shop-prerender__main">

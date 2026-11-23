@@ -38,17 +38,17 @@ watch(units, (count) => {
     padding: 0 var(--space-2) 0 var(--space-3);
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
-    color: var(--color-ink);
+    font-weight: 600;
+    color: var(--color-on-forest);
     text-decoration: none;
-    background: var(--color-paper);
-    border: 0.0625rem solid var(--color-ink);
+    background: transparent;
+    border: 0.0625rem solid var(--color-on-forest);
     border-radius: var(--radius-pill);
 }
 
 .cart-link__link:hover,
 .cart-link__link[aria-current='page'] {
-    background: var(--color-wash-leaf);
+    background: color-mix(in oklch, var(--color-on-forest) 14%, transparent);
 }
 
 .cart-link__icon {
@@ -75,13 +75,15 @@ watch(units, (count) => {
     font-size: var(--font-size-xs);
     line-height: 1;
     font-variant-numeric: tabular-nums;
+    color: var(--color-forest);
     background: var(--color-leaf);
-    border: 0.0625rem solid var(--color-ink);
     border-radius: var(--radius-pill);
 }
 
 .cart-link__count--empty {
-    background: var(--color-paper);
+    color: var(--color-on-forest);
+    background: transparent;
+    box-shadow: inset 0 0 0 0.0625rem var(--color-on-forest-muted);
 }
 
 @media (min-width: 40rem) {

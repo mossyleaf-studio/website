@@ -1,7 +1,6 @@
 import { createApp, h } from 'vue';
-import '@fontsource/gaegu/latin-700.css';
-import '@fontsource/kalam/latin-300.css';
-import '@fontsource/kalam/latin-400.css';
+import '@fontsource/kalam/latin-700.css';
+import '@fontsource-variable/quicksand/wght.css';
 import './styles/site/tokens.css';
 import './styles/site/base.css';
 import DraftBanner from './vue/site/components/DraftBanner.vue';

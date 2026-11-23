@@ -21,44 +21,34 @@ defineProps({
     padding: 0 var(--space-5);
     font-family: var(--font-ui);
     font-size: var(--font-size-sm);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.2;
     color: var(--color-ink);
     text-decoration: none;
     border: var(--border-strong);
     border-radius: var(--radius-pill);
-    box-shadow: 0 0.1875rem 0 var(--color-ink);
     cursor: pointer;
-    transition: translate var(--transition), box-shadow var(--transition);
-}
-
-.pill:hover {
-    translate: 0 0.0625rem;
-    box-shadow: 0 0.125rem 0 var(--color-ink);
-}
-
-.pill:active {
-    translate: 0 0.1875rem;
-    box-shadow: none;
+    transition: background-color var(--transition);
 }
 
 .pill:disabled {
     cursor: progress;
-    translate: 0 0.1875rem;
-    box-shadow: none;
+    opacity: 0.7;
 }
 
 .pill--leaf {
     background: var(--color-leaf);
 }
 
+.pill--leaf:hover {
+    background: color-mix(in oklch, var(--color-leaf) 75%, var(--color-paper));
+}
+
 .pill--paper {
     background: var(--color-paper);
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .pill {
-        transition: none;
-    }
+.pill--paper:hover {
+    background: var(--color-wash-leaf);
 }
 </style>
