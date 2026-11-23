@@ -8,6 +8,7 @@ use App\Application\Catalogue\ReplaceCatalogue\PushedProduct;
 use App\Application\Catalogue\ReplaceCatalogue\PushedVariant;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogue;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogueHandler;
+use App\Domain\Catalogue\Collection;
 use App\Domain\Catalogue\Exception\ProductRefused;
 use App\Domain\Catalogue\PhotoFile;
 use App\Domain\Catalogue\Product;
@@ -29,6 +30,9 @@ final class CatalogueIntegrationTest extends WebTestCase
     private const string FOX = '01JD3K7Q0000000000000000F0';
     private const string OWL = '01JD3K7Q0000000000000000F1';
     private const string FERN = '01JD3K7Q0000000000000000F2';
+    private const string FOLK = '01JD3K7Q0000000000000000C0';
+    private const string NIGHT = '01JD3K7Q0000000000000000C1';
+    private const string MOSS = '01JD3K7Q0000000000000000C2';
     private const int MAX_BODY = 8 * 1024 * 1024;
 
     protected function tearDown(): void
@@ -566,6 +570,150 @@ final class CatalogueIntegrationTest extends WebTestCase
         self::assertNothingChanged();
     }
 
+    public function testAFirstPushCreatesHiddenCollectionsInTheOrderMet(): void
+    {
+        $client = self::createClient();
+
+        self::push($client, [
+            self::fox(['collection' => ['id' => self::FOLK, 'name' => ' Forest folk ']]),
+            self::owl(['collection' => ['id' => strtolower(self::NIGHT), 'name' => 'Night owls']]),
+            self::fern(['collection' => ['id' => self::FOLK, 'name' => 'Forest folk']]),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(['created' => 3, 'updated' => 0, 'retired' => 0], Json::decode((string) $client->getResponse()->getContent()));
+        self::assertSame([['Forest folk', 0, false, '', ''], ['Night owls', 1, false, '', '']], self::collections());
+        self::assertSame(['Forest folk', 'Night owls', 'Forest folk'], [self::product(self::FOX)->collection()?->name(), self::product(self::OWL)->collection()?->name(), self::product(self::FERN)->collection()?->name()]);
+        self::assertTrue(self::product(self::OWL)->collection()?->sourceId()->equals(new Ulid(self::NIGHT)));
+    }
+
+    public function testALaterPushRenamesMovesClearsAndLeavesTheCollectionOfEachProduct(): void
+    {
+        $client = self::createClient();
+        self::push($client, [
+            self::fox(['collection' => ['id' => self::FOLK, 'name' => 'Forest folk']]),
+            self::owl(['collection' => ['id' => self::NIGHT, 'name' => 'Night owls']]),
+            self::fern(['collection' => ['id' => self::NIGHT, 'name' => 'Night owls']]),
+        ]);
+
+        self::push($client, [
+            self::fox(['collection' => ['id' => self::FOLK, 'name' => 'Forest people']]),
+            self::owl(['collection' => ['id' => self::FOLK, 'name' => 'Forest people']]),
+            self::fern(),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(['created' => 0, 'updated' => 3, 'retired' => 0], Json::decode((string) $client->getResponse()->getContent()));
+        self::assertSame([['Forest people', 0, false, '', ''], ['Night owls', 1, false, '', '']], self::collections());
+        self::assertSame(['Forest people', 'Forest people', 'Night owls'], [self::product(self::FOX)->collection()?->name(), self::product(self::OWL)->collection()?->name(), self::product(self::FERN)->collection()?->name()]);
+
+        self::push($client, [self::fox(), self::owl(['collection' => null]), self::fern(['collection' => null])]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([['Forest people', 0, false, '', '']], self::collections());
+        self::assertSame(['Forest people', null, null], [self::product(self::FOX)->collection()?->name(), self::product(self::OWL)->collection(), self::product(self::FERN)->collection()]);
+    }
+
+    public function testTheWebsiteSideOfACollectionSurvivesPushesAndANewOneComesLast(): void
+    {
+        $client = self::createClient();
+        self::push($client, [
+            self::fox(['collection' => ['id' => self::FOLK, 'name' => 'Forest folk']]),
+            self::owl(['collection' => ['id' => self::NIGHT, 'name' => 'Night owls']]),
+        ]);
+        $folk = self::product(self::FOX)->collection();
+        self::assertNotNull($folk);
+        $folk->relabel(Translation::of('Woodland folk', 'Peuple des bois'));
+        $folk->show();
+        $folk->moveTo(4);
+        self::entityManager()->flush();
+
+        self::push($client, [
+            self::fox(['collection' => ['id' => self::FOLK, 'name' => 'Forest people']]),
+            self::owl(['collection' => ['id' => self::NIGHT, 'name' => 'Night owls']]),
+            self::fern(['collection' => ['id' => self::MOSS, 'name' => 'Moss']]),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([['Night owls', 1, false, '', ''], ['Forest people', 4, true, 'Woodland folk', 'Peuple des bois'], ['Moss', 5, false, '', '']], self::collections());
+    }
+
+    public function testACollectionNoProductPointsAtIsDeletedButOneARetiredProductKeepsIsNot(): void
+    {
+        $client = self::createClient();
+        self::push($client, [
+            self::fox(['collection' => ['id' => self::FOLK, 'name' => 'Forest folk']]),
+            self::owl(['collection' => ['id' => self::NIGHT, 'name' => 'Night owls']]),
+            self::fern(['collection' => ['id' => self::MOSS, 'name' => 'Moss']]),
+        ]);
+
+        self::push($client, [self::owl(), self::fern(['collection' => null])]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(['created' => 0, 'updated' => 2, 'retired' => 1], Json::decode((string) $client->getResponse()->getContent()));
+        self::assertSame([['Forest folk', 0, false, '', ''], ['Night owls', 1, false, '', '']], self::collections());
+        self::assertTrue(self::product(self::FOX)->isRetired());
+        self::assertSame('Forest folk', self::product(self::FOX)->collection()?->name());
+    }
+
+    public function testAPushWithoutAnyCollectionKeyCreatesNone(): void
+    {
+        $client = self::createClient();
+
+        self::push($client, [self::fox(), self::owl()]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(0, self::rows('collection'));
+        self::assertNull(self::product(self::FOX)->collection());
+    }
+
+    public function testTheLongestCollectionNameIsAccepted(): void
+    {
+        $client = self::createClient();
+
+        self::push($client, [self::fox(['collection' => ['id' => self::FOLK, 'name' => str_repeat('é', 255)]])]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(255, mb_strlen((string) self::product(self::FOX)->collection()?->name()));
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function malformedCollections(): iterable
+    {
+        yield 'false' => [false];
+        yield 'a text' => ['Forest folk'];
+        yield 'a number' => [3];
+        yield 'a list' => [[self::FOLK, 'Forest folk']];
+        yield 'an empty object' => [[]];
+        yield 'no id' => [['name' => 'Forest folk']];
+        yield 'an id that is not a ULID' => [['id' => 'forest', 'name' => 'Forest folk']];
+        yield 'an id that is a number' => [['id' => 3, 'name' => 'Forest folk']];
+        yield 'an id written as a UUID' => [['id' => '0193a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b', 'name' => 'Forest folk']];
+        yield 'an id written in base 58' => [['id' => '1BKocMc5BnrVcuq2ti4Eqm', 'name' => 'Forest folk']];
+        yield 'no name' => [['id' => self::FOLK]];
+        yield 'a blank name' => [['id' => self::FOLK, 'name' => ' ']];
+        yield 'a name that is not a text' => [['id' => self::FOLK, 'name' => ['Forest folk']]];
+        yield 'a name longer than 255 characters' => [['id' => self::FOLK, 'name' => str_repeat('é', 256)]];
+    }
+
+    #[DataProvider('malformedCollections')]
+    public function testAMalformedCollectionRefusesTheCatalogue(mixed $collection): void
+    {
+        $client = self::createClient();
+        self::push($client, [self::fox(), self::owl()]);
+
+        self::push($client, [self::owl(['collection' => ['id' => self::NIGHT, 'name' => 'Night owls']]), self::fox(['collection' => $collection])]);
+
+        self::assertResponseStatusCodeSame(422);
+        $problem = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame(422, Json::int($problem, 'status'));
+        self::assertSame('products[1].collection: A collection is sent as {"id": "<ULID>", "name": "…"} or null.', Json::string($problem, 'detail'));
+        self::assertNothingChanged();
+        self::assertSame(0, self::rows('collection'));
+    }
+
     private static function assertNothingChanged(): void
     {
         self::assertSame(2, self::rows('product'));
@@ -635,6 +783,16 @@ final class CatalogueIntegrationTest extends WebTestCase
     private static function variants(Product $product): array
     {
         return array_map(static fn (ProductVariant $variant): array => [$variant->sku(), $variant->name(), $variant->stock()], $product->variants());
+    }
+
+    /**
+     * @return list<array{string, int, bool, string, string}>
+     */
+    private static function collections(): array
+    {
+        $collections = self::entityManager()->getRepository(Collection::class)->findBy([], ['position' => 'ASC']);
+
+        return array_map(static fn (Collection $collection): array => [$collection->name(), $collection->position(), $collection->isShown(), $collection->label()->en, $collection->label()->fr], $collections);
     }
 
     private static function rows(string $table): int

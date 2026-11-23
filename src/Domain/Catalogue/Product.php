@@ -14,7 +14,7 @@ use App\Domain\Shared\Orderable;
 use App\Domain\Shared\Ordering;
 use App\Domain\Shared\Translation;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Collection as DoctrineCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -52,6 +52,10 @@ class Product implements Orderable
     #[ORM\JoinColumn(nullable: false)]
     private Category $category;
 
+    #[ORM\ManyToOne(targetEntity: Collection::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Collection $collection = null;
+
     #[ORM\Column]
     private int $price;
 
@@ -76,13 +80,13 @@ class Product implements Orderable
     #[ORM\Column]
     private int $position;
 
-    /** @var Collection<int, ProductVariant> */
+    /** @var DoctrineCollection<int, ProductVariant> */
     #[ORM\OneToMany(targetEntity: ProductVariant::class, mappedBy: 'product', cascade: ['persist'], orphanRemoval: true)]
-    private Collection $variants;
+    private DoctrineCollection $variants;
 
-    /** @var Collection<int, ProductPhoto> */
+    /** @var DoctrineCollection<int, ProductPhoto> */
     #[ORM\OneToMany(targetEntity: ProductPhoto::class, mappedBy: 'product', cascade: ['persist'], orphanRemoval: true)]
-    private Collection $photos;
+    private DoctrineCollection $photos;
 
     private function __construct(Ulid $sourceId, string $slug, int $position)
     {
@@ -116,6 +120,11 @@ class Product implements Orderable
         $this->category = $category;
         $this->price = $price;
         $this->retiredAt = null;
+    }
+
+    public function belongTo(?Collection $collection): void
+    {
+        $this->collection = $collection;
     }
 
     public function stock(string $sku, ?string $name, int $stock, int $position): void
@@ -265,6 +274,11 @@ class Product implements Orderable
     public function category(): Category
     {
         return $this->category;
+    }
+
+    public function collection(): ?Collection
+    {
+        return $this->collection;
     }
 
     public function price(): int

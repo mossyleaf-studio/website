@@ -3,6 +3,7 @@ import { useApi } from '../composables/useApi.js';
 
 const PRODUCTS = '/api/admin/products';
 const CATEGORIES = '/api/admin/categories';
+const COLLECTIONS = '/api/admin/collections';
 const CONVENTIONS = '/api/admin/conventions';
 const LEGAL_PAGES = '/api/admin/legal-pages';
 const SHIPPING_ZONES = '/api/admin/shipping-zones';
@@ -53,6 +54,25 @@ export function useCategories() {
         },
         reorder: async (ids) => {
             categories.value = await api.put(`${CATEGORIES}/order`, { ids });
+        },
+    };
+}
+
+const collections = ref([]);
+
+export function useCollections() {
+    const replace = (saved) => {
+        collections.value = collections.value.map((collection) => (collection.id === saved.id ? saved : collection));
+        return saved;
+    };
+    return {
+        collections,
+        load: () => api.load(COLLECTIONS, collections),
+        label: async (id, body) => replace(await api.put(`${COLLECTIONS}/${id}`, body)),
+        show: async (id) => replace(await api.put(`${COLLECTIONS}/${id}/visibility`)),
+        hide: async (id) => replace(await api.del(`${COLLECTIONS}/${id}/visibility`)),
+        reorder: async (ids) => {
+            collections.value = await api.put(`${COLLECTIONS}/order`, { ids });
         },
     };
 }

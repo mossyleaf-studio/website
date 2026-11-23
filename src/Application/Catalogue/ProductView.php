@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Application\Catalogue;
 
+use App\Domain\Catalogue\Collection;
 use App\Domain\Catalogue\Product;
 
 final readonly class ProductView
 {
     /**
-     * @param list<VariantView> $variants
-     * @param list<PhotoView>   $photos
+     * @param array{id: string, name: string, label: string, labelFr: string}|null $collection
+     * @param list<VariantView>                                                    $variants
+     * @param list<PhotoView>                                                      $photos
      */
     private function __construct(
         public string $id,
@@ -18,6 +20,7 @@ final readonly class ProductView
         public string $name,
         public string $displayName,
         public CategoryView $category,
+        public ?array $collection,
         public int $price,
         public array $variants,
         public bool $retired,
@@ -41,6 +44,7 @@ final readonly class ProductView
             $product->name(),
             $product->displayName(),
             CategoryView::of($product->category()),
+            self::collection($product->collection()),
             $product->price(),
             array_map(VariantView::of(...), $product->variants()),
             $product->isRetired(),
@@ -54,6 +58,12 @@ final readonly class ProductView
             $product->position(),
             array_map(PhotoView::of(...), $product->photos()),
         );
+    }
+
+    /** @return array{id: string, name: string, label: string, labelFr: string}|null */
+    private static function collection(?Collection $collection): ?array
+    {
+        return null === $collection ? null : ['id' => (string) $collection->id(), 'name' => $collection->name(), 'label' => $collection->label()->en, 'labelFr' => $collection->label()->fr];
     }
 
     /**

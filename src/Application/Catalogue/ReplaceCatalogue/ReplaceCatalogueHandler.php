@@ -8,6 +8,8 @@ use App\Application\AtomicChange;
 use App\Application\Transaction;
 use App\Domain\Catalogue\Category;
 use App\Domain\Catalogue\CategoryRepository;
+use App\Domain\Catalogue\Collection;
+use App\Domain\Catalogue\CollectionRepository;
 use App\Domain\Catalogue\Exception\CatalogueTooLarge;
 use App\Domain\Catalogue\Exception\DuplicateEntry;
 use App\Domain\Catalogue\Exception\EmptyCatalogue;
@@ -36,6 +38,7 @@ final readonly class ReplaceCatalogueHandler
         private AtomicChange $atomicChange,
         private Transaction $transaction,
         private OrderRepository $orders,
+        private CollectionRepository $collections,
     ) {
     }
 
@@ -120,6 +123,13 @@ final readonly class ReplaceCatalogueHandler
         foreach ($this->categories->all() as $category) {
             $categories[$category->name()] = $category;
         }
+        $collections = [];
+        $nextCollection = 0;
+        foreach ($this->collections->all() as $collection) {
+            $collections[(string) $collection->sourceId()] = $collection;
+            $nextCollection = max($nextCollection, $collection->position() + 1);
+        }
+        $created = [];
 
         foreach ($pushed as $id => $item) {
             try {
@@ -134,10 +144,26 @@ final readonly class ReplaceCatalogueHandler
                 if (null === $product) {
                     $product = Product::pushed($item->id, $item->reference, $item->name, $item->displayName, $category, $item->price, $this->freeSlug($item->displayName, $slugs), $position++);
                     $this->products->add($product);
+                    $created[] = $product;
                 } else {
                     $product->synchronise($item->reference, $item->name, $item->displayName, $category, $item->price);
                 }
                 $product->prefillDescription($item->descriptions);
+
+                if ($item->collection instanceof PushedCollection) {
+                    $collectionId = (string) $item->collection->id;
+                    $collection = $collections[$collectionId] ?? null;
+                    if (null === $collection) {
+                        $collection = Collection::pushed($item->collection->id, $item->collection->name, $nextCollection++);
+                        $this->collections->add($collection);
+                        $collections[$collectionId] = $collection;
+                    } else {
+                        $collection->rename($item->collection->name);
+                    }
+                    $product->belongTo($collection);
+                } elseif (null === $item->collection) {
+                    $product->belongTo(null);
+                }
 
                 foreach ($item->variants as $index => $variant) {
                     $product->stock($variant->sku, $variant->name, self::unsold($variant->stock, $sold[trim($variant->sku)] ?? []), $index);
@@ -145,6 +171,17 @@ final readonly class ReplaceCatalogueHandler
             } catch (DomainException $reason) {
                 throw new ProductRefused($item->reference, $reason);
             }
+        }
+
+        $pointedAt = [];
+        foreach ([...array_values($known), ...$created] as $product) {
+            $collection = $product->collection();
+            if (null !== $collection) {
+                $pointedAt[(string) $collection->sourceId()] = true;
+            }
+        }
+        foreach (array_diff_key($collections, $pointedAt) as $orphan) {
+            $this->collections->remove($orphan);
         }
 
         $updated = \count(array_intersect_key($pushed, $known));

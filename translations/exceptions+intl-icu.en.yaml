@@ -1,5 +1,5 @@
 shared:
-    not_found: 'This {subject, select, link {link} artwork {image} user {account} product {product} photo {photo} category {category} convention {convention} shipping_zone {shipping zone} order {order} other {item}} no longer exists.'
+    not_found: 'This {subject, select, link {link} artwork {image} user {account} product {product} photo {photo} category {category} collection {collection} convention {convention} shipping_zone {shipping zone} order {order} other {item}} no longer exists.'
 user:
     invalid_email: '“{email}” is not a valid email address.'
     email_taken: 'An account already uses {email}.'
@@ -19,7 +19,7 @@ content:
     shop_not_ready: 'The shop cannot open yet: {count, plural, one {one thing still blocks it} other {# things still block it}}.'
 catalogue:
     too_large: '{subject, select, products {A catalogue holds {max} products at most.} megabytes {A catalogue weighs {max} MB at most.} other {A product holds {max} variants at most.}}'
-    product_refused: 'The product “{reference}” is refused: {field, select, price {its price is negative} stock {a stock is negative} other {{field, select, product_reference {its reference} product_name {its name} product_display_name {its display name} category_name {its category} sku {a SKU} other {a variant name}} {max, plural, =0 {is empty} other {is longer than # characters}}}}.'
+    product_refused: 'The product “{reference}” is refused: {field, select, price {its price is negative} stock {a stock is negative} other {{field, select, product_reference {its reference} product_name {its name} product_display_name {its display name} category_name {its category} collection_name {its collection} sku {a SKU} other {a variant name}} {max, plural, =0 {is empty} other {is longer than # characters}}}}.'
     empty: 'The catalogue is empty: send at least one product, an empty list would retire the whole shop.'
     duplicate_entry: '{field, select, id {The product {value} is sent twice.} reference {The reference “{value}” is sent for two products.} other {The SKU “{value}” is sent twice.}}'
     negative_amount: '{field, select, price {A price cannot be negative.} other {A stock cannot be negative.}}'

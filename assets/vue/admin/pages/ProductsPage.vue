@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowDown, ArrowUp, CircleAlert, GripVertical, ImageOff, Package, Pencil, SearchX, Star, Tags } from '@lucide/vue';
+import { ArrowDown, ArrowUp, CircleAlert, GripVertical, ImageOff, Layers, Package, Pencil, SearchX, Star, Tags } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
@@ -12,19 +12,21 @@ import IconButton from '../../components/ui/IconButton.vue';
 import PageHeader from '../../components/ui/PageHeader.vue';
 import StatusBadge from '../../components/ui/StatusBadge.vue';
 import { useToast } from '../../composables/useToast.js';
-import { intlLocale } from '../../i18n/locale.js';
+import { currentLanguage, intlLocale } from '../../i18n/locale.js';
 import BulkBar from '../components/BulkBar.vue';
 import CategoryNames from '../components/CategoryNames.vue';
+import CollectionSettings from '../components/CollectionSettings.vue';
 import SelectCheck from '../components/SelectCheck.vue';
 import { formatCents } from '../money.js';
-import { completeness, filterProducts, pickSkip, totalStock, unpickSkip } from '../products.js';
+import { collectionLabel, completeness, filterProducts, pickSkip, totalStock, unpickSkip } from '../products.js';
 import { useSelection } from '../useSelection.js';
-import { useCategories, useProducts } from '../useShop.js';
+import { useCategories, useCollections, useProducts } from '../useShop.js';
 
 const { t } = useI18n();
 const toast = useToast();
 const { products, load, show, hide, pick, unpick, reorder } = useProducts();
 const { categories, load: loadCategories } = useCategories();
+const { collections, load: loadCollections } = useCollections();
 const loaded = ref(false);
 const failed = ref(false);
 
@@ -35,16 +37,25 @@ function fetchProducts() {
 
 fetchProducts();
 loadCategories();
+loadCollections();
 
 const animation = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 160;
 
 const query = ref('');
 const category = ref('');
+const collection = ref('');
 const namesOpen = ref(false);
+const collectionsOpen = ref(false);
 
-const filtering = computed(() => query.value.trim() !== '' || category.value !== '');
-const rows = computed(() => filterProducts(products.value, { query: query.value, category: category.value }));
+const filtering = computed(() => query.value.trim() !== '' || category.value !== '' || collection.value !== '');
+const rows = computed(() => filterProducts(products.value, { query: query.value, category: category.value, collection: collection.value }));
 const categoryOptions = computed(() => [{ value: '', label: t('admin.products.allCategories') }, ...categories.value.map((entry) => ({ value: entry.id, label: entry.name }))]);
+
+const collectionOptions = computed(() => [
+    { value: '', label: t('admin.products.allCollections') },
+    { value: 'none', label: t('admin.products.noCollection') },
+    ...collections.value.map((entry) => ({ value: entry.id, label: collectionLabel(entry, currentLanguage()) })),
+]);
 
 const heading = (product) => product.title || product.displayName;
 
@@ -83,6 +94,7 @@ function toggle(product, visible) {
     <div class="products-page">
         <PageHeader :title="t('admin.products.title')" :subtitle="t('admin.products.subtitle')">
             <BaseButton variant="secondary" data-test="category-names-open" @click="namesOpen = true"><Tags size="1rem" aria-hidden="true" />{{ t('admin.products.categoryNames') }}</BaseButton>
+            <BaseButton variant="secondary" data-test="collections-open" @click="collectionsOpen = true"><Layers size="1rem" aria-hidden="true" />{{ t('admin.products.collectionSettings') }}</BaseButton>
         </PageHeader>
 
         <BaseCard v-if="failed || loaded || products.length" class="products-page__card">
@@ -96,6 +108,7 @@ function toggle(product, visible) {
                 <div class="products-page__filters">
                     <input v-model="query" class="control products-page__search" type="search" name="search" :aria-label="t('admin.products.search')" :placeholder="t('admin.products.searchPlaceholder')" data-test="product-search" />
                     <div class="products-page__category"><BaseSelect v-model="category" :options="categoryOptions" :aria-label="t('admin.products.categoryFilter')" data-test="product-category-filter" /></div>
+                    <div class="products-page__category"><BaseSelect v-model="collection" :options="collectionOptions" :aria-label="t('admin.products.collectionFilter')" data-test="product-collection-filter" /></div>
                 </div>
                 <p v-if="filtering" class="products-page__note">{{ t('admin.products.filtering') }}</p>
 
@@ -125,7 +138,7 @@ function toggle(product, visible) {
                             </div>
                             <div class="products-page__text">
                                 <RouterLink class="products-page__name" :to="{ name: 'product', params: { id: product.id } }">{{ heading(product) }}</RouterLink>
-                                <p class="products-page__meta">{{ product.reference }} · {{ product.category.name }}</p>
+                                <p class="products-page__meta">{{ product.reference }} · {{ product.category.name }}<template v-if="product.collection"> · {{ collectionLabel(product.collection, currentLanguage()) }}</template></p>
                                 <div class="products-page__chips">
                                     <StatusBadge v-if="product.picked" data-test="product-picked"><Star size="0.75rem" aria-hidden="true" />{{ t('admin.products.picked') }}</StatusBadge>
                                     <StatusBadge v-if="product.retired" data-test="product-retired">{{ t('admin.products.retired') }}</StatusBadge>
@@ -157,6 +170,7 @@ function toggle(product, visible) {
         <BulkBar :selection="selection" :actions="actions" noun="admin.products.bulk.count" />
 
         <CategoryNames v-model:open="namesOpen" />
+        <CollectionSettings v-model:open="collectionsOpen" />
     </div>
 </template>
 

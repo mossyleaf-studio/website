@@ -25,6 +25,7 @@ final readonly class PushedProduct
         public int $price,
         public array $variants,
         ?Translation $descriptions = null,
+        public PushedCollection|false|null $collection = false,
     ) {
         $this->reference = trim($reference);
         $this->category = trim($category);

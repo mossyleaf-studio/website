@@ -7,6 +7,7 @@ namespace App\Application\Catalogue;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogueHandler;
 use App\Domain\Catalogue\Category;
 use App\Domain\Catalogue\CategoryRepository;
+use App\Domain\Catalogue\CollectionRepository;
 use App\Domain\Catalogue\Product;
 use App\Domain\Catalogue\ProductRepository;
 use App\Domain\Sales\OrderRepository;
@@ -23,6 +24,7 @@ final readonly class CatalogueQueries
         private SluggerInterface $slugger,
         private OrderRepository $orders,
         private ClockInterface $clock,
+        private CollectionRepository $collections,
     ) {
     }
 
@@ -36,6 +38,12 @@ final readonly class CatalogueQueries
     public function categories(): array
     {
         return CategoryView::list($this->categories->all());
+    }
+
+    /** @return list<CollectionView> */
+    public function collections(): array
+    {
+        return CollectionView::list($this->collections->all(), $this->collections->productsOnSale());
     }
 
     /** @return list<ShopProductView> */

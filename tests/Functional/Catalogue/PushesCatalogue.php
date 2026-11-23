@@ -7,6 +7,7 @@ namespace App\Tests\Functional\Catalogue;
 use App\Application\Catalogue\CatalogueQueries;
 use App\Application\Catalogue\CategoryView;
 use App\Application\Catalogue\ProductView;
+use App\Application\Catalogue\ReplaceCatalogue\PushedCollection;
 use App\Application\Catalogue\ReplaceCatalogue\PushedProduct;
 use App\Application\Catalogue\ReplaceCatalogue\PushedVariant;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogue;
@@ -30,14 +31,19 @@ trait PushesCatalogue
     }
 
     /** @param array<string, int>|int $stocks */
-    private static function product(int $number, string $category, string $name, int $price, array|int $stocks = 5): PushedProduct
+    private static function product(int $number, string $category, string $name, int $price, array|int $stocks = 5, PushedCollection|false|null $collection = false): PushedProduct
     {
         $reference = strtoupper(substr($category, 0, 3).'-'.$name);
         $variants = \is_int($stocks)
             ? [new PushedVariant(null, $reference, $stocks)]
             : array_map(static fn (string $variant, int $stock): PushedVariant => new PushedVariant($variant, $reference.'-'.$variant, $stock), array_keys($stocks), array_values($stocks));
 
-        return new PushedProduct(new Ulid(\sprintf('01JD3K7Q%018d', $number)), $reference, $name, $category, $category.' '.$name, $price, $variants);
+        return new PushedProduct(new Ulid(\sprintf('01JD3K7Q%018d', $number)), $reference, $name, $category, $category.' '.$name, $price, $variants, collection: $collection);
+    }
+
+    private static function collection(int $number, string $name): PushedCollection
+    {
+        return new PushedCollection(new Ulid(\sprintf('01JD3K7QC0%016d', $number)), $name);
     }
 
     /** @return list<PushedProduct> */

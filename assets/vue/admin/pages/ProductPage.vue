@@ -180,6 +180,7 @@ function togglePick(picked) {
                         <div><dt>{{ t('admin.product.mossytrunk.reference') }}</dt><dd>{{ product.reference }}</dd></div>
                         <div><dt>{{ t('admin.product.mossytrunk.name') }}</dt><dd>{{ product.displayName }}</dd></div>
                         <div><dt>{{ t('admin.product.mossytrunk.category') }}</dt><dd>{{ product.category.name }}</dd></div>
+                        <div><dt>{{ t('admin.product.mossytrunk.collection') }}</dt><dd data-test="product-collection">{{ product.collection?.name ?? t('admin.product.mossytrunk.noCollection') }}</dd></div>
                         <div><dt>{{ t('admin.product.mossytrunk.price') }}</dt><dd class="tabular" data-test="product-price">{{ formatCents(product.price, intlLocale()) }}</dd></div>
                     </dl>
                     <table class="product-page__variants">

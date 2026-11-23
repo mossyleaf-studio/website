@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Presentation\Integration;
 
+use App\Application\Catalogue\ReplaceCatalogue\PushedCollection;
 use App\Application\Catalogue\ReplaceCatalogue\PushedProduct;
 use App\Application\Catalogue\ReplaceCatalogue\PushedVariant;
+use App\Domain\Catalogue\Collection;
 use App\Domain\Catalogue\Product;
 use App\Domain\Shared\Translation;
 use Symfony\Component\Uid\Ulid;
@@ -32,6 +34,7 @@ final readonly class CatalogueProductPayload
         #[Assert\Count(min: 1)]
         public array $variants,
         public array $descriptions = [],
+        public mixed $collection = new \stdClass(),
     ) {
     }
 
@@ -41,6 +44,16 @@ final readonly class CatalogueProductPayload
         if (([] !== $this->descriptions && array_is_list($this->descriptions)) || [] !== array_filter($this->descriptions, static fn (mixed $text): bool => !\is_string($text))) {
             $context->buildViolation('descriptions.invalid')->atPath('descriptions')->addViolation();
         }
+    }
+
+    #[Assert\Callback]
+    public function collectionIsAnIdAndANameOrNull(ExecutionContextInterface $context): void
+    {
+        if ($this->collection instanceof \stdClass || null === $this->collection || null !== $this->pushedCollection()) {
+            return;
+        }
+
+        $context->buildViolation('collection.invalid')->atPath('collection')->addViolation();
     }
 
     public function pushed(): PushedProduct
@@ -54,7 +67,19 @@ final readonly class CatalogueProductPayload
             $this->price,
             array_map(static fn (CatalogueVariantPayload $variant): PushedVariant => $variant->pushed(), $this->variants),
             Translation::of(self::text($this->descriptions['en'] ?? ''), self::text($this->descriptions['fr'] ?? '')),
+            $this->collection instanceof \stdClass ? false : $this->pushedCollection(),
         );
+    }
+
+    private function pushedCollection(): ?PushedCollection
+    {
+        $id = \is_array($this->collection) ? $this->collection['id'] ?? null : null;
+        $name = \is_array($this->collection) && \is_string($this->collection['name'] ?? null) ? trim($this->collection['name']) : '';
+        if (!\is_string($id) || !Ulid::isValid($id) || '' === $name || mb_strlen($name) > Collection::MAX_NAME) {
+            return null;
+        }
+
+        return new PushedCollection(Ulid::fromString($id), $name);
     }
 
     private static function text(mixed $text): string

@@ -42,7 +42,7 @@ final readonly class DoctrineProductRepository implements ProductRepository
     public function all(): array
     {
         return $this->entityManager
-            ->createQuery('SELECT p, c, v, ph FROM '.Product::class.' p JOIN p.category c LEFT JOIN p.variants v LEFT JOIN p.photos ph ORDER BY p.position ASC, p.id ASC')
+            ->createQuery('SELECT p, c, co, v, ph FROM '.Product::class.' p JOIN p.category c LEFT JOIN p.collection co LEFT JOIN p.variants v LEFT JOIN p.photos ph ORDER BY p.position ASC, p.id ASC')
             ->getResult();
     }
 

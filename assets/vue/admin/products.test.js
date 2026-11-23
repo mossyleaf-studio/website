@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { completeness, filterProducts, pickSkip, pickState, totalStock, unpickSkip } from './products.js';
+import { collectionLabel, completeness, filterProducts, pickSkip, pickState, totalStock, unpickSkip } from './products.js';
 
 const product = (overrides = {}) => ({
     id: 'p1',
@@ -100,5 +100,37 @@ describe('pickState', () => {
         expect(pickState(product({ picked: false, visible: false }))).toBe('off');
         expect(pickState(product({ picked: true, visible: true }))).toBe('on');
         expect(pickState(product({ picked: true, visible: false }))).toBe('hidden');
+    });
+});
+
+describe('collection filter', () => {
+    const fox = product({ id: 'a', collection: { id: 'k1', name: 'Forest', label: 'Woods', labelFr: 'Bois' } });
+    const bare = product({ id: 'b', collection: null });
+    const list = [fox, bare];
+
+    it('keeps everything without a collection filter', () => {
+        expect(filterProducts(list, { query: '', category: '', collection: '' })).toEqual(list);
+    });
+
+    it('keeps the products of one collection', () => {
+        expect(filterProducts(list, { query: '', category: '', collection: 'k1' })).toEqual([fox]);
+    });
+
+    it('keeps the products without collection', () => {
+        expect(filterProducts(list, { query: '', category: '', collection: 'none' })).toEqual([bare]);
+    });
+});
+
+describe('collectionLabel', () => {
+    const collection = { name: 'Forest', label: 'Woods', labelFr: 'Bois' };
+
+    it('uses the label of the admin language', () => {
+        expect(collectionLabel(collection, 'fr')).toBe('Bois');
+        expect(collectionLabel(collection, 'en')).toBe('Woods');
+    });
+
+    it('falls back on the other language, then the mossytrunk name', () => {
+        expect(collectionLabel({ ...collection, labelFr: '' }, 'fr')).toBe('Woods');
+        expect(collectionLabel({ ...collection, label: '', labelFr: '' }, 'en')).toBe('Forest');
     });
 });

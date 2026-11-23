@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Application\Catalogue\CatalogueQueries;
+use App\Application\Catalogue\ReplaceCatalogue\PushedCollection;
 use App\Application\Catalogue\ReplaceCatalogue\PushedProduct;
 use App\Application\Catalogue\ReplaceCatalogue\PushedVariant;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogue;
@@ -12,11 +13,13 @@ use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogueHandler;
 use App\Domain\Shared\Translation;
 use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
+use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\Uid\Ulid;
 
 final class ProductsApiTest extends WebTestCase
@@ -25,6 +28,8 @@ final class ProductsApiTest extends WebTestCase
 
     private const string FOX = '01JD3K7Q0000000000000000F0';
     private const string OWL = '01JD3K7Q0000000000000000F1';
+    private const string FOLK = '01JD3K7Q0000000000000000C0';
+    private const string NIGHT = '01JD3K7Q0000000000000000C1';
 
     protected function tearDown(): void
     {
@@ -48,6 +53,7 @@ final class ProductsApiTest extends WebTestCase
             'name' => 'Fox',
             'displayName' => 'Prints Fox',
             'category' => ['id' => Json::string($products, 0, 'category', 'id'), 'name' => 'Prints', 'label' => '', 'labelFr' => ''],
+            'collection' => null,
             'price' => 1500,
             'variants' => [['sku' => 'PRT-FOX-A4', 'name' => 'A4', 'stock' => 12], ['sku' => 'PRT-FOX-A5', 'name' => 'A5', 'stock' => 0]],
             'retired' => false,
@@ -407,7 +413,7 @@ final class ProductsApiTest extends WebTestCase
     public function testTheProductPagesOfTheAdminComeWithTheProductsAndCategories(): void
     {
         $client = self::signedInClient();
-        $id = self::push([self::fox()])[0];
+        $id = self::push([self::fox(new PushedCollection(new Ulid(self::FOLK), 'Forest folk'))])[0];
 
         foreach (['/admin/products', "/admin/products/{$id}"] as $page) {
             $client->request('GET', $page);
@@ -415,7 +421,32 @@ final class ProductsApiTest extends WebTestCase
             $preloaded = Json::decode($client->getCrawler()->filter('#app-preload')->text());
             self::assertSame(['PRT-FOX'], array_column(Json::array($preloaded, '/api/admin/products'), 'reference'));
             self::assertSame(['Prints'], array_column(Json::array($preloaded, '/api/admin/categories'), 'name'));
+            self::assertSame(['Forest folk'], array_column(Json::array($preloaded, '/api/admin/collections'), 'name'));
         }
+    }
+
+    public function testAProductCarriesItsCollection(): void
+    {
+        $client = self::signedInClient();
+        self::push([self::fox(new PushedCollection(new Ulid(self::FOLK), 'Forest folk')), self::owl()]);
+
+        $client->jsonRequest('GET', '/api/admin/products');
+
+        $products = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame(['id' => Json::string($products, 0, 'collection', 'id'), 'name' => 'Forest folk', 'label' => '', 'labelFr' => ''], Json::array($products, 0, 'collection'));
+        self::assertNotSame(self::FOLK, Json::string($products, 0, 'collection', 'id'));
+        self::assertNull(Json::at($products, 1, 'collection'));
+    }
+
+    public function testTheListRunsTheSameQueriesWhateverTheNumberOfCollections(): void
+    {
+        $client = self::signedInClient();
+        self::push([self::fox(new PushedCollection(new Ulid(self::FOLK), 'Forest folk')), self::owl(new PushedCollection(new Ulid(self::FOLK), 'Forest folk'))]);
+        $few = self::listQueries($client);
+
+        self::push([self::fox(new PushedCollection(new Ulid(self::FOLK), 'Forest folk')), self::owl(new PushedCollection(new Ulid(self::NIGHT), 'Night owls'))]);
+
+        self::assertSame($few, self::listQueries($client));
     }
 
     /**
@@ -461,14 +492,27 @@ final class ProductsApiTest extends WebTestCase
         return array_values(array_map(static fn (mixed $product): string => Json::string($product, 'id'), Json::decode((string) $client->getResponse()->getContent())));
     }
 
-    private static function fox(): PushedProduct
+    private static function fox(PushedCollection|false|null $collection = false): PushedProduct
     {
-        return new PushedProduct(new Ulid(self::FOX), 'PRT-FOX', 'Fox', 'Prints', 'Prints Fox', 1500, [new PushedVariant('A4', 'PRT-FOX-A4', 12), new PushedVariant('A5', 'PRT-FOX-A5', 0)]);
+        return new PushedProduct(new Ulid(self::FOX), 'PRT-FOX', 'Fox', 'Prints', 'Prints Fox', 1500, [new PushedVariant('A4', 'PRT-FOX-A4', 12), new PushedVariant('A5', 'PRT-FOX-A5', 0)], collection: $collection);
     }
 
-    private static function owl(): PushedProduct
+    private static function owl(PushedCollection|false|null $collection = false): PushedProduct
     {
-        return new PushedProduct(new Ulid(self::OWL), 'STK-OWL', 'Owl', 'Stickers', 'Stickers Owl', 300, [new PushedVariant(null, 'STK-OWL', 4)]);
+        return new PushedProduct(new Ulid(self::OWL), 'STK-OWL', 'Owl', 'Stickers', 'Stickers Owl', 300, [new PushedVariant(null, 'STK-OWL', 4)], collection: $collection);
+    }
+
+    private static function listQueries(KernelBrowser $client): int
+    {
+        $client->enableProfiler();
+        $client->jsonRequest('GET', '/api/admin/products');
+        self::assertResponseIsSuccessful();
+        $profile = $client->getProfile();
+        self::assertInstanceOf(Profile::class, $profile);
+        $collector = $profile->getCollector('db');
+        self::assertInstanceOf(DoctrineDataCollector::class, $collector);
+
+        return $collector->getQueryCount();
     }
 
     /**

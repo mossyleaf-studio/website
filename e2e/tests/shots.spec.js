@@ -210,6 +210,17 @@ async function shootTheCategoryDialog(page, size) {
     await page.keyboard.press('Escape');
 }
 
+async function shootTheCollections(page, size) {
+    await page.goto('/admin/products');
+    await page.getByTestId('collections-open').click();
+    await expect(page.getByTestId('collection-settings')).toBeVisible();
+    await page.screenshot({ path: `shots/admin-collections-dialog-${size}.png`, animations: 'disabled' });
+    await page.keyboard.press('Escape');
+    await page.getByTestId('product-collection-filter').click();
+    await page.getByRole('option', { name: 'Forest critters', exact: true }).click();
+    await page.screenshot({ path: `shots/admin-products-collection-${size}.png`, animations: 'disabled' });
+}
+
 async function shootTheLoadingBar(page, size) {
     await page.goto('/beta/fr/');
     let release;
@@ -452,6 +463,7 @@ test('screenshots of the site and the admin', async ({ page }) => {
         await shootTheLoadingBar(page, size);
         await shootTheHeader(page, size);
         await shootTheCategoryDialog(page, size);
+        await shootTheCollections(page, size);
         await shootTheContactForm(page, size);
         await shootTheCart(page, size);
         order = await shootTheCheckout(page, size);

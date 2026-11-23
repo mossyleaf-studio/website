@@ -39,7 +39,7 @@ final class AppShellController extends AbstractController
             'texts' === $path => ['/api/admin/texts'],
             'links' === $path => ['/api/admin/links'],
             'images' === $path => ['/api/admin/artworks'],
-            'products' === $path, str_starts_with($path, 'products/') => ['/api/admin/products', '/api/admin/categories'],
+            'products' === $path, str_starts_with($path, 'products/') => ['/api/admin/products', '/api/admin/categories', '/api/admin/collections'],
             'conventions' === $path => ['/api/admin/conventions'],
             'legal' === $path => ['/api/admin/legal-pages'],
             'settings' === $path => ['/api/admin/shipping-zones'],
