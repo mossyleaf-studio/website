@@ -15,10 +15,6 @@ const year = new Date().getFullYear();
         </main>
 
         <footer class="sketchbook__footer">
-            <span class="sketchbook__mark" aria-hidden="true">
-                <span class="sketchbook__stamp">m</span>
-                <span class="sketchbook__star">✦</span>
-            </span>
             <p>© {{ year }} {{ studioName }}</p>
         </footer>
     </div>
@@ -47,42 +43,8 @@ const year = new Date().getFullYear();
 }
 
 .sketchbook__footer {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
     padding-block: var(--space-6) var(--space-7);
     font-size: var(--font-size-xs);
     color: var(--color-muted);
-}
-
-.sketchbook__mark {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.sketchbook__stamp {
-    display: grid;
-    place-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    font-family: var(--font-display);
-    font-weight: var(--font-display-weight);
-    font-size: var(--font-size-lg);
-    line-height: 1;
-    color: var(--color-ink);
-    border: 0.125rem solid var(--color-ink);
-    border-radius: 50%;
-    rotate: -8deg;
-}
-
-.sketchbook__star {
-    position: absolute;
-    top: -0.7rem;
-    left: 0.75rem;
-    font-size: 1.05rem;
-    line-height: 1;
-    color: var(--color-star);
-    -webkit-text-stroke: 0.04rem var(--color-ink);
-    rotate: 12deg;
 }
 </style>

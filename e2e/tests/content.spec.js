@@ -32,6 +32,7 @@ test('the note footer signs with the studio name', async ({ page }) => {
     await page.request.put('/api/admin/texts/identity', { data: { ...studio, studioName: 'Fern & Moss' } });
     await page.goto('/beta/note/');
     await expect(page.locator('footer').getByText(/© \d{4} Fern & Moss/)).toBeVisible();
+    await expect(page.locator('.sketchbook__footer > *')).toHaveCount(1);
     await page.request.put('/api/admin/texts/identity', { data: studio });
 });
 
@@ -174,6 +175,11 @@ test('a logo is added to the header, then removed', async ({ page }) => {
 
     await page.goto('/');
     await expect(page.locator('.note__logo')).toBeVisible();
+    await expect(page.locator('link[rel="icon"][type="image/png"]')).toHaveAttribute('href', '/favicon');
+    await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/favicon');
+    const icon = await page.request.get('/favicon');
+    expect(icon.status()).toBe(200);
+    expect(icon.headers()['content-type']).toContain('image/png');
 
     await page.goto('/admin/texts');
     await logo.getByRole('button', { name: 'Remove the logo' }).click();
@@ -182,6 +188,7 @@ test('a logo is added to the header, then removed', async ({ page }) => {
 
     await page.goto('/');
     await expect(page.locator('.note__logo')).toHaveCount(0);
+    expect((await page.request.get('/favicon')).status()).toBe(404);
 });
 
 test('an image is uploaded, featured without losing the description being typed, described, then deleted', async ({ page }) => {

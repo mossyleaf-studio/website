@@ -80,8 +80,7 @@ a {
 }
 
 .prerender__wordmark,
-.prerender__note h2,
-.prerender__stamp {
+.prerender__note h2 {
     font-family: var(--font-display);
     font-weight: var(--font-display-weight);
 }
@@ -205,41 +204,9 @@ a {
 }
 
 .prerender__footer {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
     padding-block: var(--space-6) var(--space-7);
     font-size: var(--font-size-xs);
     color: var(--color-muted);
-}
-
-.prerender__mark {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.prerender__stamp {
-    display: grid;
-    place-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: var(--font-size-lg);
-    line-height: 1;
-    color: var(--color-ink);
-    border: 0.125rem solid var(--color-ink);
-    border-radius: 50%;
-    rotate: -8deg;
-}
-
-.prerender__star {
-    position: absolute;
-    top: -0.7rem;
-    left: 0.75rem;
-    font-size: 1.05rem;
-    line-height: 1;
-    color: var(--color-star);
-    -webkit-text-stroke: 0.04rem var(--color-ink);
-    rotate: 12deg;
 }
 
 @media (min-width: 40rem) {

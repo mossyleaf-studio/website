@@ -8,7 +8,8 @@
             <meta name="robots" content="noindex">
             <title>{% block title %}mossyleaf.studio admin{% endblock %}</title>
         {% endblock %}
-        <link rel="icon" href="{{ path('site_favicon') }}">
+        <link rel="icon" type="image/png" href="{{ path('site_favicon') }}">
+        <link rel="apple-touch-icon" href="{{ path('site_favicon') }}">
         {% block stylesheets %}{% endblock %}
         {% block javascripts %}{% endblock %}
     </head>

@@ -39,13 +39,13 @@ final readonly class ContentQueries
         return null === $site ? $this->draft() : new PublicSnapshot($site->content(), $site->publishedAt());
     }
 
-    public function publicLogoUrl(): ?string
+    public function publicLogoFile(): ?string
     {
         $site = json_decode($this->public()->content, true, flags: \JSON_THROW_ON_ERROR);
         $logo = \is_array($site) ? ($site['logo'] ?? null) : null;
         $url = \is_array($logo) ? ($logo['url'] ?? null) : null;
 
-        return \is_string($url) ? $url : null;
+        return \is_string($url) && str_starts_with($url, ArtworkView::URL_PREFIX) ? substr($url, \strlen(ArtworkView::URL_PREFIX)) : null;
     }
 
     public function shopIsOpen(): bool

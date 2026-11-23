@@ -12,6 +12,7 @@ use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -41,6 +42,7 @@ final class SitePagesTest extends WebTestCase
         self::assertSame('The website is still growing', $crawler->filter('#site main section.prerender__note[aria-labelledby="note-title"] h2')->text());
         self::assertCount(1, $crawler->filter('#site .prerender__note > .prerender__tape'));
         self::assertCount(1, $crawler->filter('#site .prerender > footer.prerender__footer'));
+        self::assertSame(['p'], $crawler->filter('#site .prerender > footer.prerender__footer > *')->each(static fn (Crawler $child): string => $child->nodeName()));
         self::assertSame('index, follow, max-image-preview:large', $crawler->filter('meta[name="robots"]')->attr('content'));
         self::assertSame('#cbd3a0', $crawler->filter('meta[name="theme-color"]')->attr('content'));
         self::assertSame('note', $crawler->filter('#site')->attr('data-page'));

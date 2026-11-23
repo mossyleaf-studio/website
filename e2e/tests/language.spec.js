@@ -62,9 +62,9 @@ test('the current menu entry is marked and Home leads to the shop home', async (
     await expect(navigation.getByRole('link', { name: 'About' })).not.toHaveAttribute('aria-current', 'page');
 });
 
-test('the favicon address redirects without a cookie', async ({ request }) => {
+test('the favicon address answers without a cookie', async ({ request }) => {
     const response = await request.get('/favicon', { maxRedirects: 0 });
-    expect(response.status()).toBe(302);
-    expect(response.headers().location).toMatch(/^\/(favicon\.svg|media\/artworks\/[0-9a-z]+\.webp)$/i);
+    expect([200, 404]).toContain(response.status());
+    expect(response.headers()['cache-control']).toMatch(/max-age=3600/);
     expect(response.headers()['set-cookie']).toBeUndefined();
 });
