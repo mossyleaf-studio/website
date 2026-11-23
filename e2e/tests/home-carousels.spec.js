@@ -4,6 +4,7 @@ import { signIn } from './support/session.js';
 const latest = (page) => page.locator('[data-latest]');
 const row = (page) => latest(page).locator('[data-products]');
 const scrollLeft = (page) => row(page).evaluate((list) => list.scrollLeft);
+const moreAhead = (page) => row(page).evaluate((list) => list.scrollLeft <= list.scrollWidth - list.clientWidth - 1);
 const inView = (page) =>
     row(page).evaluate((list) => {
         const frame = list.getBoundingClientRect();
@@ -59,7 +60,7 @@ test('at 1440px Next scrolls the latest row to its end, then Previous comes back
     await expect(next).toBeEnabled();
     expect(await inView(page)).toBe(5);
     await expect(page.locator('[data-picks] [data-carousel-next]')).toHaveCount(0);
-    for (let press = 0; press < 5 && (await next.getAttribute('aria-disabled')) !== 'true'; press++) {
+    for (let press = 0; press < 5 && (await moreAhead(page)); press++) {
         const before = await scrollLeft(page);
         await next.click();
         await expect.poll(() => scrollLeft(page)).toBeGreaterThan(before);
