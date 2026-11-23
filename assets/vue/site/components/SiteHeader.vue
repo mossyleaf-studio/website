@@ -69,7 +69,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
                             {{ $t('nav.shop') }}
                             <ChevronDown class="site-header__chevron" aria-hidden="true" />
                         </button>
-                        <span id="shop-categories-label" :class="['site-header__label', { 'site-header__label--current': entry.current }]">{{ $t('nav.shop') }}</span>
+                        <a id="shop-categories-label" :class="['site-header__link', 'site-header__label', { 'site-header__link--current': entry.current }]" :href="entry.url" :aria-current="entry.current ? 'true' : undefined">{{ $t('nav.shop') }}</a>
                         <ul id="shop-categories" aria-labelledby="shop-categories-label" :class="['site-header__categories', { 'site-header__categories--open': shopOpen }]" data-categories>
                             <li v-for="child in entry.children" :key="child.key">
                                 <a :class="['site-header__category', { 'site-header__category--current': child.current }]" :href="child.url" :aria-current="child.current ? 'page' : undefined">{{ child.label }}</a>
@@ -207,8 +207,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     display: grid;
 }
 
-.site-header__link,
-.site-header__label {
+.site-header__link {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -223,18 +222,9 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
 }
 
 .site-header__link:hover,
-.site-header__link--current,
-.site-header__label--current {
+.site-header__link--current {
     color: var(--color-on-forest);
     box-shadow: inset 0 0.25rem 0 var(--color-leaf);
-}
-
-.site-header__label {
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    cursor: default;
 }
 
 .site-header__shop {
@@ -305,7 +295,6 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
 
 @media (forced-colors: active) {
     .site-header__link--current,
-    .site-header__label--current,
     .site-header__category--current {
         text-decoration: underline;
     }

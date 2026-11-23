@@ -66,7 +66,7 @@ final class FaviconTest extends WebTestCase
 
             self::assertResponseIsSuccessful($url);
             self::assertSame('/favicon', $crawler->filter('link[rel="icon"]')->attr('href'), $url);
-            self::assertSame('/favicon', $crawler->filter('link[rel="apple-touch-icon"]')->attr('href'), $url);
+            self::assertCount(0, $crawler->filter('link[rel="apple-touch-icon"]'), $url);
         }
     }
 

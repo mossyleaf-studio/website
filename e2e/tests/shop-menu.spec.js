@@ -90,6 +90,9 @@ test('under 56rem the menu lists the categories under the shop label', async ({ 
     const links = panel(page).getByRole('link');
     await expect(links).toHaveText(['Tirages', 'Stickers et masking tape', /^Papeterie/]);
     await expect(panel(page)).toHaveAccessibleName('Boutique');
+    const label = page.locator('#shop-categories-label');
+    await expect(label).toHaveAttribute('href', '/beta/fr/shop');
+    await expect(label).toHaveCSS('text-transform', 'none');
     await expect(panel(page).getByRole('link', { name: 'Tirages' })).toHaveAttribute('aria-current', 'page');
     for (const box of await Promise.all((await links.all()).map((link) => link.boundingBox()))) expect(box.height).toBeGreaterThanOrEqual(44);
 });
