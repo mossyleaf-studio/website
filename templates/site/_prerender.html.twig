@@ -4,7 +4,7 @@
     </header>
 
     <main class="prerender__page">
-        <div class="prerender__intro">
+        <div class="prerender__intro{% if site.logo %} prerender__intro--logo{% endif %}">
             {% if site.logo %}
                 <img class="prerender__logo" src="{{ site.logo.url }}" alt="" width="{{ site.logo.width }}" height="{{ site.logo.height }}">
             {% endif %}

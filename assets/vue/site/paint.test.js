@@ -18,3 +18,13 @@ test('the public site paints without blend modes, which Firefox scrolls slowly o
 
     expect(offenders).toEqual([]);
 });
+
+test('the public site styles do without :has(), which Firefox before 121 does not know', () => {
+    const offenders = [new URL('./', import.meta.url), new URL('../../styles/site/', import.meta.url)]
+        .flatMap(files)
+        .filter((file) => /\.(css|vue)$/.test(file.pathname))
+        .filter((file) => readFileSync(file, 'utf8').includes(':has('))
+        .map((file) => fileURLToPath(file).replace(/^.*\/assets\//, 'assets/'));
+
+    expect(offenders).toEqual([]);
+});

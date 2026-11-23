@@ -208,7 +208,7 @@ a {
 }
 
 @media (min-width: 40rem) {
-    .prerender__intro:has(.prerender__logo) {
+    .prerender__intro--logo {
         grid-template-columns: auto minmax(0, 1fr);
         align-items: center;
         column-gap: var(--space-6);

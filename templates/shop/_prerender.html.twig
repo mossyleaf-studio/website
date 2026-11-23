@@ -47,7 +47,7 @@
         </nav>
     </header>
 
-    <main id="main" class="shop-prerender__main">
+    <main id="main" class="shop-prerender__main{% if data.page == 'home' %} shop-prerender__main--home{% endif %}">
         {% include 'shop/prerender/' ~ data.page ~ '.html.twig' %}
     </main>
 

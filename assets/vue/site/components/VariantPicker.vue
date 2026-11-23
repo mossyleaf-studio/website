@@ -11,7 +11,7 @@ const sku = defineModel({ type: String, required: true });
     <fieldset class="variant-picker" data-test="variant-picker">
         <legend class="variant-picker__legend">{{ $t('product.variants') }}</legend>
         <div class="variant-picker__options">
-            <label v-for="variant in variants" :key="variant.sku" :class="['variant-picker__option', { 'variant-picker__option--sold-out': variant.soldOut }]">
+            <label v-for="variant in variants" :key="variant.sku" :class="['variant-picker__option', { 'variant-picker__option--sold-out': variant.soldOut, 'variant-picker__option--chosen': sku === variant.sku && !variant.soldOut }]">
                 <input v-model="sku" class="variant-picker__input" type="radio" :name="name" :value="variant.sku" :disabled="variant.soldOut" />
                 <span>{{ variant.name }}</span>
                 <span v-if="variant.soldOut" class="variant-picker__note">{{ $t('product.soldOut') }}</span>
@@ -65,15 +65,20 @@ const sku = defineModel({ type: String, required: true });
     background: var(--color-wash-leaf);
 }
 
-.variant-picker__option:has(:checked:not(:disabled)) {
+.variant-picker__option--chosen {
     font-weight: 600;
     background: var(--color-meadow);
     border: var(--border-strong);
 }
 
-.variant-picker__option:has(:focus-visible) {
+.variant-picker__input:focus-visible + span::after {
+    content: '';
+    position: absolute;
+    inset: -0.125rem;
+    border-radius: var(--radius-pill);
     outline: 0.1875rem solid var(--color-ink);
     outline-offset: 0.1875rem;
+    pointer-events: none;
 }
 
 .variant-picker__option--sold-out {

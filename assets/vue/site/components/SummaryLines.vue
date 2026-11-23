@@ -12,7 +12,7 @@ const { locale } = useI18n();
 
 <template>
     <ul class="summary-lines" :aria-label="label" data-test="summary-lines">
-        <li v-for="line in lines" :key="`${line.title}-${line.variant}-${line.unitPrice}`" class="summary-lines__line" data-test="summary-line">
+        <li v-for="line in lines" :key="`${line.title}-${line.variant}-${line.unitPrice}`" :class="['summary-lines__line', { 'summary-lines__line--plain': !('image' in line) }]" data-test="summary-line">
             <span v-if="'image' in line" class="summary-lines__photo" aria-hidden="true">
                 <img v-if="line.image" :src="line.image.src" :srcset="line.image.srcset" sizes="3.5rem" :width="line.image.width" :height="line.image.height" alt="" loading="lazy" />
             </span>
@@ -62,7 +62,7 @@ const { locale } = useI18n();
     object-fit: cover;
 }
 
-.summary-lines__line:not(:has(.summary-lines__photo)) {
+.summary-lines__line--plain {
     grid-template-columns: minmax(0, 1fr) auto auto;
 }
 

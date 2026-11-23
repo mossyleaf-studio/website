@@ -965,7 +965,7 @@ html[data-layout="shop"] :is([data-picks], [data-latest]) {
     --in-view: 2.4;
 }
 
-html[data-layout="shop"] .shop-prerender__main:has(> [data-about]) {
+html[data-layout="shop"] .shop-prerender__main--home {
     gap: var(--space-9);
 }
 

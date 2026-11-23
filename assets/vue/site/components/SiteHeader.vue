@@ -55,11 +55,11 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
                 {{ $t('layout.menu') }}
             </button>
             <ul id="site-navigation" :class="['site-header__links', { 'site-header__links--open': open }]">
-                <template v-for="entry in navigation" :key="entry.key">
+                <template v-for="(entry, index) in navigation" :key="entry.key">
                     <li
                         v-if="entry.children"
                         :ref="(element) => (dropdowns[entry.key] = element)"
-                        class="site-header__dropdown"
+                        :class="['site-header__dropdown', { 'site-header__dropdown--joined': navigation[index + 1]?.children }]"
                         @keydown.esc="close(entry.key, $event)"
                         @focusout="leave(entry.key, $event)"
                     >
@@ -270,7 +270,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     box-shadow: var(--shadow-sheet);
 }
 
-.site-header__dropdown:has(+ .site-header__dropdown) .site-header__panel {
+.site-header__dropdown--joined .site-header__panel {
     margin-bottom: 0;
     padding-bottom: 0;
     border-end-start-radius: 0;
@@ -405,7 +405,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     }
 
     .site-header__panel,
-    .site-header__dropdown:has(+ .site-header__dropdown) .site-header__panel,
+    .site-header__dropdown--joined .site-header__panel,
     .site-header__dropdown + .site-header__dropdown .site-header__panel {
         position: absolute;
         top: 100%;
