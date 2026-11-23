@@ -23,7 +23,6 @@ body {
         url("./paper/tooth.svg") 0 0 / 20rem 20rem,
         url("./paper/mottle.svg") 0 0 / 56rem 56rem,
         var(--color-paper);
-    background-blend-mode: multiply, multiply, normal;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -73,7 +72,6 @@ a {
     background:
         url("./paper/tooth.svg") 0 0 / 20rem 20rem,
         var(--color-bark);
-    background-blend-mode: multiply, normal;
     mask:
         linear-gradient(#000 0 0) top / 100% calc(100% - var(--deckle) + 0.25rem) no-repeat,
         url("./paper/deckle.svg") bottom / 37.5rem var(--deckle) repeat-x;

@@ -24,7 +24,6 @@ const parts = computed(() => props.name.split(/(?=\.)/));
     background:
         url('../../../styles/site/paper/tooth.svg') 0 0 / 20rem 20rem,
         var(--color-bark);
-    background-blend-mode: multiply, normal;
     mask:
         linear-gradient(#000 0 0) top / 100% calc(100% - var(--deckle) + 0.25rem) no-repeat,
         url('../../../styles/site/paper/deckle.svg') bottom / 37.5rem var(--deckle) repeat-x;
