@@ -279,6 +279,7 @@
         "moveDown": "Move “{title}” down",
         "moved": "“{title}” is now at position {position}.",
         "loadFailed": "The products could not be loaded",
+        "picked": "Studio pick",
         "bulk": {
             "count": "{count} product selected | {count} products selected",
             "select": "Select “{title}”",
@@ -286,7 +287,11 @@
             "show": "Show {count} product | Show {count} products",
             "hide": "Hide {count} product | Hide {count} products",
             "shown": "{count} product shown in the shop. | {count} products shown in the shop.",
-            "hidden": "{count} product hidden from the shop. | {count} products hidden from the shop."
+            "hidden": "{count} product hidden from the shop. | {count} products hidden from the shop.",
+            "pick": "Pick {count} product for the home | Pick {count} products for the home",
+            "unpick": "Unpick {count} product | Unpick {count} products",
+            "picked": "{count} product picked for the home. | {count} products picked for the home.",
+            "unpicked": "{count} product unpicked. | {count} products unpicked."
         }
     },
     "product": {
@@ -335,6 +340,13 @@
             "slug": "Address",
             "slugHint": "Lowercase letters, digits and hyphens, e.g. fox-print. It ends the address of the product page.",
             "save": "Save"
+        },
+        "pick": {
+            "title": "Studio pick",
+            "label": "Pick for the shop home",
+            "on": "Shown in the “Studio picks” row of the shop home.",
+            "off": "Not in the “Studio picks” row of the shop home.",
+            "hidden": "Picked, but hidden: visitors will not see it until it is shown in the shop."
         },
         "visibility": {
             "title": "Visibility",
@@ -563,6 +575,8 @@
             "retired": "{count} skipped: retired by mossytrunk. | {count} skipped: retired by mossytrunk.",
             "alreadyShown": "{count} already shown. | {count} already shown.",
             "alreadyHidden": "{count} already hidden. | {count} already hidden.",
+            "alreadyPicked": "{count} already picked. | {count} already picked.",
+            "notPicked": "{count} not picked. | {count} not picked.",
             "notPaid": "{count} skipped: not paid, or already shipped. | {count} skipped: not paid, or already shipped.",
             "notTest": "{count} skipped: not a test order. | {count} skipped: not test orders.",
             "checkoutOpen": "{count} skipped: still waiting for payment. | {count} skipped: still waiting for payment."

@@ -45,6 +45,7 @@ final class ProductTest extends TestCase
         $product = self::product();
         $product->describe(Translation::of('Fox print', 'Affiche renard'), Translation::of('A fox among ferns.', ''));
         $product->show();
+        $product->pick();
         $product->moveTo(7);
         $stickers = Category::named('Stickers', 1);
 
@@ -54,11 +55,13 @@ final class ProductTest extends TestCase
         self::assertSame($stickers, $product->category());
         self::assertSame(['prints-fox', 'Affiche renard', 'A fox among ferns.', 7], [$product->slug(), $product->title()->in(Locale::Fr), $product->description()->in(Locale::Fr), $product->position()]);
         self::assertTrue($product->isVisible());
+        self::assertTrue($product->isPicked());
     }
 
     public function testARetiredProductLosesItsVariantsAndComesBackWhenPushedAgain(): void
     {
         $product = self::product();
+        $product->pick();
         $product->stock('PRT-FOX-A4', 'A4', 3, 0);
         $first = new \DateTimeImmutable('2026-11-20 10:00');
 
@@ -69,9 +72,12 @@ final class ProductTest extends TestCase
         self::assertSame($first, $product->retiredAt());
         self::assertSame([], $product->variants());
 
+        self::assertTrue($product->isPicked());
+
         $product->synchronise('PRT-FOX', 'Fox', 'Prints Fox', $product->category(), 1500);
 
         self::assertFalse($product->isRetired());
+        self::assertTrue($product->isPicked());
     }
 
     public function testVariantsAreRewrittenBySkuInThePushedOrder(): void
@@ -155,6 +161,31 @@ final class ProductTest extends TestCase
         $this->expectException(ProductRetired::class);
 
         $product->show();
+    }
+
+    public function testAProductIsPickedAndUnpicked(): void
+    {
+        $product = self::product();
+        self::assertFalse($product->isPicked());
+
+        $product->pick();
+        $product->pick();
+        self::assertTrue($product->isPicked());
+        self::assertFalse($product->isVisible());
+
+        $product->unpick();
+        $product->unpick();
+        self::assertFalse($product->isPicked());
+    }
+
+    public function testARetiredProductCannotBePicked(): void
+    {
+        $product = self::product();
+        $product->retire(new \DateTimeImmutable('2026-11-20 10:00'));
+
+        $this->expectException(ProductRetired::class);
+
+        $product->pick();
     }
 
     public function testTheSlugIsEdited(): void

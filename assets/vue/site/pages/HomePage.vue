@@ -4,7 +4,7 @@ import ConventionTeaser from '../components/ConventionTeaser.vue';
 import FeaturedArt from '../components/FeaturedArt.vue';
 import PaperSheet from '../components/PaperSheet.vue';
 import PillButton from '../components/PillButton.vue';
-import ProductGrid from '../components/ProductGrid.vue';
+import ProductCarousel from '../components/ProductCarousel.vue';
 import RichText from '../components/RichText.vue';
 
 defineProps({
@@ -24,9 +24,16 @@ defineProps({
             <FeaturedArt v-if="data.featured" class="home__art" :artwork="data.featured" />
         </div>
 
-        <section v-if="data.products" class="home__shelf" aria-labelledby="latest-title" data-latest>
-            <h2 id="latest-title" class="home__heading">{{ $t('home.latest') }}</h2>
-            <ProductGrid :products="data.products" />
+        <section v-if="data.picks" aria-labelledby="picks-title" data-picks>
+            <ProductCarousel :products="data.picks" labelledby="picks-title" eager>
+                <h2 id="picks-title" class="home__heading">{{ $t('home.picks') }}</h2>
+            </ProductCarousel>
+        </section>
+
+        <section v-if="data.latest" aria-labelledby="latest-title" data-latest>
+            <ProductCarousel :products="data.latest" labelledby="latest-title" :eager="!data.picks">
+                <h2 id="latest-title" class="home__heading">{{ $t('home.latest') }}</h2>
+            </ProductCarousel>
         </section>
 
         <PaperSheet tag="section" tape="blossom" class="home__about" aria-labelledby="about-title">

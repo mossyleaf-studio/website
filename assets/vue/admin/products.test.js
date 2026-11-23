@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { completeness, filterProducts, totalStock } from './products.js';
+import { completeness, filterProducts, pickSkip, pickState, totalStock, unpickSkip } from './products.js';
 
 const product = (overrides = {}) => ({
     id: 'p1',
@@ -75,5 +75,30 @@ describe('filterProducts', () => {
 
     it('combines both', () => {
         expect(filterProducts(all, { query: 'fox', category: 'c2' })).toEqual([]);
+    });
+});
+
+describe('pickSkip', () => {
+    it('skips retired products first, then the ones already picked', () => {
+        expect(pickSkip(product({ retired: true, picked: false }))).toBe('retired');
+        expect(pickSkip(product({ retired: true, picked: true }))).toBe('retired');
+        expect(pickSkip(product({ retired: false, picked: true }))).toBe('alreadyPicked');
+        expect(pickSkip(product({ retired: false, picked: false }))).toBeNull();
+    });
+});
+
+describe('unpickSkip', () => {
+    it('skips only the products that are not picked, retired or not', () => {
+        expect(unpickSkip(product({ picked: false }))).toBe('notPicked');
+        expect(unpickSkip(product({ picked: true, retired: true }))).toBeNull();
+    });
+});
+
+describe('pickState', () => {
+    it('says whether the product is picked and warns when a picked product is hidden', () => {
+        expect(pickState(product({ picked: false, visible: true }))).toBe('off');
+        expect(pickState(product({ picked: false, visible: false }))).toBe('off');
+        expect(pickState(product({ picked: true, visible: true }))).toBe('on');
+        expect(pickState(product({ picked: true, visible: false }))).toBe('hidden');
     });
 });

@@ -26,8 +26,13 @@
     "home": {
         "aboutLink": "More about the studio",
         "shopLink": "Visit the shop",
+        "picks": "Studio picks",
         "latest": "New in the shop",
         "categories": "Browse by category"
+    },
+    "carousel": {
+        "previous": "Previous products",
+        "next": "Next products"
     },
     "product": {
         "soldOut": "Sold out",

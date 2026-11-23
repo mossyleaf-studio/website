@@ -52,7 +52,10 @@ final class OpenShopPagesTest extends WebTestCase
     public function testAHiddenOrRetiredProductIsNowhereForVisitors(): void
     {
         $client = self::signedInClient();
-        self::stockTheDemo($client);
+        $ids = self::stockTheDemo($client);
+        foreach (['prints-fox', 'stickers-moth', 'prints-hare'] as $slug) {
+            self::pick($client, $ids[$slug]);
+        }
         self::openTheShop($client);
         $visitor = self::visitor($client);
 
@@ -67,7 +70,11 @@ final class OpenShopPagesTest extends WebTestCase
         $listed = ['/en/shop/prints-fox', '/en/shop/prints-owl'];
         self::assertSame($listed, self::cardUrls(Json::array(self::props($visitor, '/en/category/prints'), 'data', 'products')));
         self::assertSame(['prints'], array_map(static fn (mixed $child): string => Json::string($child, 'key'), Json::array(self::props($visitor, '/en/'), 'layout', 'navigation', 1, 'children')));
-        self::assertSame($listed, self::cardUrls(Json::array(self::props($visitor, '/en/'), 'data', 'products')));
+        $home = Json::array(self::props($visitor, '/en/'), 'data');
+        self::assertSame(['/en/shop/prints-owl', '/en/shop/prints-fox'], self::cardUrls(Json::array($home, 'latest')));
+        self::assertSame(['/en/shop/prints-fox'], self::cardUrls(Json::array($home, 'picks')));
+        self::assertSame(['title', 'url', 'price', 'image', 'soldOut'], array_keys(Json::array($home, 'picks', 0)));
+        self::assertArrayNotHasKey('products', $home);
         self::assertSame(['/en/shop/prints-owl'], self::cardUrls(Json::array(self::props($visitor, '/en/shop/prints-fox'), 'data', 'related')));
 
         $visitor->jsonRequest('POST', '/api/shop/en/quote', ['lines' => [['sku' => 'STI-MOTH', 'quantity' => 1], ['sku' => 'PRI-FOX-A4', 'quantity' => 1]], 'country' => 'FR']);

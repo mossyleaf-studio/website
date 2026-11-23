@@ -157,6 +157,7 @@ final class CatalogueIntegrationTest extends WebTestCase
         $fox = self::product(self::FOX);
         $fox->describe(Translation::of('Fox print', 'Affiche renard'), Translation::of('A fox among ferns.', 'Un renard dans les fougères.'));
         $fox->show();
+        $fox->pick();
         $fox->moveTo(5);
         $fox->useSlug('fox-print');
         $photo = $fox->addPhoto(new Ulid(), new PhotoFile('01JD3K7Q0000000000000000P0.webp', 1600, 1200), new PhotoFile('01JD3K7Q0000000000000000P1.webp', 600, 450));
@@ -178,6 +179,8 @@ final class CatalogueIntegrationTest extends WebTestCase
         self::assertSame([['PRT-FOX-A5', 'A5', 7], ['STK-FOX-A3', 'A3', 2]], self::variants($fox));
         self::assertSame(['fox-print', 'Affiche renard', 'A fox among ferns.', 5], [$fox->slug(), $fox->title()->in(Locale::Fr), $fox->description()->in(Locale::En), $fox->position()]);
         self::assertTrue($fox->isVisible());
+        self::assertTrue($fox->isPicked());
+        self::assertFalse(self::product(self::OWL)->isPicked());
         self::assertSame([[(string) $photo->id(), '01JD3K7Q0000000000000000P0.webp', '01JD3K7Q0000000000000000P1.webp']], array_map(static fn (ProductPhoto $kept): array => [(string) $kept->id(), $kept->file(), $kept->thumbFile()], $fox->photos()));
         self::assertSame(2, self::rows('category'));
     }
@@ -186,11 +189,14 @@ final class CatalogueIntegrationTest extends WebTestCase
     {
         $client = self::createClient();
         self::push($client, [self::fox(), self::owl()]);
+        self::product(self::FOX)->pick();
+        self::entityManager()->flush();
 
         self::push($client, [self::owl()]);
 
         self::assertSame(['created' => 0, 'updated' => 1, 'retired' => 1], Json::decode((string) $client->getResponse()->getContent()));
         self::assertTrue(self::product(self::FOX)->isRetired());
+        self::assertTrue(self::product(self::FOX)->isPicked());
         self::assertSame([], self::variants(self::product(self::FOX)));
         self::assertFalse(self::product(self::OWL)->isRetired());
 
@@ -203,6 +209,7 @@ final class CatalogueIntegrationTest extends WebTestCase
         self::assertSame(['created' => 0, 'updated' => 2, 'retired' => 0], Json::decode((string) $client->getResponse()->getContent()));
         $fox = self::product(self::FOX);
         self::assertFalse($fox->isRetired());
+        self::assertTrue($fox->isPicked());
         self::assertSame('prints-fox', $fox->slug());
         self::assertSame([['PRT-FOX-A4', 'A4', 12], ['PRT-FOX-A5', 'A5', 0]], self::variants($fox));
         self::assertSame(2, self::rows('product'));

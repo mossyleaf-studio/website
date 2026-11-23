@@ -70,6 +70,9 @@ class Product implements Orderable
     #[ORM\Column]
     private bool $visible = false;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $picked = false;
+
     #[ORM\Column]
     private int $position;
 
@@ -192,6 +195,20 @@ class Product implements Orderable
         $this->visible = false;
     }
 
+    public function pick(): void
+    {
+        if ($this->isRetired()) {
+            throw new ProductRetired($this->reference);
+        }
+
+        $this->picked = true;
+    }
+
+    public function unpick(): void
+    {
+        $this->picked = false;
+    }
+
     public function addPhoto(Ulid $id, PhotoFile $full, PhotoFile $thumb): ProductPhoto
     {
         $last = array_last($this->photos());
@@ -283,6 +300,11 @@ class Product implements Orderable
     public function isVisible(): bool
     {
         return $this->visible;
+    }
+
+    public function isPicked(): bool
+    {
+        return $this->picked;
     }
 
     public function position(): int

@@ -26,8 +26,13 @@
     "home": {
         "aboutLink": "En savoir plus sur le studio",
         "shopLink": "Voir la boutique",
+        "picks": "Coups de cœur",
         "latest": "Nouveautés",
         "categories": "Parcourir par catégorie"
+    },
+    "carousel": {
+        "previous": "Produits précédents",
+        "next": "Produits suivants"
     },
     "product": {
         "soldOut": "Épuisé",

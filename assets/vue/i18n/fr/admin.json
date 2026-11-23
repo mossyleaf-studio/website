@@ -279,6 +279,7 @@
         "moveDown": "Descendre « {title} »",
         "moved": "« {title} » est maintenant en position {position}.",
         "loadFailed": "Les produits n’ont pas pu être chargés",
+        "picked": "Coup de cœur",
         "bulk": {
             "count": "{count} produit sélectionné | {count} produits sélectionnés",
             "select": "Sélectionner « {title} »",
@@ -286,7 +287,11 @@
             "show": "Afficher {count} produit | Afficher {count} produits",
             "hide": "Masquer {count} produit | Masquer {count} produits",
             "shown": "{count} produit affiché dans la boutique. | {count} produits affichés dans la boutique.",
-            "hidden": "{count} produit masqué de la boutique. | {count} produits masqués de la boutique."
+            "hidden": "{count} produit masqué de la boutique. | {count} produits masqués de la boutique.",
+            "pick": "Mettre {count} produit en avant | Mettre {count} produits en avant",
+            "unpick": "Retirer {count} produit des coups de cœur | Retirer {count} produits des coups de cœur",
+            "picked": "{count} produit mis en avant sur l’accueil. | {count} produits mis en avant sur l’accueil.",
+            "unpicked": "{count} produit retiré des coups de cœur. | {count} produits retirés des coups de cœur."
         }
     },
     "product": {
@@ -335,6 +340,13 @@
             "slug": "Adresse",
             "slugHint": "Lettres minuscules, chiffres et tirets, par exemple renard-print. Termine l’adresse de la page du produit.",
             "save": "Enregistrer"
+        },
+        "pick": {
+            "title": "Coup de cœur",
+            "label": "Mettre en avant sur l’accueil de la boutique",
+            "on": "Apparaît dans la rangée « Coups de cœur » de l’accueil de la boutique.",
+            "off": "N’apparaît pas dans la rangée « Coups de cœur » de l’accueil de la boutique.",
+            "hidden": "Mis en avant, mais masqué : les visiteurs ne le verront pas tant qu’il n’est pas affiché dans la boutique."
         },
         "visibility": {
             "title": "Visibilité",
@@ -563,6 +575,8 @@
             "retired": "{count} ignoré : retiré par mossytrunk. | {count} ignorés : retirés par mossytrunk.",
             "alreadyShown": "{count} déjà affiché. | {count} déjà affichés.",
             "alreadyHidden": "{count} déjà masqué. | {count} déjà masqués.",
+            "alreadyPicked": "{count} déjà en avant. | {count} déjà en avant.",
+            "notPicked": "{count} pas en avant. | {count} pas en avant.",
             "notPaid": "{count} ignorée : pas payée, ou déjà expédiée. | {count} ignorées : pas payées, ou déjà expédiées.",
             "notTest": "{count} ignorée : pas une commande test. | {count} ignorées : pas des commandes test.",
             "checkoutOpen": "{count} ignorée : paiement encore attendu. | {count} ignorées : paiement encore attendu."

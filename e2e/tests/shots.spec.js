@@ -188,6 +188,20 @@ async function shootTheSelections(page, size) {
     }
 }
 
+async function shootTheCarousels(page, size) {
+    await page.goto('/beta/en/');
+    await page.waitForLoadState('networkidle');
+    await page.locator('[data-picks]').screenshot({ path: `shots/shop-home-picks-${size}.png`, animations: 'disabled' });
+    const latest = page.locator('[data-latest]');
+    await latest.screenshot({ path: `shots/shop-home-latest-${size}.png`, animations: 'disabled' });
+    const next = latest.locator('[data-carousel-next]');
+    for (let press = 0; press < 5 && (await next.getAttribute('aria-disabled')) !== 'true'; press++) {
+        await next.click();
+        await page.waitForTimeout(700);
+    }
+    await latest.screenshot({ path: `shots/shop-home-latest-end-${size}.png`, animations: 'disabled' });
+}
+
 async function shootTheCategoryDialog(page, size) {
     await page.goto('/admin/products');
     await page.getByTestId('category-names-open').click();
@@ -429,6 +443,7 @@ test('screenshots of the site and the admin', async ({ page }) => {
         await expect(page.getByTestId('link-editor')).toBeVisible();
         await page.screenshot({ path: `shots/admin-link-editor-${size}.png`, animations: 'disabled' });
         await shootTheSelections(page, size);
+        await shootTheCarousels(page, size);
     }
 
     let order = null;
@@ -446,6 +461,12 @@ test('screenshots of the site and the admin', async ({ page }) => {
     const crawler = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.desktop })).newPage();
     await crawler.goto('/');
     await crawler.screenshot({ path: 'shots/home-without-javascript.png', fullPage: true });
+    await crawler.context().close();
+
+    const shopWithoutScript = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.desktop, storageState: await page.context().storageState() })).newPage();
+    await shopWithoutScript.goto('/beta/en/');
+    await shopWithoutScript.screenshot({ path: 'shots/shop-home-carousels-without-javascript.png', fullPage: true });
+    await shopWithoutScript.context().close();
 
     const editorWithoutScript = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport: VIEWPORTS.phone, storageState: await page.context().storageState() })).newPage();
     await editorWithoutScript.goto(SHOP['shop-home-fr']);

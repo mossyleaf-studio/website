@@ -130,21 +130,22 @@ test('showing another photo keeps the gallery the same size', async ({ page }) =
 const boxes = async (locator) => Promise.all((await locator.all()).map((item) => item.boundingBox()));
 const firstRow = (all) => all.filter((box) => Math.abs(box.y - all[0].y) < 1);
 
-for (const { width, height, perRow } of [{ width: 1440, height: 900, perRow: 5 }, { width: 390, height: 844, perRow: 2 }]) {
-    test(`at ${width}px the home shows ${perRow} square cards a row, prices aligned, and the same tiles with or without JavaScript`, async ({ browser, page }) => {
+for (const { width, height, columns } of [{ width: 1440, height: 900, columns: 5 }, { width: 800, height: 900, columns: 3 }, { width: 390, height: 844, columns: 2 }]) {
+    test(`at ${width}px a category page has ${columns} grid tracks of square cards, prices aligned, and the same tiles with or without JavaScript`, async ({ browser, page }) => {
         const tileLayout = [];
         for (const javaScriptEnabled of [true, false]) {
             const context = await browser.newContext({ javaScriptEnabled, viewport: { width, height }, storageState: await page.context().storageState() });
             const visitor = await context.newPage();
-            await visitor.goto('/beta/en/');
+            await visitor.goto('/beta/en/category/stickers');
             const grid = visitor.locator('[data-products]').first();
+            const tracks = await grid.evaluate((list) => getComputedStyle(list).gridTemplateColumns.split(' ').length);
+            expect(tracks).toBe(columns);
             const cards = await boxes(grid.locator(':scope > li'));
-            expect(cards.length).toBeGreaterThan(perRow);
-            expect(firstRow(cards)).toHaveLength(perRow);
+            expect(cards.length).toBeGreaterThan(1);
             for (const box of await boxes(grid.locator(':scope > li > a > :first-child'))) expect(Math.abs(box.width - box.height)).toBeLessThan(1);
             const prices = firstRow(await boxes(grid.locator('[data-card-price]')));
-            expect(prices).toHaveLength(perRow);
             for (const box of prices) expect(Math.abs(box.y - prices[0].y)).toBeLessThan(1);
+            await visitor.goto('/beta/en/');
             const tiles = visitor.locator('[data-tiles] > li');
             const photos = await boxes(tiles.locator(':scope > a > :first-child'));
             const labels = await boxes(tiles.locator(':scope > a > :last-child'));

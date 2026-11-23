@@ -70,6 +70,12 @@ trait PushesCatalogue
         self::assertResponseIsSuccessful();
     }
 
+    private static function pick(KernelBrowser $client, string $id): void
+    {
+        $client->jsonRequest('PUT', "/api/admin/products/{$id}/pick");
+        self::assertResponseIsSuccessful();
+    }
+
     /** @param array<string, string> $texts */
     private static function describe(KernelBrowser $client, string $id, string $slug, array $texts): void
     {

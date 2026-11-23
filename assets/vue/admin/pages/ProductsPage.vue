@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowDown, ArrowUp, CircleAlert, GripVertical, ImageOff, Package, Pencil, SearchX, Tags } from '@lucide/vue';
+import { ArrowDown, ArrowUp, CircleAlert, GripVertical, ImageOff, Package, Pencil, SearchX, Star, Tags } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
@@ -17,13 +17,13 @@ import BulkBar from '../components/BulkBar.vue';
 import CategoryNames from '../components/CategoryNames.vue';
 import SelectCheck from '../components/SelectCheck.vue';
 import { formatCents } from '../money.js';
-import { completeness, filterProducts, totalStock } from '../products.js';
+import { completeness, filterProducts, pickSkip, totalStock, unpickSkip } from '../products.js';
 import { useSelection } from '../useSelection.js';
 import { useCategories, useProducts } from '../useShop.js';
 
 const { t } = useI18n();
 const toast = useToast();
-const { products, load, show, hide, reorder } = useProducts();
+const { products, load, show, hide, pick, unpick, reorder } = useProducts();
 const { categories, load: loadCategories } = useCategories();
 const loaded = ref(false);
 const failed = ref(false);
@@ -70,6 +70,8 @@ function showSkip(product) {
 const actions = [
     { key: 'show', label: (count) => t('admin.products.bulk.show', { count }, count), skip: showSkip, perform: (product) => show(product.id), done: 'admin.products.bulk.shown' },
     { key: 'hide', tone: 'secondary', label: (count) => t('admin.products.bulk.hide', { count }, count), skip: (product) => (product.visible ? null : 'alreadyHidden'), perform: (product) => hide(product.id), done: 'admin.products.bulk.hidden' },
+    { key: 'pick', label: (count) => t('admin.products.bulk.pick', { count }, count), skip: pickSkip, perform: (product) => pick(product.id), done: 'admin.products.bulk.picked' },
+    { key: 'unpick', tone: 'secondary', label: (count) => t('admin.products.bulk.unpick', { count }, count), skip: unpickSkip, perform: (product) => unpick(product.id), done: 'admin.products.bulk.unpicked' },
 ];
 
 function toggle(product, visible) {
@@ -125,6 +127,7 @@ function toggle(product, visible) {
                                 <RouterLink class="products-page__name" :to="{ name: 'product', params: { id: product.id } }">{{ heading(product) }}</RouterLink>
                                 <p class="products-page__meta">{{ product.reference }} · {{ product.category.name }}</p>
                                 <div class="products-page__chips">
+                                    <StatusBadge v-if="product.picked" data-test="product-picked"><Star size="0.75rem" aria-hidden="true" />{{ t('admin.products.picked') }}</StatusBadge>
                                     <StatusBadge v-if="product.retired" data-test="product-retired">{{ t('admin.products.retired') }}</StatusBadge>
                                     <StatusBadge v-for="gap in completeness(product)" :key="gap" tone="warning" data-test="product-chip">{{ t(`admin.products.chips.${gap}`) }}</StatusBadge>
                                 </div>

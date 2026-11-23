@@ -21,3 +21,17 @@ export function filterProducts(products, { query, category }) {
         return words.every((word) => haystack.includes(word));
     });
 }
+
+export function pickSkip(product) {
+    if (product.retired) return 'retired';
+    return product.picked ? 'alreadyPicked' : null;
+}
+
+export function pickState(product) {
+    if (!product.picked) return 'off';
+    return product.visible ? 'on' : 'hidden';
+}
+
+export function unpickSkip(product) {
+    return product.picked ? null : 'notPicked';
+}

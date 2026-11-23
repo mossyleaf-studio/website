@@ -24,6 +24,8 @@ export function useProducts() {
         describe: async (id, body) => replaceProduct(await api.put(`${PRODUCTS}/${id}`, body)),
         show: async (id) => replaceProduct(await api.put(`${PRODUCTS}/${id}/visibility`)),
         hide: async (id) => replaceProduct(await api.del(`${PRODUCTS}/${id}/visibility`)),
+        pick: async (id) => replaceProduct(await api.put(`${PRODUCTS}/${id}/pick`)),
+        unpick: async (id) => replaceProduct(await api.del(`${PRODUCTS}/${id}/pick`)),
         reorder: async (ids) => {
             products.value = await api.put(`${PRODUCTS}/order`, { ids });
         },

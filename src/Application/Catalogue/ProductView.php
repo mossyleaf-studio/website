@@ -27,6 +27,7 @@ final readonly class ProductView
         public string $description,
         public string $descriptionFr,
         public bool $visible,
+        public bool $picked,
         public int $position,
         public array $photos,
     ) {
@@ -49,6 +50,7 @@ final readonly class ProductView
             $product->description()->en,
             $product->description()->fr,
             $product->isVisible(),
+            $product->isPicked(),
             $product->position(),
             array_map(PhotoView::of(...), $product->photos()),
         );

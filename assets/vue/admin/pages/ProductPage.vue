@@ -17,6 +17,7 @@ import { intlLocale } from '../../i18n/locale.js';
 import ProductPhotos from '../components/ProductPhotos.vue';
 import { LIMITS } from '../limits.js';
 import { formatCents } from '../money.js';
+import { pickState } from '../products.js';
 import { useProducts } from '../useShop.js';
 
 const props = defineProps({
@@ -26,7 +27,7 @@ const props = defineProps({
 const { t, locale } = useI18n();
 const previewLocale = computed(() => (locale.value === 'fr' ? 'fr' : 'en'));
 const toast = useToast();
-const { products, load, describe, show, hide } = useProducts();
+const { products, load, describe, show, hide, pick, unpick } = useProducts();
 
 const loaded = ref(false);
 const failed = ref(false);
@@ -86,6 +87,10 @@ async function submit() {
 
 function toggle(visible) {
     toast.attempt(() => (visible ? show(props.id) : hide(props.id)));
+}
+
+function togglePick(picked) {
+    toast.attempt(() => (picked ? pick(props.id) : unpick(props.id)));
 }
 </script>
 
@@ -154,6 +159,19 @@ function toggle(visible) {
                         <p>{{ product.visible ? t('admin.product.visibility.on') : t('admin.product.visibility.off') }}</p>
                     </div>
                     <p v-if="product.retired" class="product-page__hint product-page__hint--after">{{ t('admin.products.retiredHint') }}</p>
+                </BaseCard>
+
+                <BaseCard :title="t('admin.product.pick.title')">
+                    <div class="product-page__visibility">
+                        <BaseSwitch
+                            :model-value="product.picked"
+                            :label="t('admin.product.pick.label')"
+                            :disabled="product.retired && !product.picked"
+                            data-test="product-pick"
+                            @update:model-value="togglePick"
+                        />
+                        <p data-test="product-pick-state">{{ t(`admin.product.pick.${pickState(product)}`) }}</p>
+                    </div>
                 </BaseCard>
 
                 <BaseCard :title="t('admin.product.mossytrunk.title')" data-test="product-mossytrunk">

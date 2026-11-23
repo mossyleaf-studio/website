@@ -27,6 +27,7 @@ final readonly class ShopProductView
         public array $variants,
         public bool $hidden,
         public bool $soldOut,
+        public bool $picked,
     ) {
     }
 
@@ -48,6 +49,7 @@ final readonly class ShopProductView
             $variants,
             !$product->isVisible(),
             null === array_find($variants, static fn (ShopVariantView $variant): bool => !$variant->soldOut),
+            $product->isPicked(),
         );
     }
 

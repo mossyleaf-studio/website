@@ -307,43 +307,155 @@ final class ShopCataloguePagesTest extends WebTestCase
         $data = self::data($crawler);
 
         self::assertSame('/beta/en/category/prints', $data['shopUrl']);
-        self::assertSame(['/beta/en/shop/prints-fox', '/beta/en/shop/prints-owl', '/beta/en/shop/stickers-moth'], array_map(static fn (mixed $card): string => Json::string($card, 'url'), Json::array($data, 'products')));
+        self::assertArrayNotHasKey('products', $data);
+        self::assertArrayNotHasKey('picks', $data);
+        self::assertSame(['/beta/en/shop/stickers-moth', '/beta/en/shop/prints-owl', '/beta/en/shop/prints-fox'], array_map(static fn (mixed $card): string => Json::string($card, 'url'), Json::array($data, 'latest')));
         self::assertSame(['key', 'label', 'url', 'image'], array_keys(Json::array($data, 'categories', 0)));
         self::assertSame([['prints', 'Prints', '/beta/en/category/prints'], ['stickers', 'Stickers', '/beta/en/category/stickers']], array_map(static fn (mixed $tile): array => [Json::string($tile, 'key'), Json::string($tile, 'label'), Json::string($tile, 'url')], Json::array($data, 'categories')));
-        self::assertSame(Json::array($data, 'products', 0, 'image'), Json::array($data, 'categories', 0, 'image'));
+        self::assertSame(Json::array($data, 'latest', 2, 'image'), Json::array($data, 'categories', 0, 'image'));
         self::assertNull(Json::at($data, 'categories', 1, 'image'));
 
         $main = $crawler->filter('#shop main');
         self::assertSame([['Visit the shop', '/beta/en/category/prints']], $main->filter('a[data-shop]')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]));
-        self::assertSame(['/beta/en/shop/prints-fox', '/beta/en/shop/prints-owl', '/beta/en/shop/stickers-moth'], $main->filter('[data-latest] [data-products] a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
+        self::assertSame(['/beta/en/shop/stickers-moth', '/beta/en/shop/prints-owl', '/beta/en/shop/prints-fox'], $main->filter('[data-latest] [data-products] a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
         self::assertSame(['lazy'], $main->filter('[data-latest] [data-products] img')->each(static fn (Crawler $image): string => (string) $image->attr('loading')));
         self::assertCount(0, $main->filter('[data-latest] > p'));
+        self::assertCount(0, $main->filter('[data-picks]'));
         self::assertCount(0, $main->filter('[data-products] [style], [data-tiles] [style]'));
         self::assertSame([['Prints', '/beta/en/category/prints'], ['Stickers', '/beta/en/category/stickers']], $main->filter('[data-tiles] a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]));
         self::assertEveryInternalLinkIsAPreviewLink($crawler);
     }
 
-    public function testTheHomeKeepsAtMostTenProducts(): void
+    public function testTheHomeCarriesTheStudioPicksInStudioOrderAndTheNewestProductsFirst(): void
     {
         $client = self::signedInClient();
-        foreach (self::push(array_map(static fn (int $number): PushedProduct => self::product($number, 'Prints', 'Fern'.$number, 900), range(1, 11))) as $id) {
+        $ids = self::push(array_map(static fn (int $number): PushedProduct => self::product($number, 'Prints', 'Fern'.$number, 900), range(1, 14)));
+        foreach ($ids as $slug => $id) {
+            self::show($client, $id);
+            if ('prints-fern1' !== $slug) {
+                self::pick($client, $id);
+            }
+        }
+        $client->jsonRequest('PUT', '/api/admin/products/order', ['ids' => [$ids['prints-fern14'], ...array_values(array_diff($ids, [$ids['prints-fern14']]))]]);
+        self::assertResponseIsSuccessful();
+
+        $data = self::data($client->request('GET', '/beta/en/'));
+
+        $url = static fn (int $number): string => "/beta/en/shop/prints-fern{$number}";
+        self::assertSame(array_map($url, [14, ...range(2, 12)]), self::cardUrls(Json::array($data, 'picks')));
+        self::assertSame(array_map($url, range(14, 3)), self::cardUrls(Json::array($data, 'latest')));
+        self::assertSame(['title', 'url', 'price', 'image', 'soldOut', 'hidden'], array_keys(Json::array($data, 'picks', 0)));
+    }
+
+    public function testTheHomePicksLeaveOutWhatCannotBeSoldAndFlagWhatIsHidden(): void
+    {
+        $client = self::signedInClient();
+        $ids = self::push(self::demo());
+        foreach (['prints-fox', 'prints-owl', 'prints-hare', 'cards-bee'] as $slug) {
+            self::show($client, $ids[$slug]);
+        }
+        foreach (['stickers-moth', 'prints-hare', 'cards-bee', 'prints-fox'] as $slug) {
+            self::pick($client, $ids[$slug]);
+        }
+        self::push(\array_slice(self::demo(), 0, 4));
+
+        $crawler = $client->request('GET', '/beta/fr/');
+        $data = self::data($crawler);
+
+        self::assertSame([['/beta/fr/shop/prints-fox', false], ['/beta/fr/shop/stickers-moth', true]], array_map(static fn (mixed $card): array => [Json::string($card, 'url'), Json::at($card, 'hidden')], Json::array($data, 'picks')));
+        self::assertSame(['/beta/fr/shop/stickers-moth', '/beta/fr/shop/prints-owl', '/beta/fr/shop/prints-fox'], self::cardUrls(Json::array($data, 'latest')));
+
+        $main = $crawler->filter('#shop main');
+        foreach (['picks' => 'home.picks', 'latest' => 'home.latest'] as $key => $label) {
+            $section = $main->filter("[data-{$key}]");
+            self::assertCount(1, $section, $key);
+            self::assertSame(self::siteLabel('fr', $label), $section->filter('h2')->text(), $key);
+            self::assertSame($section->filter('h2')->attr('id'), $section->attr('aria-labelledby'), $key);
+            self::assertSame(self::cardUrls(Json::array($data, $key)), $section->filter('[data-products] > li a')->each(static fn (Crawler $link): string => (string) $link->attr('href')), $key);
+            self::assertSame(
+                array_map(static fn (mixed $card): array => [Json::string($card, 'title'), self::price('fr', Json::int($card, 'price')), [...(true === Json::at($card, 'soldOut') ? [self::siteLabel('fr', 'product.soldOut')] : []), ...(true === Json::at($card, 'hidden') ? [self::siteLabel('fr', 'product.hidden')] : [])]], Json::array($data, $key)),
+                $section->filter('[data-products] > li')->each(static fn (Crawler $card): array => [$card->filter('[data-card-title]')->text(), $card->filter('[data-card-price]')->text(), $card->filter('[data-label]')->each(static fn (Crawler $tape): string => $tape->text())]),
+                $key,
+            );
+        }
+        self::assertEveryInternalLinkIsAPreviewLink($crawler);
+    }
+
+    public function testThePrerenderLoadsOnlyTheFirstImageOfTheFirstHomeRowEagerly(): void
+    {
+        $client = self::signedInClient();
+        $ids = self::stockTheDemo($client);
+        self::photo($client, $ids['prints-fox']);
+        self::photo($client, $ids['stickers-moth']);
+        $loading = static fn (string $key): array => $client->getCrawler()->filter("#shop main [data-{$key}] [data-products] img")->each(static fn (Crawler $image): string => (string) $image->attr('loading'));
+
+        $client->request('GET', '/beta/en/');
+        self::assertSame(['eager', 'lazy'], $loading('latest'));
+
+        self::pick($client, $ids['prints-fox']);
+        $client->request('GET', '/beta/en/');
+        self::assertSame(['eager'], $loading('picks'));
+        self::assertSame(['lazy', 'lazy'], $loading('latest'));
+    }
+
+    public function testTheHomeKeepsAtMostTwelveNewProducts(): void
+    {
+        $client = self::signedInClient();
+        foreach (self::push(array_map(static fn (int $number): PushedProduct => self::product($number, 'Prints', 'Fern'.$number, 900), range(1, 13))) as $id) {
             self::show($client, $id);
         }
 
-        self::assertCount(10, Json::array(self::data($client->request('GET', '/beta/en/')), 'products'));
+        self::assertCount(12, Json::array(self::data($client->request('GET', '/beta/en/')), 'latest'));
     }
 
     public function testTheHomeLeavesTheShopSectionsOutWhenTheCatalogueShowsNothing(): void
     {
         $client = self::signedInClient();
-        self::push([self::product(1, 'Prints', 'Hare', 0, 5)]);
+        $ids = self::push([self::product(1, 'Prints', 'Hare', 0, 5)]);
+        self::pick($client, $ids['prints-hare']);
 
         $crawler = $client->request('GET', '/beta/fr/');
         $data = self::data($crawler);
 
+        self::assertArrayNotHasKey('picks', $data);
+        self::assertArrayNotHasKey('latest', $data);
         self::assertArrayNotHasKey('products', $data);
         self::assertArrayNotHasKey('categories', $data);
-        self::assertCount(0, $crawler->filter('#shop main [data-latest], #shop main [data-tiles]'));
+        self::assertCount(0, $crawler->filter('#shop main [data-picks], #shop main [data-latest], #shop main [data-tiles]'));
+    }
+
+    public function testTheHomeDoesNotRunOneQueryPerProduct(): void
+    {
+        $client = self::signedInClient();
+        self::stockFerns($client, 2, true);
+        $few = self::homeQueries($client);
+
+        self::stockFerns($client, 8, true);
+
+        self::assertSame($few, self::homeQueries($client));
+    }
+
+    /**
+     * @param array<mixed> $cards
+     *
+     * @return list<string>
+     */
+    private static function cardUrls(array $cards): array
+    {
+        return array_values(array_map(static fn (mixed $card): string => Json::string($card, 'url'), $cards));
+    }
+
+    private static function homeQueries(KernelBrowser $client): int
+    {
+        $client->enableProfiler();
+        $client->request('GET', '/beta/en/');
+        self::assertResponseIsSuccessful();
+        $profile = $client->getProfile();
+        self::assertInstanceOf(Profile::class, $profile);
+        $collector = $profile->getCollector('db');
+        self::assertInstanceOf(DoctrineDataCollector::class, $collector);
+
+        return $collector->getQueryCount();
     }
 
     public function testThePrerenderOfACategoryShowsWhatThePropsCarry(): void
@@ -454,10 +566,13 @@ final class ShopCataloguePagesTest extends WebTestCase
         self::assertStringNotContainsString('product_photo', $sql);
     }
 
-    private static function stockFerns(KernelBrowser $client, int $count): void
+    private static function stockFerns(KernelBrowser $client, int $count, bool $picked = false): void
     {
         foreach (self::push(array_map(static fn (int $number): PushedProduct => self::product($number, 'Prints', 'Fern'.$number, 900, ['A4' => 2, 'A5' => 3]), range(1, $count))) as $id) {
             self::show($client, $id);
+            if ($picked) {
+                self::pick($client, $id);
+            }
             self::photo($client, $id);
         }
     }

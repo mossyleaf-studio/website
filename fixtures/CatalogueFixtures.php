@@ -8,6 +8,8 @@ use App\Application\Catalogue\DescribeProduct\DescribeProduct;
 use App\Application\Catalogue\DescribeProduct\DescribeProductHandler;
 use App\Application\Catalogue\LabelCategory\LabelCategory;
 use App\Application\Catalogue\LabelCategory\LabelCategoryHandler;
+use App\Application\Catalogue\PickProduct\PickProduct;
+use App\Application\Catalogue\PickProduct\PickProductHandler;
 use App\Application\Catalogue\ReplaceCatalogue\PushedProduct;
 use App\Application\Catalogue\ReplaceCatalogue\PushedVariant;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogue;
@@ -34,6 +36,8 @@ final class CatalogueFixtures extends Fixture
         'Stickers' => ['Stickers and tape', 'Stickers et masking tape'],
         'Cards' => ['Paper goods', 'Papeterie'],
     ];
+
+    private const array PICKED = ['PRT-001', 'CRD-001'];
 
     /** @var array<string, FixtureProduct> */
     private const array PRODUCTS = [
@@ -99,6 +103,7 @@ final class CatalogueFixtures extends Fixture
         private readonly ReplaceCatalogueHandler $replace,
         private readonly DescribeProductHandler $describe,
         private readonly ShowProductHandler $show,
+        private readonly PickProductHandler $pick,
         private readonly UploadProductPhotoHandler $upload,
         private readonly LabelCategoryHandler $label,
         private readonly ProductRepository $products,
@@ -164,6 +169,9 @@ final class CatalogueFixtures extends Fixture
         }
         if ($data['visible'] && !$product->isRetired()) {
             $this->show->__invoke(new ShowProduct($product->id()));
+        }
+        if (in_array($product->reference(), self::PICKED, true)) {
+            $this->pick->__invoke(new PickProduct($product->id()));
         }
     }
 

@@ -861,6 +861,70 @@ html[data-layout="shop"] .shop-prerender__main section {
     }
 }
 
+html[data-layout="shop"] :is([data-picks], [data-latest]) {
+    --bleed: 0.75rem;
+    --bleed-inline: var(--page-gutter);
+    --gap: 0.9375rem;
+    --in-view: 2.4;
+}
+
+html[data-layout="shop"] .shop-prerender__main:has(> [data-about]) {
+    gap: var(--space-9);
+}
+
+html[data-layout="shop"] .shop-prerender__main :is([data-picks], [data-latest]) {
+    gap: calc(var(--space-5) - var(--bleed));
+}
+
+html[data-layout="shop"] .shop-prerender__main :is([data-picks], [data-latest]) > h2 {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-size: var(--font-size-2xl);
+    line-height: 1.15;
+}
+
+html[data-layout="shop"] :is([data-picks], [data-latest]) > .shop-prerender__cards {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: calc((100% - (var(--in-view) - 1) * var(--gap)) / var(--in-view));
+    gap: var(--gap);
+    margin: 0 calc(-1 * var(--bleed-inline));
+    padding: var(--bleed) var(--bleed-inline);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--bleed-inline);
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-bark) transparent;
+}
+
+html[data-layout="shop"] :is([data-picks], [data-latest]) > .shop-prerender__cards > li {
+    scroll-snap-align: start;
+}
+
+html[data-layout="shop"] :is([data-picks], [data-latest]) .shop-prerender__card:focus-visible {
+    outline-offset: 0.375rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    html[data-layout="shop"] :is([data-picks], [data-latest]) > .shop-prerender__cards {
+        scroll-behavior: smooth;
+    }
+}
+
+@media (min-width: 40rem) {
+    html[data-layout="shop"] :is([data-picks], [data-latest]) {
+        --in-view: 3;
+    }
+}
+
+@media (min-width: 56rem) {
+    html[data-layout="shop"] :is([data-picks], [data-latest]) {
+        --in-view: 5;
+    }
+}
+
 html[data-layout="shop"] .shop-prerender__lead {
     display: grid;
     gap: var(--space-5);

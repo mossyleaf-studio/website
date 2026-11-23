@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
+use App\Application\Catalogue\CatalogueQueries;
 use App\Application\Catalogue\ReplaceCatalogue\PushedProduct;
 use App\Application\Catalogue\ReplaceCatalogue\PushedVariant;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogue;
@@ -56,6 +57,7 @@ final class ProductsApiTest extends WebTestCase
             'description' => '',
             'descriptionFr' => '',
             'visible' => false,
+            'picked' => false,
             'position' => 0,
             'photos' => [],
             'preview' => ['en' => '/beta/en/shop/prints-fox', 'fr' => '/beta/fr/shop/prints-fox'],
@@ -207,6 +209,73 @@ final class ProductsApiTest extends WebTestCase
         self::assertResponseStatusCodeSame(422);
         $client->jsonRequest('GET', '/api/admin/products');
         self::assertSame([false, true], array_column(Json::decode((string) $client->getResponse()->getContent()), 'retired'));
+    }
+
+    public function testAProductIsPickedAndUnpickedWithoutChangingItsVisibility(): void
+    {
+        $client = self::signedInClient();
+        $id = self::push([self::fox()])[0];
+
+        foreach ([1, 2] as $time) {
+            $client->jsonRequest('PUT', "/api/admin/products/{$id}/pick");
+            self::assertResponseIsSuccessful((string) $time);
+            $product = Json::decode((string) $client->getResponse()->getContent());
+            self::assertSame([$id, true, false], [Json::string($product, 'id'), Json::at($product, 'picked'), Json::at($product, 'visible')]);
+            self::assertSame(['en' => '/beta/en/shop/prints-fox', 'fr' => '/beta/fr/shop/prints-fox'], Json::array($product, 'preview'));
+        }
+
+        $client->jsonRequest('GET', '/api/admin/products');
+        self::assertSame([true], array_column(Json::decode((string) $client->getResponse()->getContent()), 'picked'));
+
+        foreach ([1, 2] as $time) {
+            $client->jsonRequest('DELETE', "/api/admin/products/{$id}/pick");
+            self::assertResponseIsSuccessful((string) $time);
+            self::assertFalse(Json::at(Json::decode((string) $client->getResponse()->getContent()), 'picked'));
+        }
+    }
+
+    public function testARetiredProductCannotBePickedButCanBeUnpicked(): void
+    {
+        $client = self::signedInClient();
+        [, $owl] = self::push([self::fox(), self::owl()]);
+        $client->jsonRequest('PUT', "/api/admin/products/{$owl}/pick");
+        self::push([self::fox()]);
+
+        $client->jsonRequest('PUT', "/api/admin/products/{$owl}/pick");
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertResponseHeaderSame('Content-Type', 'application/problem+json');
+        self::assertSame('catalogue.product_retired', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'code'));
+
+        $client->jsonRequest('DELETE', "/api/admin/products/{$owl}/pick");
+
+        self::assertResponseIsSuccessful();
+        self::assertFalse(Json::at(Json::decode((string) $client->getResponse()->getContent()), 'picked'));
+    }
+
+    public function testPickingAnUnknownProductIsNotFound(): void
+    {
+        $client = self::signedInClient();
+
+        foreach (['PUT', 'DELETE'] as $method) {
+            $client->jsonRequest($method, '/api/admin/products/'.new Ulid().'/pick');
+
+            self::assertResponseStatusCodeSame(404, $method);
+        }
+    }
+
+    public function testAnAnonymousCallerCannotPick(): void
+    {
+        $client = self::createClient();
+        self::getContainer()->get(ReplaceCatalogueHandler::class)(new ReplaceCatalogue([self::fox()]));
+        $id = self::getContainer()->get(CatalogueQueries::class)->products()[0]->id;
+
+        foreach (['PUT', 'DELETE'] as $method) {
+            $client->jsonRequest($method, "/api/admin/products/{$id}/pick");
+
+            self::assertResponseStatusCodeSame(401, $method);
+        }
+        self::assertFalse(self::getContainer()->get(CatalogueQueries::class)->products()[0]->picked);
     }
 
     public function testAnUnknownProductIsNotFound(): void

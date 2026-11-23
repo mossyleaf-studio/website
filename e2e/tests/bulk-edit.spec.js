@@ -95,6 +95,27 @@ test('products: hiding and showing several at once, with the head checkbox, the 
     await expect(bar(page)).toHaveCount(0);
 });
 
+test('products: picking two for the home with the bulk bar, then unpicking them', async ({ page }) => {
+    await page.goto('/admin/products');
+    for (const reference of ['STK-002', 'STK-003']) await expect(productRow(page, reference).getByTestId('product-picked')).toHaveCount(0);
+    await tick(productRow(page, 'STK-002'));
+    await tick(productRow(page, 'STK-003'));
+    await page.getByTestId('bulk-pick').getByRole('button', { name: 'Pick 2 products for the home' }).click();
+    await expect(toast(page, '2 products picked for the home.')).toBeVisible();
+    for (const reference of ['STK-002', 'STK-003']) await expect(productRow(page, reference).getByTestId('product-picked')).toBeVisible();
+    await page.goto('/beta/en/');
+    await expect(page.locator('[data-picks] [data-products] > li')).toHaveCount(4);
+
+    await page.goto('/admin/products');
+    await tick(productRow(page, 'STK-002'));
+    await tick(productRow(page, 'STK-003'));
+    await page.getByTestId('bulk-unpick').getByRole('button', { name: 'Unpick 2 products' }).click();
+    await expect(toast(page, '2 products unpicked.')).toBeVisible();
+    for (const reference of ['STK-002', 'STK-003']) await expect(productRow(page, reference).getByTestId('product-picked')).toHaveCount(0);
+    await page.goto('/beta/en/');
+    await expect(page.locator('[data-picks] [data-products] > li')).toHaveCount(2);
+});
+
 test('products: a ticked row can still be moved and its link still opens the editor', async ({ page }) => {
     await page.goto('/admin/products');
     const references = () => page.getByTestId('product-row').evaluateAll((rows) => rows.map((item) => item.dataset.reference));

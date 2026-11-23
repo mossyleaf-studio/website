@@ -110,3 +110,34 @@ test('a failed load says so and retries instead of claiming there is no product'
     await page.getByTestId('products-failed').getByRole('button', { name: 'Try again' }).click();
     await expect(page.getByTestId('product-row').first()).toBeVisible();
 });
+
+test('switching Studio pick puts the product in the Studio picks of the preview home and off removes it', async ({ page }) => {
+    const picks = async () => {
+        await page.goto('/beta/en/');
+        return page.locator('[data-picks] [data-card-title]').allTextContents();
+    };
+    expect(await picks()).not.toContain('Leaf sticker pack');
+    await page.goto('/admin/products');
+    await expect(row(page, 'STK-002').getByTestId('product-picked')).toHaveCount(0);
+    await expect(row(page, 'PRT-001').getByTestId('product-picked')).toBeVisible();
+    await row(page, 'STK-002').getByTestId('product-edit').click();
+    await expect(page.getByTestId('product-editor')).toBeVisible();
+    await expect(page.getByTestId('product-pick')).not.toBeChecked();
+    await expect(page.getByTestId('product-pick-state')).toHaveText('Not in the “Studio picks” row of the shop home.');
+    await page.getByTestId('product-pick').click();
+    await expect(page.getByTestId('product-pick')).toBeChecked();
+    await expect(page.getByTestId('product-pick-state')).toHaveText('Shown in the “Studio picks” row of the shop home.');
+    try {
+        expect(await picks()).toContain('Leaf sticker pack');
+        await page.goto('/admin/products');
+        await expect(row(page, 'STK-002').getByTestId('product-picked')).toBeVisible();
+    } finally {
+        await page.goto('/admin/products');
+        await row(page, 'STK-002').getByTestId('product-edit').click();
+        if (await page.getByTestId('product-pick').isChecked()) await page.getByTestId('product-pick').click();
+        await expect(page.getByTestId('product-pick')).not.toBeChecked();
+    }
+    expect(await picks()).not.toContain('Leaf sticker pack');
+    await page.goto('/admin/products');
+    await expect(row(page, 'STK-002').getByTestId('product-picked')).toHaveCount(0);
+});
