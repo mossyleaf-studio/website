@@ -5,5 +5,14 @@
     },
     "toast": {
         "label": "Notifications"
+    },
+    "pagination": {
+        "label": "Pagination",
+        "range": "{from}–{to} of {total}",
+        "first": "First page",
+        "previous": "Previous page",
+        "next": "Next page",
+        "last": "Last page",
+        "perPage": "Per page"
     }
 }

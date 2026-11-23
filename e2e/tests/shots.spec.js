@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { placePaidOrder } from './support/orders.js';
+import { addProducts, placePaidOrder, removeAddedProducts } from './support/orders.js';
 import { LOGO, PNG, signIn } from './support/session.js';
 
 const VIEWPORTS = { phone: { width: 390, height: 844 }, desktop: { width: 1440, height: 900 } };
@@ -590,5 +590,22 @@ test('screenshots of the collections', async ({ page }) => {
         await crawler.locator('.shop-prerender__navigation [data-menu="collections"]').hover();
         await crawler.screenshot({ path: `shots/collections-panel-without-javascript-${size}.png` });
         await crawler.context().close();
+    }
+});
+
+test('screenshots of the paged products list', async ({ page }) => {
+    await signIn(page);
+    await removeAddedProducts(page.request);
+    await addProducts(page.request, 37);
+    try {
+        for (const [size, viewport] of Object.entries(VIEWPORTS)) {
+            await page.setViewportSize(viewport);
+            await page.goto('/admin/products?page=2');
+            await expect(page.getByTestId('products-pagination')).toBeVisible();
+            await page.waitForLoadState('networkidle');
+            await page.screenshot({ path: `shots/products-page-2-${size}.png`, fullPage: true, animations: 'disabled' });
+        }
+    } finally {
+        await removeAddedProducts(page.request);
     }
 });

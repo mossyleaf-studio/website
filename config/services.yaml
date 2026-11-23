@@ -52,3 +52,11 @@ when@test:
         App\Tests\Support\FakeOrderExpiryController:
             autowire: true
             autoconfigure: true
+
+        App\Tests\Support\FakeProductsAddController:
+            autowire: true
+            autoconfigure: true
+
+        App\Tests\Support\FakeProductsRemoveController:
+            autowire: true
+            autoconfigure: true

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collectionLabel, completeness, filterProducts, pickSkip, pickState, totalStock, unpickSkip } from './products.js';
+import { canShift, collectionLabel, completeness, filterProducts, pageFromQuery, pageOf, pickSkip, pickState, placePage, shift, totalStock, unpickSkip } from './products.js';
 
 const product = (overrides = {}) => ({
     id: 'p1',
@@ -132,5 +132,95 @@ describe('collectionLabel', () => {
     it('falls back on the other language, then the mossytrunk name', () => {
         expect(collectionLabel({ ...collection, labelFr: '' }, 'fr')).toBe('Woods');
         expect(collectionLabel({ ...collection, label: '', labelFr: '' }, 'en')).toBe('Forest');
+    });
+});
+
+const ids = (count) => Array.from({ length: count }, (_, index) => ({ id: `p${index + 1}` }));
+const names = (list) => list.map((item) => item.id);
+
+describe('pageOf', () => {
+    it('numbers the pages from 1', () => {
+        expect([0, 19, 20, 39, 40].map((index) => pageOf(index, 20))).toEqual([1, 1, 2, 2, 3]);
+    });
+});
+
+describe('canShift', () => {
+    it('refuses to leave the whole list, whatever the page', () => {
+        expect(canShift(0, -1, 45)).toBe(false);
+        expect(canShift(44, 1, 45)).toBe(false);
+    });
+
+    it('allows every other move, across a page boundary too', () => {
+        expect(canShift(0, 1, 45)).toBe(true);
+        expect(canShift(20, -1, 45)).toBe(true);
+        expect(canShift(19, 1, 45)).toBe(true);
+        expect(canShift(44, -1, 45)).toBe(true);
+    });
+
+    it('refuses everything for a list of one', () => {
+        expect(canShift(0, -1, 1)).toBe(false);
+        expect(canShift(0, 1, 1)).toBe(false);
+    });
+});
+
+describe('shift', () => {
+    it('moves one place inside a page', () => {
+        expect(names(shift(ids(5), 1, 1))).toEqual(['p1', 'p3', 'p2', 'p4', 'p5']);
+        expect(names(shift(ids(5), 3, -1))).toEqual(['p1', 'p2', 'p4', 'p3', 'p5']);
+    });
+
+    it('moves the last row of a page onto the next one', () => {
+        const moved = shift(ids(45), 19, 1);
+        expect(moved[20].id).toBe('p20');
+        expect(moved[19].id).toBe('p21');
+        expect(pageOf(20, 20)).toBe(2);
+    });
+
+    it('moves the first row of page 2 up onto page 1', () => {
+        const moved = shift(ids(45), 20, -1);
+        expect(moved[19].id).toBe('p21');
+        expect(moved[20].id).toBe('p20');
+    });
+
+    it('leaves the ends alone and does not touch its input', () => {
+        const list = ids(3);
+        expect(names(shift(list, 0, -1))).toEqual(['p1', 'p2', 'p3']);
+        expect(names(shift(list, 2, 1))).toEqual(['p1', 'p2', 'p3']);
+        expect(names(list)).toEqual(['p1', 'p2', 'p3']);
+    });
+});
+
+describe('placePage', () => {
+    it('puts the page back at its place in the whole list after a drag on page 2 of 3', () => {
+        const list = ids(45);
+        const page = list.slice(20, 40);
+        const dragged = [page[1], page[0], ...page.slice(2)];
+        const placed = placePage(list, 2, 20, dragged);
+        expect(names(placed.slice(0, 20))).toEqual(names(list.slice(0, 20)));
+        expect(names(placed.slice(20, 22))).toEqual(['p22', 'p21']);
+        expect(names(placed.slice(40))).toEqual(names(list.slice(40)));
+        expect(placed).toHaveLength(45);
+    });
+
+    it('handles a short last page', () => {
+        const list = ids(45);
+        const placed = placePage(list, 3, 20, [list[44], ...list.slice(40, 44)]);
+        expect(names(placed.slice(40))).toEqual(['p45', 'p41', 'p42', 'p43', 'p44']);
+    });
+
+    it('handles a page of one row', () => {
+        const list = ids(21);
+        expect(names(placePage(list, 2, 20, [list[20]]))).toEqual(names(list));
+    });
+});
+
+describe('pageFromQuery', () => {
+    it('reads a page number and falls back to 1', () => {
+        expect(pageFromQuery('3')).toBe(3);
+        expect(pageFromQuery(undefined)).toBe(1);
+        expect(pageFromQuery('abc')).toBe(1);
+        expect(pageFromQuery('0')).toBe(1);
+        expect(pageFromQuery('-2')).toBe(1);
+        expect(pageFromQuery(['4', '5'])).toBe(4);
     });
 });

@@ -1,8 +1,9 @@
 <script setup>
 import { ArrowDown, ArrowUp, CircleAlert, GripVertical, ImageOff, Layers, Package, Pencil, SearchX, Star, Tags } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
+import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 import BaseButton from '../../components/ui/BaseButton.vue';
 import BaseCard from '../../components/ui/BaseCard.vue';
 import BaseSelect from '../../components/ui/BaseSelect.vue';
@@ -11,6 +12,8 @@ import EmptyState from '../../components/ui/EmptyState.vue';
 import IconButton from '../../components/ui/IconButton.vue';
 import PageHeader from '../../components/ui/PageHeader.vue';
 import StatusBadge from '../../components/ui/StatusBadge.vue';
+import TablePagination from '../../components/ui/TablePagination.vue';
+import { PAGE_SIZES, usePagination } from '../../composables/usePagination.js';
 import { useToast } from '../../composables/useToast.js';
 import { currentLanguage, intlLocale } from '../../i18n/locale.js';
 import BulkBar from '../components/BulkBar.vue';
@@ -18,12 +21,15 @@ import CategoryNames from '../components/CategoryNames.vue';
 import CollectionSettings from '../components/CollectionSettings.vue';
 import SelectCheck from '../components/SelectCheck.vue';
 import { formatCents } from '../money.js';
-import { collectionLabel, completeness, filterProducts, pickSkip, totalStock, unpickSkip } from '../products.js';
+import { canShift, collectionLabel, completeness, filterProducts, pageFromQuery, pageOf, pickSkip, placePage, shift, totalStock, unpickSkip } from '../products.js';
 import { useSelection } from '../useSelection.js';
 import { useCategories, useCollections, useProducts } from '../useShop.js';
 
 const { t } = useI18n();
 const toast = useToast();
+const route = useRoute();
+const router = useRouter();
+const root = ref(null);
 const { products, load, show, hide, pick, unpick, reorder } = useProducts();
 const { categories, load: loadCategories } = useCategories();
 const { collections, load: loadCollections } = useCollections();
@@ -57,21 +63,36 @@ const collectionOptions = computed(() => [
     ...collections.value.map((entry) => ({ value: entry.id, label: collectionLabel(entry, currentLanguage()) })),
 ]);
 
+const page = ref(pageFromQuery(route.query.page));
+const pageSize = ref(PAGE_SIZES[0]);
+watch(page, (number) => router.replace({ query: { ...route.query, page: number > 1 ? number : undefined } }));
+const pager = usePagination(rows, PAGE_SIZES[0], { page, pageSize });
+const pageRows = pager.pageItems;
+const start = computed(() => (page.value - 1) * pageSize.value);
+const pageQuery = computed(() => (page.value > 1 ? { page: page.value } : {}));
+
+watch([query, category, collection], () => pager.goTo(1));
+onBeforeRouteUpdate((to) => pager.goTo(pageFromQuery(to.query.page)));
+
 const heading = (product) => product.title || product.displayName;
 
 function saveOrder(message = null) {
     toast.attempt(() => reorder(products.value.map((product) => product.id)), message);
 }
 
-function move(index, offset) {
-    const list = [...products.value];
-    const [product] = list.splice(index, 1);
-    list.splice(index + offset, 0, product);
-    products.value = list;
-    saveOrder(t('admin.products.moved', { title: heading(product), position: index + offset + 1 }));
+async function move(index, offset) {
+    const at = start.value + index;
+    const product = products.value[at];
+    products.value = shift(products.value, at, offset);
+    pager.goTo(pageOf(at + offset, pageSize.value));
+    saveOrder(t('admin.products.moved', { title: heading(product), position: at + offset + 1 }));
+    await nextTick();
+    const [up, down] = root.value.querySelectorAll(`[data-reference="${CSS.escape(product.reference)}"] .products-page__actions button`);
+    const [pressed, other] = offset < 0 ? [up, down] : [down, up];
+    (pressed.disabled ? other : pressed).focus();
 }
 
-const selection = useSelection(rows);
+const selection = useSelection(pageRows);
 
 function showSkip(product) {
     if (product.retired) return 'retired';
@@ -91,7 +112,7 @@ function toggle(product, visible) {
 </script>
 
 <template>
-    <div class="products-page">
+    <div ref="root" class="products-page">
         <PageHeader :title="t('admin.products.title')" :subtitle="t('admin.products.subtitle')">
             <BaseButton variant="secondary" data-test="category-names-open" @click="namesOpen = true"><Tags size="1rem" aria-hidden="true" />{{ t('admin.products.categoryNames') }}</BaseButton>
             <BaseButton variant="secondary" data-test="collections-open" @click="collectionsOpen = true"><Layers size="1rem" aria-hidden="true" />{{ t('admin.products.collectionSettings') }}</BaseButton>
@@ -119,17 +140,17 @@ function toggle(product, visible) {
                         <SelectCheck :model-value="selection.head()" :label="t('admin.products.bulk.all')" :disabled="selection.locked.value" data-test="select-all" @update:model-value="selection.setAll">{{ t('admin.selection.all') }}</SelectCheck>
                     </div>
                     <VueDraggable
-                        :model-value="rows"
+                        :model-value="pageRows"
                         tag="ul"
                         class="products-page__list"
                         handle=".products-page__grip"
                         :disabled="filtering || selection.locked.value"
                         :animation="animation"
                         ghost-class="products-page__ghost"
-                        @update:model-value="(list) => { products = list; }"
+                        @update:model-value="(list) => { products = placePage(products, page, pageSize, list); }"
                         @end="saveOrder()"
                     >
-                        <li v-for="(product, index) in rows" :key="product.id" :class="['products-page__item', { 'products-page__item--selected': selection.has(product.id) }]" data-test="product-row" :data-reference="product.reference">
+                        <li v-for="(product, index) in pageRows" :key="product.id" :class="['products-page__item', { 'products-page__item--selected': selection.has(product.id) }]" data-test="product-row" :data-reference="product.reference">
                             <SelectCheck :model-value="selection.has(product.id)" :label="t('admin.products.bulk.select', { title: heading(product) })" :disabled="selection.locked.value" data-test="select-row" @update:model-value="(checked) => selection.set(product.id, checked)" />
                             <span :class="['products-page__grip', { 'products-page__grip--off': filtering || selection.locked.value }]" :title="t('admin.products.move', { title: heading(product) })"><GripVertical size="1.125rem" aria-hidden="true" /></span>
                             <div class="products-page__thumb">
@@ -137,7 +158,7 @@ function toggle(product, visible) {
                                 <ImageOff v-else size="1.25rem" aria-hidden="true" />
                             </div>
                             <div class="products-page__text">
-                                <RouterLink class="products-page__name" :to="{ name: 'product', params: { id: product.id } }">{{ heading(product) }}</RouterLink>
+                                <RouterLink class="products-page__name" :to="{ name: 'product', params: { id: product.id }, query: pageQuery }">{{ heading(product) }}</RouterLink>
                                 <p class="products-page__meta">{{ product.reference }} · {{ product.category.name }}<template v-if="product.collection"> · {{ collectionLabel(product.collection, currentLanguage()) }}</template></p>
                                 <div class="products-page__chips">
                                     <StatusBadge v-if="product.picked" data-test="product-picked"><Star size="0.75rem" aria-hidden="true" />{{ t('admin.products.picked') }}</StatusBadge>
@@ -155,14 +176,25 @@ function toggle(product, visible) {
                                 @update:model-value="(visible) => toggle(product, visible)"
                             />
                             <div class="products-page__actions">
-                                <IconButton :icon="ArrowUp" :label="t('admin.products.moveUp', { title: heading(product) })" :disabled="filtering || selection.locked.value || index === 0" @click="move(index, -1)" />
-                                <IconButton :icon="ArrowDown" :label="t('admin.products.moveDown', { title: heading(product) })" :disabled="filtering || selection.locked.value || index === rows.length - 1" @click="move(index, 1)" />
-                                <RouterLink class="products-page__edit" :to="{ name: 'product', params: { id: product.id } }" tabindex="-1" aria-hidden="true" :title="t('admin.products.edit', { title: heading(product) })" data-test="product-edit">
+                                <IconButton :icon="ArrowUp" :label="t('admin.products.moveUp', { title: heading(product) })" :disabled="filtering || selection.locked.value || !canShift(start + index, -1, products.length)" @click="move(index, -1)" />
+                                <IconButton :icon="ArrowDown" :label="t('admin.products.moveDown', { title: heading(product) })" :disabled="filtering || selection.locked.value || !canShift(start + index, 1, products.length)" @click="move(index, 1)" />
+                                <RouterLink class="products-page__edit" :to="{ name: 'product', params: { id: product.id }, query: pageQuery }" tabindex="-1" aria-hidden="true" :title="t('admin.products.edit', { title: heading(product) })" data-test="product-edit">
                                     <Pencil size="1.125rem" aria-hidden="true" />
                                 </RouterLink>
                             </div>
                         </li>
                     </VueDraggable>
+                    <TablePagination
+                        v-if="rows.length > PAGE_SIZES[0]"
+                        v-model:page-size="pageSize"
+                        :page="page"
+                        :from="pager.from.value"
+                        :to="pager.to.value"
+                        :total="pager.total.value"
+                        :disabled="selection.locked.value"
+                        data-test="products-pagination"
+                        @go="pager.goTo"
+                    />
                 </template>
             </template>
         </BaseCard>

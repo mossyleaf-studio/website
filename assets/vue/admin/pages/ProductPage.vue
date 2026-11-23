@@ -2,7 +2,7 @@
 import { ArrowLeft, CircleAlert, ExternalLink, PackageX } from '@lucide/vue';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { onBeforeRouteLeave } from 'vue-router';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import BaseButton from '../../components/ui/BaseButton.vue';
 import BaseCard from '../../components/ui/BaseCard.vue';
 import BaseSwitch from '../../components/ui/BaseSwitch.vue';
@@ -27,6 +27,7 @@ const props = defineProps({
 const { t, locale } = useI18n();
 const previewLocale = computed(() => (locale.value === 'fr' ? 'fr' : 'en'));
 const toast = useToast();
+const route = useRoute();
 const { products, load, describe, show, hide, pick, unpick } = useProducts();
 
 const loaded = ref(false);
@@ -97,13 +98,13 @@ function togglePick(picked) {
 <template>
     <div class="product-page" data-test="product-editor">
         <PageHeader v-if="product" :title="heading" :subtitle="product.reference">
-            <template #back><RouterLink :to="{ name: 'products' }"><ArrowLeft size="0.875rem" aria-hidden="true" />{{ t('admin.product.back') }}</RouterLink></template>
+            <template #back><RouterLink :to="{ name: 'products', query: route.query }"><ArrowLeft size="0.875rem" aria-hidden="true" />{{ t('admin.product.back') }}</RouterLink></template>
             <a v-if="product.preview" class="product-page__preview" :href="product.preview[previewLocale]" target="_blank" rel="noopener" data-test="product-preview">
                 <ExternalLink size="0.9rem" aria-hidden="true" />{{ t('admin.product.preview') }}
             </a>
             <StatusBadge v-if="product.retired">{{ t('admin.products.retired') }}</StatusBadge>
         </PageHeader>
-        <RouterLink v-else class="product-page__back" :to="{ name: 'products' }"><ArrowLeft size="0.875rem" aria-hidden="true" />{{ t('admin.product.back') }}</RouterLink>
+        <RouterLink v-else class="product-page__back" :to="{ name: 'products', query: route.query }"><ArrowLeft size="0.875rem" aria-hidden="true" />{{ t('admin.product.back') }}</RouterLink>
 
         <EmptyState v-if="failed && !product" :icon="CircleAlert" :title="t('admin.product.loadFailed')" :hint="t('common.error')" data-test="product-failed">
             <BaseButton variant="secondary" @click="fetchProducts">{{ t('admin.retry') }}</BaseButton>

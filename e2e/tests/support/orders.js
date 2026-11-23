@@ -45,3 +45,7 @@ export async function placePaidOrder(page, lines, base = '/beta') {
     const reference = (await page.getByTestId('order-reference').textContent()).match(REFERENCE)[0];
     return { reference, url: page.url() };
 }
+
+export const addProducts = async (request, count) => expect((await request.post(`/_fake/products/${count}`)).status()).toBe(204);
+
+export const removeAddedProducts = async (request) => expect((await request.delete('/_fake/products')).status()).toBe(204);

@@ -42,3 +42,22 @@ export function pickState(product) {
 export function unpickSkip(product) {
     return product.picked ? null : 'notPicked';
 }
+
+export const pageOf = (index, pageSize) => Math.floor(index / pageSize) + 1;
+
+export const canShift = (index, offset, length) => index + offset >= 0 && index + offset < length;
+
+export function shift(list, index, offset) {
+    if (!canShift(index, offset, list.length)) return [...list];
+    const next = [...list];
+    const [item] = next.splice(index, 1);
+    next.splice(index + offset, 0, item);
+    return next;
+}
+
+export const placePage = (list, page, pageSize, pageRows) => {
+    const start = (page - 1) * pageSize;
+    return [...list.slice(0, start), ...pageRows, ...list.slice(start + pageRows.length)];
+};
+
+export const pageFromQuery = (value) => Math.max(1, Number.parseInt(Array.isArray(value) ? value[0] : value, 10) || 1);
