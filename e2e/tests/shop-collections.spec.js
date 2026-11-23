@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { signIn } from './support/session.js';
 
 const header = (page) => page.locator('#shop header.site-header');
-const button = (page) => header(page).locator('[data-shop-menu]');
+const button = (page) => header(page).locator('[data-menu="collections"]');
 const collections = (page) => header(page).locator('[data-collections]');
 const chips = (page) => page.locator('#shop nav[data-filters]');
 const chip = (page, name) => chips(page).locator('a[data-filter]').filter({ hasText: name });
@@ -14,18 +14,15 @@ test.beforeEach(async ({ page }) => {
     await signIn(page);
 });
 
-test('the Shop panel lists the collections under the categories and a click opens the collection', async ({ page }) => {
+test('the Collections panel lists the collections and a click opens the collection', async ({ page }) => {
     await page.goto('/beta/en/');
     await button(page).click();
     await expect(collections(page).getByRole('link')).toHaveText(['Forest critters', 'Autumn market Hidden']);
-    await expect(header(page).getByRole('heading', { name: 'Collections' })).toBeVisible();
+    await expect(header(page).locator('#menu-collections').getByRole('heading')).toBeHidden();
 
     await page.keyboard.press('Escape');
     await expect(collections(page)).toBeHidden();
     await page.keyboard.press('Enter');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
     await page.keyboard.press('Tab');
     await expect(collections(page).getByRole('link').first()).toBeFocused();
     await page.keyboard.press('Enter');
@@ -37,7 +34,7 @@ test('the Shop panel lists the collections under the categories and a click open
     await button(page).click();
     await expect(collections(page).getByRole('link', { name: 'Forest critters' })).toHaveAttribute('aria-current', 'page');
     await expect(collections(page).getByRole('link', { name: 'Autumn market' })).not.toHaveAttribute('aria-current');
-    await expect(header(page).locator('[data-categories]').getByRole('link', { name: 'Prints' })).not.toHaveAttribute('aria-current');
+    await expect(header(page).locator('[data-menu="categories"]')).not.toHaveAttribute('aria-current');
 });
 
 test('the phone menu lists the collections too', async ({ page }) => {

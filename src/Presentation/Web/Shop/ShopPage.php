@@ -18,10 +18,11 @@ use Twig\Environment;
 final readonly class ShopPage
 {
     public const int SAFE_IN_HTML = \JSON_HEX_TAG | \JSON_HEX_AMP | \JSON_HEX_APOS | \JSON_HEX_QUOT | \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES;
-    private const array NAVIGATION = ['home' => 'shop_home', 'shop' => 'shop_listing', 'conventions' => 'shop_conventions', 'about' => 'shop_about', 'contact' => 'shop_contact'];
-    private const array CURRENT = ['shop_category' => 'shop_listing', 'shop_collection' => 'shop_listing', 'shop_product' => 'shop_listing'];
+    private const array NAVIGATION = ['home' => 'shop_home', self::CATEGORIES => 'shop_listing', self::COLLECTIONS => null, 'conventions' => 'shop_conventions', 'about' => 'shop_about', 'contact' => 'shop_contact'];
+    private const array CURRENT = ['shop_category' => self::CATEGORIES, 'shop_product' => self::CATEGORIES, 'shop_collection' => self::COLLECTIONS];
     private const array KEPT_QUERY = ['shop_category' => [CatalogueFilters::COLLECTION], 'shop_collection' => [CatalogueFilters::CATEGORY]];
-    private const string SHOP = 'shop';
+    private const string CATEGORIES = 'categories';
+    private const string COLLECTIONS = 'collections';
     private const string CATEGORY = 'shop_category';
     private const string COLLECTION = 'shop_collection';
     private const array OPEN_GRAPH_LOCALES = ['en' => 'en_GB', 'fr' => 'fr_FR'];
@@ -130,20 +131,24 @@ final readonly class ShopPage
     private function navigation(Locale $locale, bool $preview, string $route, array $parameters): array
     {
         $current = self::CURRENT[$route] ?? $route;
-        $children = array_map(
-            fn (ShopCategoryView $category): array => [...$this->props->category($category, $locale, $preview), 'current' => self::CATEGORY === $route && $category->key === ($parameters['category'] ?? null)],
-            $this->catalogue->shopCategories($preview),
-        );
-        $collections = array_map(
-            fn (ShopCollectionView $collection): array => [...$this->props->collection($collection, $locale, $preview), 'current' => self::COLLECTION === $route && $collection->key === ($parameters['collection'] ?? null)],
-            $this->catalogue->shopCollections($preview),
-        );
+        $children = [
+            self::CATEGORIES => array_map(
+                fn (ShopCategoryView $category): array => [...$this->props->category($category, $locale, $preview), 'current' => self::CATEGORY === $route && $category->key === ($parameters['category'] ?? null)],
+                $this->catalogue->shopCategories($preview),
+            ),
+            self::COLLECTIONS => array_map(
+                fn (ShopCollectionView $collection): array => [...$this->props->collection($collection, $locale, $preview), 'current' => self::COLLECTION === $route && $collection->key === ($parameters['collection'] ?? null)],
+                $this->catalogue->shopCollections($preview),
+            ),
+        ];
         $navigation = [];
         foreach (self::NAVIGATION as $key => $target) {
-            if (self::SHOP === $key && [] === $children) {
+            $list = $children[$key] ?? null;
+            if ([] === $list) {
                 continue;
             }
-            $navigation[] = ['key' => $key, 'url' => $this->urls->to($target, $locale, $preview), 'current' => $target === $current, ...(self::SHOP === $key ? ['children' => $children, 'collections' => $collections] : [])];
+            $url = null === $target ? ($list[0]['url'] ?? '') : $this->urls->to($target, $locale, $preview);
+            $navigation[] = ['key' => $key, 'url' => $url, 'current' => (null === $list ? $target : $key) === $current, ...(null === $list ? [] : ['children' => $list])];
         }
 
         return $navigation;

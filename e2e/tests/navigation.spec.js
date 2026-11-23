@@ -67,7 +67,7 @@ async function walk(page, prefix) {
         ['/en/shop/moss-print', 'shop/moss-print', 'product'],
     ];
     for (const [href, pattern] of steps) {
-        if (href.includes('/category/')) await page.locator('#shop [data-shop-menu]').click();
+        if (href.includes('/category/')) await page.locator('#shop [data-menu="categories"]').click();
         await visit(page, prefix, href, new RegExp(`${prefix}/en/${pattern}$`));
         await expect(page.locator('html')).toHaveAttribute('lang', 'en');
         await arrived(page);

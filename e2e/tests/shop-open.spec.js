@@ -120,7 +120,7 @@ test('the studio opens the shop, a visitor buys a postcard set, then the studio 
         await expect(visitor.locator('#shop nav[data-filters] a[data-filter]').first()).toHaveText('All');
         await visitor.goto('/en/category/cards');
         await expect(visitor.locator('#shop main')).not.toContainText('Autumn market');
-        await visitor.locator('#shop [data-shop-menu]').click();
+        await visitor.locator('#shop [data-menu="collections"]').click();
         await expect(visitor.locator('#shop [data-collections]').getByRole('link')).toHaveText(['Forest critters']);
         await expect(visitor.locator('#shop [data-label]')).toHaveCount(0);
         const hidden = await visitor.goto('/en/collection/autumn-market');
@@ -131,6 +131,23 @@ test('the studio opens the shop, a visitor buys a postcard set, then the studio 
         const sitemap = await (await english.request.get('/sitemap.xml')).text();
         expect(sitemap).toContain('/en/collection/forest-critters');
         expect(sitemap).not.toContain('autumn-market');
+        await noCookie();
+    });
+
+    await test.step('the public menu has no Collections entry while no collection is shown', async () => {
+        const collections = await (await page.request.get('/api/admin/collections')).json();
+        const shown = collections.find((collection) => collection.label === 'Forest critters');
+        expect((await page.request.delete(`/api/admin/collections/${shown.id}/visibility`)).ok()).toBe(true);
+        try {
+            await visitor.goto('/en/category/prints');
+            await expect(visitor.locator('#shop [data-menu="categories"]')).toHaveCount(1);
+            await expect(visitor.locator('#shop [data-menu="collections"], #shop #menu-collections')).toHaveCount(0);
+            expect(await (await english.request.get('/en/category/prints')).text()).not.toContain('menu-collections');
+        } finally {
+            expect((await page.request.put(`/api/admin/collections/${shown.id}/visibility`)).ok()).toBe(true);
+        }
+        await visitor.goto('/en/category/prints');
+        await expect(visitor.locator('#shop [data-menu="collections"]')).toHaveCount(1);
         await noCookie();
     });
 

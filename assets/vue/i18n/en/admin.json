@@ -365,7 +365,7 @@
     },
     "categories": {
         "title": "Category names and order",
-        "hint": "Name each category and put them in order: the order is the order of the Shop menu of the site.",
+        "hint": "Name each category and put them in order: the order is the order of the Categories menu of the site.",
         "moveUp": "Move “{name}” up",
         "moveDown": "Move “{name}” down",
         "emptyHint": "Empty: the shop uses “{name}”.",
@@ -375,7 +375,7 @@
     },
     "collections": {
         "title": "Collections",
-        "hint": "A shown collection has its own page, a filter chip and a place in the Shop menu, in this order.",
+        "hint": "A shown collection has its own page, a filter chip and a place in the Collections menu, in this order.",
         "moveUp": "Move “{name}” up",
         "moveDown": "Move “{name}” down",
         "emptyHint": "Empty: the shop uses “{name}”.",

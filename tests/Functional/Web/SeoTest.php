@@ -196,7 +196,7 @@ final class SeoTest extends WebTestCase
         self::assertResponseNotHasHeader('Set-Cookie');
     }
 
-    public function testTheShopEntryIsCurrentOnACategoryAndOnAProductPage(): void
+    public function testTheCategoriesEntryIsCurrentOnACategoryAndOnAProductPage(): void
     {
         $client = self::openShopClient();
 
@@ -204,7 +204,7 @@ final class SeoTest extends WebTestCase
             $crawler = $client->request('GET', $url);
 
             $navigation = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'layout', 'navigation');
-            self::assertSame(['shop'], array_values(array_map(static fn (mixed $entry): string => Json::string($entry, 'key'), array_filter($navigation, static fn (mixed $entry): bool => true === Json::at($entry, 'current')))), $url);
+            self::assertSame(['categories'], array_values(array_map(static fn (mixed $entry): string => Json::string($entry, 'key'), array_filter($navigation, static fn (mixed $entry): bool => true === Json::at($entry, 'current')))), $url);
             self::assertSame(['/en/shop'], $crawler->filter('nav[data-navigation] a[aria-current="true"]')->each(static fn (Crawler $link): string => (string) $link->attr('href')), $url);
             self::assertSame($current, $crawler->filter('nav[data-navigation] a[aria-current="page"]')->each(static fn (Crawler $link): string => (string) $link->attr('href')), $url);
         }

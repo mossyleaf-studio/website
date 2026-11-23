@@ -365,7 +365,7 @@
     },
     "categories": {
         "title": "Noms et ordre des catégories",
-        "hint": "Nommez chaque catégorie et mettez-les dans l’ordre : c’est l’ordre du menu Boutique du site.",
+        "hint": "Nommez chaque catégorie et mettez-les dans l’ordre : c’est l’ordre du menu Catégories du site.",
         "moveUp": "Monter « {name} »",
         "moveDown": "Descendre « {name} »",
         "emptyHint": "Vide : la boutique utilise « {name} ».",
@@ -375,7 +375,7 @@
     },
     "collections": {
         "title": "Collections",
-        "hint": "Une collection affichée a sa page, une pastille de filtre et une place dans le menu Boutique, dans cet ordre.",
+        "hint": "Une collection affichée a sa page, une pastille de filtre et une place dans le menu Collections, dans cet ordre.",
         "moveUp": "Monter « {name} »",
         "moveDown": "Descendre « {name} »",
         "emptyHint": "Vide : la boutique utilise « {name} ».",

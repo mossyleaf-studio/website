@@ -189,20 +189,21 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame([[self::label('fr', 'home.aboutLink'), Json::string($data, 'about', 'url')]], self::links($shop->filter('main section p a')));
     }
 
-    public function testThePrerenderOfTheMenuListsTheCategoriesThePropsCarry(): void
+    public function testThePrerenderOfTheMenuListsTheCategoriesAndCollectionsThePropsCarry(): void
     {
         $client = self::signedInClient();
-        $ids = self::push([self::product(1, 'Prints', 'Fox', 1500), self::product(2, 'Stickers', 'Moth', 300), self::product(3, 'Cards', 'Bee', 500)]);
+        $ids = self::push([self::product(1, 'Prints', 'Fox', 1500, 5, self::collection(1, 'Forest')), self::product(2, 'Stickers', 'Moth', 300), self::product(3, 'Cards', 'Bee', 500, 5, self::collection(2, 'Autumn'))]);
         foreach (['prints-fox', 'cards-bee'] as $slug) {
             self::show($client, $ids[$slug]);
         }
 
-        foreach (['/beta/fr/category/cards', '/beta/en/shop/prints-fox', '/beta/en/about', '/beta/fr/no-such-page'] as $url) {
+        foreach (['/beta/fr/category/cards', '/beta/en/shop/prints-fox', '/beta/en/collection/forest', '/beta/en/about', '/beta/fr/no-such-page'] as $url) {
             $crawler = $client->request('GET', $url);
             $layout = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'layout');
 
             self::assertLayoutMatches($crawler->filter('#shop'), $layout);
-            self::assertCount(3, Json::array($layout, 'navigation', 1, 'children'), $url);
+            self::assertSame(['categories', 3], [Json::string($layout, 'navigation', 1, 'key'), \count(Json::array($layout, 'navigation', 1, 'children'))], $url);
+            self::assertSame(['collections', 2, true], [Json::string($layout, 'navigation', 2, 'key'), \count(Json::array($layout, 'navigation', 2, 'children')), Json::at($layout, 'navigation', 2, 'children', 0, 'hidden')], $url);
         }
     }
 
@@ -255,13 +256,23 @@ final class ShopPagesTest extends WebTestCase
             array_map(static fn (mixed $entry): string => true === Json::at($entry, 'current') ? (\is_array($entry) && \array_key_exists('children', $entry) ? 'true' : 'page') : '', $navigation),
             $shop->filter('nav[data-navigation] > ul > li > a')->each(static fn (Crawler $link): string => (string) $link->attr('aria-current')),
         );
-        $entry = array_find($navigation, static fn (mixed $entry): bool => 'shop' === Json::at($entry, 'key'));
-        $children = null === $entry ? [] : Json::array($entry, 'children');
         self::assertSame(
-            array_map(static fn (mixed $child): array => [Json::string($child, 'label'), Json::string($child, 'url'), true === Json::at($child, 'current') ? 'page' : ''], $children),
-            $shop->filter('nav[data-navigation] > ul > li > div > ul[data-categories] > li > a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href'), (string) $link->attr('aria-current')]),
+            array_values(array_map(static fn (mixed $entry): string => Json::string($entry, 'key'), array_filter($navigation, static fn (mixed $entry): bool => \is_array($entry) && \array_key_exists('children', $entry)))),
+            array_values(array_filter($shop->filter('nav[data-navigation] > ul > li > a')->each(static fn (Crawler $link): string => (string) $link->attr('data-menu')))),
         );
-        self::assertCount([] === $children ? 0 : 1, $shop->filter('[data-categories]'));
+        foreach (['categories', 'collections'] as $key) {
+            $entry = array_find($navigation, static fn (mixed $entry): bool => $key === Json::at($entry, 'key'));
+            $children = null === $entry ? [] : Json::array($entry, 'children');
+            self::assertSame(null === $entry, [] === $children, $key);
+            self::assertSame(
+                array_map(static fn (mixed $child): array => [Json::string($child, 'label'), Json::string($child, 'url'), true === Json::at($child, 'current') ? 'page' : '', true === (Json::array($child)['hidden'] ?? false)], $children),
+                $shop->filter("nav[data-navigation] > ul > li > a[data-menu=\"{$key}\"] + #menu-{$key} > ul[data-{$key}] > li > a")->each(static fn (Crawler $link): array => [1 === $link->filter('[data-collection-label]')->count() ? $link->filter('[data-collection-label]')->text() : $link->text(), (string) $link->attr('href'), (string) $link->attr('aria-current'), 1 === $link->filter('[data-label]')->count()]),
+                $key,
+            );
+            self::assertCount(null === $entry ? 0 : 1, $shop->filter("#menu-{$key}"), $key);
+            self::assertCount(null === $entry ? 0 : 1, $shop->filter("[data-{$key}]"), $key);
+        }
+        self::assertCount(0, $shop->filter('[data-shop-menu], #shop-panel, #shop-categories'));
         self::assertSame(self::label($locale, 'layout.navigation'), $shop->filter('nav[data-navigation]')->attr('aria-label'));
         self::assertSame([[self::label($locale, 'cart.link'), Json::string($layout, 'cartUrl')]], self::links($shop->filter('header a[data-cart]')));
         self::assertSame(self::label($locale, 'layout.languages'), $shop->filter('header nav[data-languages]')->attr('aria-label'));

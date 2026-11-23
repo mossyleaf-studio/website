@@ -126,15 +126,31 @@ async function shootTheHeader(page, size) {
         await header.screenshot({ path: 'shots/shop-header-hover-desktop.png', animations: 'disabled' });
         await page.mouse.move(0, 0);
         await page.goto('/beta/en/category/stickers');
-        await header.locator('[data-shop-menu]').click();
-        await page.mouse.move(0, 0);
-        await page.screenshot({ path: 'shots/shop-header-shop-open-desktop.png', animations: 'disabled' });
-        await page.keyboard.press('Escape');
+        for (const key of ['categories', 'collections']) {
+            await header.locator(`[data-menu="${key}"]`).click();
+            await page.mouse.move(0, 0);
+            await page.screenshot({ path: `shots/shop-header-${key}-open-desktop.png`, animations: 'disabled' });
+            await page.keyboard.press('Escape');
+        }
+        for (const width of [900, 1024]) {
+            await page.setViewportSize({ width, height: 800 });
+            await header.locator('[data-menu="categories"]').click();
+            await page.mouse.move(0, 0);
+            await page.screenshot({ path: `shots/shop-header-categories-open-${width}.png`, animations: 'disabled' });
+            await page.keyboard.press('Escape');
+        }
+        await page.setViewportSize(VIEWPORTS.desktop);
     } else {
         await page.locator('#shop .site-header__menu').click();
         await expect(page.locator('#site-navigation').getByRole('link', { name: 'About' })).toBeVisible();
         await header.screenshot({ path: 'shots/shop-header-menu-phone.png', animations: 'disabled' });
     }
+    const crawler = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport: page.viewportSize(), storageState: await page.context().storageState() })).newPage();
+    await crawler.goto('/beta/en/category/stickers');
+    await crawler.locator('.shop-prerender__header').screenshot({ path: `shots/shop-header-without-javascript-${size}.png` });
+    await crawler.locator('.shop-prerender__navigation [data-menu="collections"]').hover();
+    await crawler.screenshot({ path: `shots/shop-header-collections-without-javascript-${size}.png` });
+    await crawler.context().close();
 }
 
 async function shootTheContactForm(page, size) {
@@ -556,12 +572,13 @@ test('screenshots of the collections', async ({ page }) => {
         await page.goto('/beta/en/collection/forest-critters');
         const header = page.locator('header.site-header');
         if (size === 'desktop') {
-            await header.locator('[data-shop-menu]').click();
+            await header.locator('[data-menu="collections"]').click();
             await page.mouse.move(0, 0);
             await page.screenshot({ path: 'shots/collections-panel-desktop.png', animations: 'disabled' });
         } else {
             await page.locator('#shop .site-header__menu').click();
             await expect(header.locator('[data-collections]')).toBeVisible();
+            await page.mouse.move(0, 0);
             await header.screenshot({ path: 'shots/collections-menu-phone.png', animations: 'disabled' });
         }
         const crawler = await (await page.context().browser().newContext({ javaScriptEnabled: false, viewport, storageState: await page.context().storageState() })).newPage();
@@ -570,7 +587,7 @@ test('screenshots of the collections', async ({ page }) => {
             await crawler.screenshot({ path: `shots/collections-${name}-without-javascript-${size}.png`, fullPage: true });
         }
         await crawler.goto('/beta/en/collection/forest-critters');
-        await crawler.locator('.shop-prerender__navigation [data-shop-menu]').hover();
+        await crawler.locator('.shop-prerender__navigation [data-menu="collections"]').hover();
         await crawler.screenshot({ path: `shots/collections-panel-without-javascript-${size}.png` });
         await crawler.context().close();
     }

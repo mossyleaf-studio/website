@@ -123,7 +123,7 @@ final class ShopCollectionPagesTest extends WebTestCase
             ['key' => 'forest-critters', 'label' => 'Forest critters', 'url' => '/beta/en/collection/forest-critters', 'current' => false],
             ['key' => 'autumn-market', 'label' => 'Autumn market', 'url' => '/beta/en/collection/autumn-market', 'hidden' => true, 'current' => true],
             ['key' => 'moonlight', 'label' => 'Moonlight', 'url' => '/beta/en/collection/moonlight', 'current' => false],
-        ], Json::array(self::shopEntry($crawler), 'collections'));
+        ], self::collectionsMenu($crawler));
         self::assertSame([['/beta/en/shop/cards-lynx', true]], self::cards(self::data($client->request('GET', '/beta/en/collection/moonlight'))));
         $client->request('GET', '/beta/en/collection/winter');
         self::assertResponseStatusCodeSame(404);
@@ -155,7 +155,7 @@ final class ShopCollectionPagesTest extends WebTestCase
         $client->jsonRequest('PUT', '/api/admin/collections/order', ['ids' => [$collectionIds['Moonlight'], $collectionIds['Forest critters'], $collectionIds['Autumn market'], $collectionIds['Winter']]]);
         self::assertResponseIsSuccessful();
         self::assertSame([null, 'moonlight', 'autumn-market'], array_map(static fn (mixed $item): mixed => Json::at($item, 'key'), Json::array(self::data($client->request('GET', '/beta/en/category/cards')), 'filters', 'items')));
-        self::assertSame(['moonlight', 'forest-critters', 'autumn-market'], array_map(static fn (mixed $item): string => Json::string($item, 'key'), Json::array(self::shopEntry($client->getCrawler()), 'collections')));
+        self::assertSame(['moonlight', 'forest-critters', 'autumn-market'], array_map(static fn (mixed $item): string => Json::string($item, 'key'), self::collectionsMenu($client->getCrawler())));
     }
 
     public function testACategoryWithoutCollectionsHasNoFilters(): void
@@ -167,7 +167,7 @@ final class ShopCollectionPagesTest extends WebTestCase
 
         self::assertArrayNotHasKey('filters', self::data($crawler));
         self::assertCount(0, $crawler->filter('#shop main nav[data-filters]'));
-        self::assertSame([], Json::array(self::shopEntry($crawler), 'collections'));
+        self::assertSame([], self::collectionsMenu($crawler));
         self::assertCount(0, $crawler->filter('#shop [data-collections]'));
     }
 
@@ -266,20 +266,29 @@ final class ShopCollectionPagesTest extends WebTestCase
         $client = self::openShop();
 
         $crawler = $client->request('GET', '/en/about');
-        $entry = self::shopEntry($crawler);
-        self::assertSame([['key' => 'forest-critters', 'label' => 'Forest critters', 'url' => '/en/collection/forest-critters', 'current' => false]], $entry['collections']);
-        self::assertSame('Collections', $crawler->filter('#'.$crawler->filter('#shop nav[data-navigation] ul[data-collections]')->attr('aria-labelledby'))->text());
+        self::assertSame(['home', 'categories', 'collections', 'conventions', 'about', 'contact'], array_map(static fn (mixed $entry): string => Json::string($entry, 'key'), Json::array(self::props($crawler), 'layout', 'navigation')));
+        self::assertSame(['key' => 'collections', 'url' => '/en/collection/forest-critters', 'current' => false, 'children' => [['key' => 'forest-critters', 'label' => 'Forest critters', 'url' => '/en/collection/forest-critters', 'current' => false]]], self::menuEntry($crawler, 'collections'));
         self::assertSame([['Forest critters', '/en/collection/forest-critters', '']], self::prerenderedCollections($crawler));
-        self::assertCount(\count(Json::array($entry, 'children')), $crawler->filter('#shop nav[data-navigation] ul[data-categories] > li'));
-        self::assertCount(0, $crawler->filter('#shop nav[data-navigation] [data-categories] [data-collections]'));
+        self::assertCount(\count(Json::array(self::menuEntry($crawler, 'categories'), 'children')), $crawler->filter('#shop nav[data-navigation] #menu-categories > ul[data-categories] > li'));
+        self::assertCount(0, $crawler->filter('#shop nav[data-navigation] #menu-categories [data-collections]'));
+        self::assertCount(0, $crawler->filter('#shop nav[data-navigation] #menu-collections [data-categories]'));
 
-        $crawler = $client->request('GET', '/en/collection/forest-critters');
-        $entry = self::shopEntry($crawler);
-        self::assertTrue($entry['current']);
-        self::assertSame([true], array_map(static fn (mixed $collection): mixed => Json::at($collection, 'current'), Json::array($entry, 'collections')));
-        self::assertSame([], array_filter(Json::array($entry, 'children'), static fn (mixed $category): bool => true === Json::at($category, 'current')));
-        self::assertSame([['Forest critters', '/en/collection/forest-critters', 'page']], self::prerenderedCollections($crawler));
-        self::assertSame(['/en/shop'], $crawler->filter('nav[data-navigation] a[aria-current="true"]')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
+        foreach (['/en/collection/forest-critters', '/en/collection/forest-critters?category=prints'] as $url) {
+            $crawler = $client->request('GET', $url);
+            self::assertResponseIsSuccessful($url);
+            $entry = self::menuEntry($crawler, 'collections');
+            self::assertTrue($entry['current'], $url);
+            self::assertFalse(self::menuEntry($crawler, 'categories')['current'], $url);
+            self::assertSame([true], array_map(static fn (mixed $collection): mixed => Json::at($collection, 'current'), Json::array($entry, 'children')), $url);
+            self::assertSame([], array_filter(Json::array(self::menuEntry($crawler, 'categories'), 'children'), static fn (mixed $category): bool => true === Json::at($category, 'current')), $url);
+            self::assertSame([['Forest critters', '/en/collection/forest-critters', 'page']], self::prerenderedCollections($crawler), $url);
+            self::assertSame(['/en/collection/forest-critters'], $crawler->filter('nav[data-navigation] a[aria-current="true"]')->each(static fn (Crawler $link): string => (string) $link->attr('href')), $url);
+        }
+
+        $crawler = $client->request('GET', '/en/category/prints?collection=forest-critters');
+        self::assertTrue(self::menuEntry($crawler, 'categories')['current']);
+        self::assertFalse(self::menuEntry($crawler, 'collections')['current']);
+        self::assertSame([false], array_map(static fn (mixed $collection): mixed => Json::at($collection, 'current'), Json::array(self::menuEntry($crawler, 'collections'), 'children')));
 
         $client->loginUser(SecurityUser::fromUser(self::createUser()));
         $client->jsonRequest('DELETE', '/api/admin/collections/'.self::collectionIds()['Forest critters'].'/visibility');
@@ -287,8 +296,9 @@ final class ShopCollectionPagesTest extends WebTestCase
         $client->getCookieJar()->clear();
 
         $crawler = $client->request('GET', '/en/category/prints');
-        self::assertSame([], Json::array(self::shopEntry($crawler), 'collections'));
-        self::assertCount(0, $crawler->filter('#shop [data-collections]'));
+        self::assertSame(['home', 'categories', 'conventions', 'about', 'contact'], array_map(static fn (mixed $entry): string => Json::string($entry, 'key'), Json::array(self::props($crawler), 'layout', 'navigation')));
+        self::assertCount(0, $crawler->filter('#shop [data-collections], #shop #menu-collections, #shop [data-menu="collections"]'));
+        self::assertStringNotContainsString('forest-critters', $crawler->filter('#shop')->html());
         self::assertArrayNotHasKey('filters', self::data($crawler));
     }
 
@@ -300,8 +310,8 @@ final class ShopCollectionPagesTest extends WebTestCase
         $crawler = $client->request('GET', '/beta/fr/');
 
         self::assertSame(
-            array_map(static fn (mixed $collection): array => [Json::string($collection, 'label'), Json::string($collection, 'url'), true === (Json::array($collection)['hidden'] ?? false)], Json::array(self::shopEntry($crawler), 'collections')),
-            $crawler->filter('#shop nav[data-navigation] ul[data-collections] a')->each(static fn (Crawler $link): array => [$link->filter('[data-collection-label]')->text(), (string) $link->attr('href'), 1 === $link->filter('[data-label]')->count()]),
+            array_map(static fn (mixed $collection): array => [Json::string($collection, 'label'), Json::string($collection, 'url'), true === (Json::array($collection)['hidden'] ?? false)], self::collectionsMenu($crawler)),
+            $crawler->filter('#shop nav[data-navigation] #menu-collections > ul[data-collections] > li > a')->each(static fn (Crawler $link): array => [$link->filter('[data-collection-label]')->text(), (string) $link->attr('href'), 1 === $link->filter('[data-label]')->count()]),
         );
         self::assertSame('Bestioles de la forêt', $crawler->filter('#shop ul[data-collections] [data-collection-label]')->first()->text());
         self::assertSame('Masqué', $crawler->filter('#shop ul[data-collections] [data-label]')->text());
@@ -384,7 +394,7 @@ final class ShopCollectionPagesTest extends WebTestCase
 
         $keys = [];
         foreach (['en', 'fr'] as $locale) {
-            $collections = Json::array(self::shopEntry($client->request('GET', "/beta/{$locale}/")), 'collections');
+            $collections = self::collectionsMenu($client->request('GET', "/beta/{$locale}/"));
             $keys[$locale] = array_map(static fn (mixed $collection): string => Json::string($collection, 'key'), $collections);
             foreach ($collections as $collection) {
                 self::assertCount(1, Json::array(self::data($client->request('GET', Json::string($collection, 'url'))), 'products'), Json::string($collection, 'url'));
@@ -418,7 +428,7 @@ final class ShopCollectionPagesTest extends WebTestCase
         $client->request('GET', '/beta/en/nowhere');
 
         self::assertResponseStatusCodeSame(404);
-        self::assertSame(['forest-1', 'forest-2'], array_map(static fn (mixed $collection): string => Json::string($collection, 'key'), Json::array(self::shopEntry($client->getCrawler()), 'collections')));
+        self::assertSame(['forest-1', 'forest-2'], array_map(static fn (mixed $collection): string => Json::string($collection, 'key'), self::collectionsMenu($client->getCrawler())));
         $profile = $client->getProfile();
         self::assertInstanceOf(Profile::class, $profile);
         $collector = $profile->getCollector('db');
@@ -533,7 +543,7 @@ final class ShopCollectionPagesTest extends WebTestCase
     /** @return list<array{string, string, string}> */
     private static function prerenderedCollections(Crawler $crawler): array
     {
-        return $crawler->filter('#shop nav[data-navigation] ul[data-collections] a')->each(static fn (Crawler $link): array => [$link->filter('[data-collection-label]')->text(), (string) $link->attr('href'), (string) $link->attr('aria-current')]);
+        return $crawler->filter('#shop nav[data-navigation] #menu-collections > ul[data-collections] > li > a')->each(static fn (Crawler $link): array => [$link->filter('[data-collection-label]')->text(), (string) $link->attr('href'), (string) $link->attr('aria-current')]);
     }
 
     private static function hasKey(mixed $props, string $name): bool
@@ -561,12 +571,20 @@ final class ShopCollectionPagesTest extends WebTestCase
     }
 
     /** @return array<mixed> */
-    private static function shopEntry(Crawler $crawler): array
+    private static function menuEntry(Crawler $crawler, string $key): array
     {
-        $entry = array_find(Json::array(self::props($crawler), 'layout', 'navigation'), static fn (mixed $entry): bool => 'shop' === Json::at($entry, 'key'));
+        $entry = array_find(Json::array(self::props($crawler), 'layout', 'navigation'), static fn (mixed $entry): bool => $key === Json::at($entry, 'key'));
         self::assertIsArray($entry);
 
         return $entry;
+    }
+
+    /** @return array<mixed> */
+    private static function collectionsMenu(Crawler $crawler): array
+    {
+        $entry = array_find(Json::array(self::props($crawler), 'layout', 'navigation'), static fn (mixed $entry): bool => 'collections' === Json::at($entry, 'key'));
+
+        return null === $entry ? [] : Json::array($entry, 'children');
     }
 
     /** @return array<mixed> */

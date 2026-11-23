@@ -12,21 +12,21 @@ defineProps({
 });
 
 const open = ref(false);
-const shopOpen = ref(false);
-let shopEntry = null;
-const keepShopEntry = (element) => {
-    shopEntry = element;
+const openMenu = ref(null);
+const dropdowns = {};
+const toggle = (key) => {
+    openMenu.value = openMenu.value === key ? null : key;
 };
-const closeShop = (event) => {
-    if (!shopOpen.value) return;
-    shopOpen.value = false;
-    event.currentTarget.querySelector('[data-shop-menu]').focus();
+const close = (key, event) => {
+    if (openMenu.value !== key) return;
+    openMenu.value = null;
+    event.currentTarget.querySelector('[data-menu]').focus();
 };
-const leaveShop = (event) => {
-    if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) shopOpen.value = false;
+const leave = (key, event) => {
+    if (openMenu.value === key && event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) openMenu.value = null;
 };
 const pressOutside = (event) => {
-    if (shopOpen.value && !shopEntry?.contains(event.target)) shopOpen.value = false;
+    if (openMenu.value && !dropdowns[openMenu.value]?.contains(event.target)) openMenu.value = null;
 };
 
 onMounted(() => document.addEventListener('pointerdown', pressOutside));
@@ -56,37 +56,36 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
             </button>
             <ul id="site-navigation" :class="['site-header__links', { 'site-header__links--open': open }]">
                 <template v-for="entry in navigation" :key="entry.key">
-                    <li v-if="entry.children" :ref="keepShopEntry" class="site-header__shop" @keydown.esc="closeShop" @focusout="leaveShop">
+                    <li
+                        v-if="entry.children"
+                        :ref="(element) => (dropdowns[entry.key] = element)"
+                        class="site-header__dropdown"
+                        @keydown.esc="close(entry.key, $event)"
+                        @focusout="leave(entry.key, $event)"
+                    >
                         <button
-                            :class="['site-header__link', 'site-header__shop-button', { 'site-header__link--current': entry.current }]"
+                            :class="['site-header__link', 'site-header__toggle', { 'site-header__link--current': entry.current }]"
                             type="button"
-                            :aria-expanded="shopOpen"
-                            aria-controls="shop-panel"
+                            :aria-expanded="openMenu === entry.key"
+                            :aria-controls="`menu-${entry.key}`"
                             :aria-current="entry.current ? 'true' : undefined"
-                            data-shop-menu
-                            @click="shopOpen = !shopOpen"
+                            :data-menu="entry.key"
+                            @click="toggle(entry.key)"
                         >
-                            {{ $t('nav.shop') }}
+                            {{ $t(`nav.${entry.key}`) }}
                             <ChevronDown class="site-header__chevron" aria-hidden="true" />
                         </button>
-                        <a id="shop-categories-label" :class="['site-header__link', 'site-header__label', { 'site-header__link--current': entry.current }]" :href="entry.url" :aria-current="entry.current ? 'true' : undefined">{{ $t('nav.shop') }}</a>
-                        <div id="shop-panel" :class="['site-header__panel', { 'site-header__panel--open': shopOpen }]">
-                            <ul id="shop-categories" aria-labelledby="shop-categories-label" class="site-header__categories" data-categories>
+                        <div :id="`menu-${entry.key}`" :class="['site-header__panel', { 'site-header__panel--open': openMenu === entry.key }]">
+                            <h2 :id="`menu-${entry.key}-label`" :class="['site-header__group', { 'site-header__group--current': entry.current }]" :aria-current="entry.current ? 'true' : undefined">{{ $t(`nav.${entry.key}`) }}</h2>
+                            <ul :aria-labelledby="`menu-${entry.key}-label`" class="site-header__children" v-bind="{ ['data-' + entry.key]: '' }">
                                 <li v-for="child in entry.children" :key="child.key">
-                                    <a :class="['site-header__category', { 'site-header__category--current': child.current }]" :href="child.url" :aria-current="child.current ? 'page' : undefined">{{ child.label }}</a>
+                                    <a :class="['site-header__child', { 'site-header__child--current': child.current }]" :href="child.url" :aria-current="child.current ? 'page' : undefined">
+                                        <span v-if="entry.key === 'collections'" data-collection-label>{{ child.label }}</span>
+                                        <template v-else>{{ child.label }}</template>
+                                        <template v-if="child.hidden">{{ ' ' }}<span class="site-header__hidden" data-label>{{ $t('product.hidden') }}</span></template>
+                                    </a>
                                 </li>
                             </ul>
-                            <template v-if="entry.collections.length">
-                                <h2 id="shop-collections-label" class="site-header__group">{{ $t('shop.collections') }}</h2>
-                                <ul aria-labelledby="shop-collections-label" class="site-header__categories" data-collections>
-                                    <li v-for="collection in entry.collections" :key="collection.key">
-                                        <a :class="['site-header__category', { 'site-header__category--current': collection.current }]" :href="collection.url" :aria-current="collection.current ? 'page' : undefined">
-                                            <span data-collection-label>{{ collection.label }}</span>
-                                            <template v-if="collection.hidden">{{ ' ' }}<span class="site-header__hidden" data-label>{{ $t('product.hidden') }}</span></template>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </template>
                         </div>
                     </li>
                     <li v-else>
@@ -235,13 +234,13 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     box-shadow: inset 0 0.25rem 0 var(--color-ink);
 }
 
-.site-header__shop {
+.site-header__dropdown {
     justify-self: stretch;
     display: grid;
     justify-items: center;
 }
 
-.site-header__shop-button {
+.site-header__toggle {
     display: none;
     gap: var(--space-1);
     line-height: inherit;
@@ -257,7 +256,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     transition: rotate var(--transition);
 }
 
-.site-header__shop-button[aria-expanded='true'] .site-header__chevron {
+.site-header__toggle[aria-expanded='true'] .site-header__chevron {
     rotate: 180deg;
 }
 
@@ -272,22 +271,47 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     box-shadow: var(--shadow-sheet);
 }
 
-.site-header__categories {
-    display: grid;
+.site-header__dropdown:has(+ .site-header__dropdown) .site-header__panel {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    clip-path: inset(-2rem -2rem 0);
+}
+
+.site-header__dropdown + .site-header__dropdown .site-header__panel {
+    margin-top: -0.0625rem;
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    clip-path: inset(0 -2rem -2rem);
 }
 
 .site-header__group {
-    margin: var(--space-2) var(--space-5) 0;
-    padding: var(--space-3) 0 var(--space-1);
+    margin: 0 var(--space-5);
+    padding: var(--space-2) 0 var(--space-1);
     font-family: var(--font-ui);
     font-size: var(--font-size-xs);
     font-weight: 600;
     line-height: 1.3;
     color: var(--color-muted);
+}
+
+.site-header__group--current {
+    font-weight: 700;
+    color: var(--color-ink);
+}
+
+.site-header__dropdown + .site-header__dropdown .site-header__group {
+    margin-top: var(--space-2);
+    padding-top: var(--space-3);
     border-top: 0.0625rem solid var(--color-edge);
 }
 
-.site-header__category {
+.site-header__children {
+    display: grid;
+}
+
+.site-header__child {
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -301,18 +325,18 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     text-decoration: none;
 }
 
-.site-header__category:hover {
+.site-header__child:hover {
     text-decoration: underline;
     text-decoration-thickness: 0.0625rem;
     background: var(--color-wash-leaf);
 }
 
-.site-header__category--current {
+.site-header__child--current {
     font-weight: 700;
     box-shadow: inset 0.25rem 0 0 var(--color-ink);
 }
 
-.site-header__category:hover .site-header__hidden {
+.site-header__child:hover .site-header__hidden {
     color: var(--color-ink);
 }
 
@@ -322,14 +346,14 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
     color: var(--color-muted);
 }
 
-.site-header__category:focus-visible {
+.site-header__child:focus-visible {
     outline-color: var(--color-ink);
     outline-offset: -0.1875rem;
 }
 
 @media (forced-colors: active) {
     .site-header__link--current,
-    .site-header__category--current {
+    .site-header__child--current {
         text-decoration: underline;
     }
 
@@ -368,30 +392,38 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', pressOutside))
         padding-inline: var(--space-4);
     }
 
-    .site-header__shop {
+    .site-header__dropdown {
         position: relative;
         display: block;
     }
 
-    .site-header__shop-button {
+    .site-header__toggle {
         display: flex;
     }
 
-    .site-header__label {
+    .site-header__group {
         display: none;
     }
 
-    .site-header__panel {
+    .site-header__panel,
+    .site-header__dropdown:has(+ .site-header__dropdown) .site-header__panel,
+    .site-header__dropdown + .site-header__dropdown .site-header__panel {
         position: absolute;
         top: 100%;
         left: 50%;
         z-index: 1;
-        display: none;
         width: max-content;
         min-width: 13rem;
         max-width: min(22rem, 100vw - 2 * var(--page-gutter));
         margin: 0;
+        padding: var(--space-2) 0;
+        border-radius: var(--radius-sm);
+        clip-path: none;
         translate: -50% 0;
+    }
+
+    .site-header__panel {
+        display: none;
     }
 
     .site-header__panel--open {

@@ -57,10 +57,10 @@ test('a category gets its French name', async ({ page }) => {
     expect((await labels.json()).map((category) => category.labelFr)).toContain(french);
 });
 
-test('moving a category in the dialog reorders the Shop menu of the preview', async ({ page }) => {
+test('moving a category in the dialog reorders the Categories menu of the preview', async ({ page }) => {
     const menu = async () => {
         await page.goto('/beta/en/');
-        await page.locator('#shop header.site-header [data-shop-menu]').click();
+        await page.locator('#shop header.site-header [data-menu="categories"]').click();
         return page.locator('#shop header.site-header [data-categories] a').allTextContents();
     };
     const move = async (direction, index) => {

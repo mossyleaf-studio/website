@@ -16,9 +16,9 @@ test('a category page shows its products in admin order under its title, without
     expect((await titles(page).allTextContents()).join()).not.toContain('Wall calendar');
 });
 
-test('choosing a category in the Shop panel shows only its products and marks the entry and the category current', async ({ page }) => {
+test('choosing a category in the Categories panel shows only its products and marks the entry and the category current', async ({ page }) => {
     await page.goto('/beta/en/');
-    const shop = page.locator('#shop header.site-header [data-shop-menu]');
+    const shop = page.locator('#shop header.site-header [data-menu="categories"]');
     const panel = page.locator('#shop header.site-header [data-categories]');
     await shop.click();
     await panel.getByRole('link', { name: 'Prints' }).click();

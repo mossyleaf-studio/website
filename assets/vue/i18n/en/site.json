@@ -8,7 +8,8 @@
     },
     "nav": {
         "home": "Home",
-        "shop": "Shop",
+        "categories": "Categories",
+        "collections": "Collections",
         "conventions": "Conventions",
         "about": "About",
         "contact": "Contact"
@@ -55,9 +56,6 @@
         "lessOf": "One less: {product}",
         "moreOf": "One more: {product}",
         "collection": "Collection:"
-    },
-    "shop": {
-        "collections": "Collections"
     },
     "filter": {
         "all": "All",

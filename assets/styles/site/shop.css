@@ -269,7 +269,7 @@ html[data-layout="shop"] .shop-prerender__navigation > ul {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 0 var(--space-3);
+    gap: 0;
 }
 
 html[data-layout="shop"] .shop-prerender__navigation {
@@ -278,7 +278,7 @@ html[data-layout="shop"] .shop-prerender__navigation {
 }
 
 html[data-layout="shop"] .shop-prerender__navigation a {
-    padding: 0.25rem var(--space-4) 0;
+    padding: 0.25rem var(--space-2) 0;
     font-family: var(--font-ui);
     font-size: 1rem;
     font-weight: 500;
@@ -290,7 +290,7 @@ html[data-layout="shop"] .shop-prerender__navigation a:is(:hover, [aria-current]
     box-shadow: inset 0 0.25rem 0 var(--color-ink);
 }
 
-html[data-layout="shop"] .shop-prerender__shop > a {
+html[data-layout="shop"] .shop-prerender__dropdown > a {
     gap: var(--space-1);
 }
 
@@ -317,19 +317,8 @@ html[data-layout="shop"] .shop-prerender__panel {
     box-shadow: var(--shadow-sheet);
 }
 
-html[data-layout="shop"] .shop-prerender__categories {
+html[data-layout="shop"] .shop-prerender__children {
     display: grid;
-}
-
-html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__group {
-    margin: var(--space-2) var(--space-5) 0;
-    padding: var(--space-3) 0 var(--space-1);
-    font-family: var(--font-ui);
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    line-height: 1.3;
-    color: var(--color-muted);
-    border-top: 0.0625rem solid var(--color-edge);
 }
 
 html[data-layout="shop"] .shop-prerender__quiet {
@@ -338,7 +327,7 @@ html[data-layout="shop"] .shop-prerender__quiet {
     color: var(--color-muted);
 }
 
-html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__categories a {
+html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__children a {
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -347,7 +336,7 @@ html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__categories
     color: var(--color-ink);
 }
 
-html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__categories a:hover {
+html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__children a:hover {
     color: var(--color-ink);
     text-decoration: underline;
     text-decoration-thickness: 0.0625rem;
@@ -355,22 +344,22 @@ html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__categories
     box-shadow: none;
 }
 
-html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__categories a[aria-current] {
+html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__children a[aria-current] {
     font-weight: 700;
     color: var(--color-ink);
     box-shadow: inset 0.25rem 0 0 var(--color-ink);
 }
 
-html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__categories a:hover .shop-prerender__quiet {
+html[data-layout="shop"] .shop-prerender__navigation .shop-prerender__children a:hover .shop-prerender__quiet {
     color: var(--color-ink);
 }
 
-html[data-layout="shop"] .shop-prerender__categories a:focus-visible {
+html[data-layout="shop"] .shop-prerender__children a:focus-visible {
     outline-color: var(--color-ink);
     outline-offset: -0.1875rem;
 }
 
-html[data-layout="shop"] .shop-prerender__shop:not(:hover, :focus-within) > .shop-prerender__panel {
+html[data-layout="shop"] .shop-prerender__dropdown:not(:hover, :focus-within) > .shop-prerender__panel {
     width: 1px;
     min-width: 0;
     height: 1px;
@@ -380,7 +369,7 @@ html[data-layout="shop"] .shop-prerender__shop:not(:hover, :focus-within) > .sho
     box-shadow: none;
 }
 
-html[data-layout="shop"] .shop-prerender__shop:is(:hover, :focus-within) .shop-prerender__chevron {
+html[data-layout="shop"] .shop-prerender__dropdown:is(:hover, :focus-within) .shop-prerender__chevron {
     rotate: 180deg;
 }
 
@@ -470,7 +459,15 @@ html[data-layout="shop"] .shop-prerender__languages li + li a {
         max-height: 5.5rem;
     }
 
-    html[data-layout="shop"] .shop-prerender__shop {
+    html[data-layout="shop"] .shop-prerender__navigation > ul {
+        gap: 0 var(--space-3);
+    }
+
+    html[data-layout="shop"] .shop-prerender__navigation a {
+        padding-inline: var(--space-4);
+    }
+
+    html[data-layout="shop"] .shop-prerender__dropdown {
         position: relative;
     }
 }

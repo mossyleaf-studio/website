@@ -23,23 +23,22 @@
         <nav class="shop-prerender__navigation" aria-label="{{ 'layout.navigation'|site_t }}" data-navigation>
             <ul>
                 {% for entry in layout.navigation %}
-                    <li{% if entry.children is defined %} class="shop-prerender__shop"{% endif %}>
-                        <a href="{{ entry.url }}"{% if entry.current %} aria-current="{{ entry.children is defined ? 'true' : 'page' }}"{% endif %}{% if entry.children is defined %} data-shop-menu{% endif %}>{{ ('nav.' ~ entry.key)|site_t }}{% if entry.children is defined %}<svg class="shop-prerender__chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>{% endif %}</a>
+                    <li{% if entry.children is defined %} class="shop-prerender__dropdown"{% endif %}>
+                        <a href="{{ entry.url }}"{% if entry.current %} aria-current="{{ entry.children is defined ? 'true' : 'page' }}"{% endif %}{% if entry.children is defined %} data-menu="{{ entry.key }}"{% endif %}>{{ ('nav.' ~ entry.key)|site_t }}{% if entry.children is defined %}<svg class="shop-prerender__chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>{% endif %}</a>
                         {%- if entry.children is defined %}
-                            <div class="shop-prerender__panel">
-                                <ul class="shop-prerender__categories" data-categories>
+                            <div class="shop-prerender__panel" id="menu-{{ entry.key }}">
+                                <ul class="shop-prerender__children" aria-label="{{ ('nav.' ~ entry.key)|site_t }}" data-{{ entry.key }}>
                                     {% for child in entry.children %}
-                                        <li><a href="{{ child.url }}"{% if child.current %} aria-current="page"{% endif %}>{{ child.label }}</a></li>
+                                        <li><a href="{{ child.url }}"{% if child.current %} aria-current="page"{% endif %}>
+                                            {%- if entry.key == 'collections' -%}
+                                                <span data-collection-label>{{ child.label }}</span>
+                                            {%- else -%}
+                                                {{ child.label }}
+                                            {%- endif -%}
+                                            {%- if child.hidden ?? false %} <span class="shop-prerender__quiet" data-label>{{ 'product.hidden'|site_t }}</span>{% endif -%}
+                                        </a></li>
                                     {% endfor %}
                                 </ul>
-                                {% if entry.collections is not empty %}
-                                    <h2 class="shop-prerender__group" id="shop-collections-title">{{ 'shop.collections'|site_t }}</h2>
-                                    <ul class="shop-prerender__categories" aria-labelledby="shop-collections-title" data-collections>
-                                        {% for collection in entry.collections %}
-                                            <li><a href="{{ collection.url }}"{% if collection.current %} aria-current="page"{% endif %}><span data-collection-label>{{ collection.label }}</span>{% if collection.hidden ?? false %} <span class="shop-prerender__quiet" data-label>{{ 'product.hidden'|site_t }}</span>{% endif %}</a></li>
-                                        {% endfor %}
-                                    </ul>
-                                {% endif %}
                             </div>
                         {% endif %}
                     </li>
