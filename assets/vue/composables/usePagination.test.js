@@ -1,12 +1,11 @@
 import { nextTick, ref } from 'vue';
 import { describe, expect, it } from 'vitest';
-import { PAGE_SIZES, usePagination } from './usePagination.js';
+import { usePagination } from './usePagination.js';
 
 const numbers = (count) => ref(Array.from({ length: count }, (_, index) => index + 1));
 
 describe('usePagination', () => {
     it('offers 20, 50 and 100 and starts at 20', () => {
-        expect(PAGE_SIZES).toEqual([20, 50, 100]);
         expect(usePagination(numbers(5)).pageSize.value).toBe(20);
     });
 

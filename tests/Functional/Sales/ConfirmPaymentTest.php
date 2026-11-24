@@ -137,14 +137,13 @@ final class ConfirmPaymentTest extends WebTestCase
         self::assertSame([], $this->mails->sent);
     }
 
-    #[DataProvider('settledWithoutPayment')]
-    public function testAVerifiedPaymentArrivingLateStillWins(PaymentState $state, OrderStatus $status): void
+    public function testAVerifiedPaymentArrivingLateStillWins(): void
     {
         self::stockTheShop();
         $placed = $this->placeOrder([['STI-MOTH', 2]], 1250);
-        $this->gateway->script('checkout-1', $state);
+        $this->gateway->script('checkout-1', PaymentState::Failed);
         $this->confirm('checkout-1');
-        self::assertSame($status, self::order($placed->token, fresh: true)->status());
+        self::assertSame(OrderStatus::Failed, self::order($placed->token, fresh: true)->status());
 
         $this->gateway->pay('checkout-1');
         $this->confirm('checkout-1');

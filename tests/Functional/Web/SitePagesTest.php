@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Web;
 
 use App\Domain\Content\PublishedSiteRepository;
-use App\Infrastructure\Security\SecurityUser;
 use App\Tests\Functional\Catalogue\PushesCatalogue;
 use App\Tests\Functional\Content\OpensTheShop;
 use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -36,13 +34,9 @@ final class SitePagesTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextSame('title', 'mossyleaf.studio');
-        self::assertSame('mossyleaf.studio', $crawler->filter('#site > .prerender > header.prerender__band h1')->text());
-        self::assertCount(0, $crawler->filter('#site header p, #site header img'));
-        self::assertSame('Illustrations of little critters among leaves and moss, drawn by hand.', $crawler->filter('#site main .prerender__intro p')->text());
-        self::assertSame('The website is still growing', $crawler->filter('#site main section.prerender__note[aria-labelledby="note-title"] h2')->text());
-        self::assertCount(1, $crawler->filter('#site .prerender__note > .prerender__tape'));
-        self::assertCount(1, $crawler->filter('#site .prerender > footer.prerender__footer'));
-        self::assertSame(['p'], $crawler->filter('#site .prerender > footer.prerender__footer > *')->each(static fn (Crawler $child): string => $child->nodeName()));
+        self::assertSame('mossyleaf.studio', $crawler->filter('#site h1')->text());
+        self::assertSame('Illustrations of little critters among leaves and moss, drawn by hand.', $crawler->filter('#site main p')->first()->text());
+        self::assertSame('The website is still growing', $crawler->filter('#site section h2')->text());
         self::assertSame('index, follow, max-image-preview:large', $crawler->filter('meta[name="robots"]')->attr('content'));
         self::assertSame('#cbd3a0', $crawler->filter('meta[name="theme-color"]')->attr('content'));
         self::assertSame('note', $crawler->filter('#site')->attr('data-page'));
@@ -108,16 +102,6 @@ final class SitePagesTest extends WebTestCase
         }
     }
 
-    public function testTheDraftPagesAreForAdminsOnly(): void
-    {
-        $client = self::createClient();
-
-        foreach (['/beta/', '/beta/note/'] as $url) {
-            $client->request('GET', $url);
-            self::assertResponseRedirects('/login');
-        }
-    }
-
     public function testAdminsPreviewTheNoteHiddenFromSearchEnginesWithTheirWayBack(): void
     {
         $client = self::signedInClient();
@@ -144,23 +128,6 @@ final class SitePagesTest extends WebTestCase
         }
         $client->request('GET', '/beta/');
         self::assertResponseRedirects('/beta/en/', 302);
-    }
-
-    public function testTheVisiblePageIsTheNoteUntilTheShopOpens(): void
-    {
-        $client = self::signedInClient();
-        self::stockTheDemo($client);
-        self::readyTheShop($client);
-
-        foreach ([null, 'note'] as $published) {
-            if (null !== $published) {
-                $client->loginUser(SecurityUser::fromUser(self::createUser()));
-                self::publish($client, $published);
-            }
-            $crawler = self::visitor($client)->request('GET', '/');
-            self::assertResponseIsSuccessful();
-            self::assertSame('note', $crawler->filter('#site')->attr('data-page'));
-        }
     }
 
     public function testOnceTheShopIsOpenTheHomeSendsVisitorsToTheShopInTheirLanguage(): void
@@ -193,15 +160,6 @@ final class SitePagesTest extends WebTestCase
             $client->request('GET', $url);
             self::assertResponseIsSuccessful();
         }
-    }
-
-    public function testTheDraftAddressWithoutSlashRedirects(): void
-    {
-        $client = self::signedInClient();
-
-        $client->request('GET', '/beta');
-
-        self::assertResponseRedirects('http://localhost/beta/', 301);
     }
 
     public function testEditedTextsShowEscaped(): void

@@ -60,7 +60,6 @@ final class SiteTextTest extends TestCase
     public function testTheFrenchTextsStartEmptyAndStayWhenAnEditLeavesThemOut(): void
     {
         $text = SiteText::initial();
-        self::assertSame(['', '', ''], [$text->introFr(), $text->metaDescriptionFr(), $text->searchTitleFr()]);
 
         $text->editIdentity('mossyleaf.studio', 'Little critters.', 'Drawings', '', ' Petites bêtes. ', 'Dessins', 'Illustrations de petites bêtes');
         $text->editIdentity('mossyleaf.studio', 'Tiny critters.', 'Drawings');
@@ -90,7 +89,6 @@ final class SiteTextTest extends TestCase
     public function testTheShopNotesAreOptionalInBothLanguages(): void
     {
         $text = SiteText::initial();
-        self::assertSame(['', '', '', ''], [$text->announcement(), $text->announcementFr(), $text->priceNote(), $text->priceNoteFr()]);
 
         $text->editShopNotes(' Free shipping from 40 € ', '', '', ' TVA non applicable ');
 

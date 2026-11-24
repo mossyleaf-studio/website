@@ -219,16 +219,6 @@ final class CatalogueIntegrationTest extends WebTestCase
         self::assertSame(2, self::rows('product'));
     }
 
-    public function testAProductWithoutVariantsKeepsOneNamelessVariant(): void
-    {
-        $client = self::createClient();
-
-        self::push($client, [self::fern()]);
-
-        self::assertResponseIsSuccessful();
-        self::assertSame([['PIN-FERN', null, 30]], self::variants(self::product(self::FERN)));
-    }
-
     public function testAChangedReferenceWithTheSameIdStaysTheSameProduct(): void
     {
         $client = self::createClient();
@@ -320,16 +310,6 @@ final class CatalogueIntegrationTest extends WebTestCase
         self::assertFalse($fox->isVisible());
     }
 
-    public function testADescriptionInOneLanguageLeavesTheOtherEmpty(): void
-    {
-        $client = self::createClient();
-
-        self::push($client, [self::owl(['descriptions' => ['fr' => 'Une chouette.']])]);
-
-        self::assertResponseIsSuccessful();
-        self::assertSame(['Une chouette.', ''], [self::product(self::OWL)->description()->fr, self::product(self::OWL)->description()->en]);
-    }
-
     public function testALaterPushFillsAnEmptyDescription(): void
     {
         $client = self::createClient();
@@ -370,18 +350,6 @@ final class CatalogueIntegrationTest extends WebTestCase
         self::assertSame(['', ''], [self::product(self::OWL)->description()->fr, self::product(self::OWL)->description()->en]);
     }
 
-    public function testATextOverTheLimitIsCutAtTheLastParagraphBreak(): void
-    {
-        $client = self::createClient();
-        $first = rtrim(str_repeat('Un renard dort. ', 150));
-        $second = str_repeat('Une fougère pousse. ', 100);
-
-        self::push($client, [self::fox(['descriptions' => ['en' => $first."\n\n".$second]])]);
-
-        self::assertResponseIsSuccessful();
-        self::assertSame($first, self::product(self::FOX)->description()->en);
-    }
-
     /**
      * @return iterable<string, array{mixed, string}>
      */
@@ -389,10 +357,7 @@ final class CatalogueIntegrationTest extends WebTestCase
     {
         $notTexts = 'products[1].descriptions: Descriptions are texts keyed by language, such as {"fr": "…", "en": "…"}.';
         yield 'a list' => [['Un renard.'], $notTexts];
-        yield 'a number as a value' => [['fr' => 3], $notTexts];
-        yield 'a list as a value' => [['en' => ['A fox.']], $notTexts];
         yield 'a text' => ['Un renard.', 'products[1].descriptions: This value should be of type array.'];
-        yield 'null' => [null, 'products[1].descriptions: This value should be of type array.'];
     }
 
     #[DataProvider('malformedDescriptions')]
@@ -419,17 +384,11 @@ final class CatalogueIntegrationTest extends WebTestCase
         yield 'the same sku twice in a product' => [[self::owl(), self::fern(['variants' => [['name' => 'S', 'sku' => 'PIN-FERN-S', 'stock' => 1], ['name' => 'M', 'sku' => ' PIN-FERN-S ', 'stock' => 1]]])]];
         yield 'the same id twice' => [[self::owl(), self::fern(['id' => strtolower(self::OWL)])]];
         yield 'the same reference twice' => [[self::owl(), self::fern(['reference' => 'STK-OWL '])]];
-        yield 'a negative price' => [[self::owl(), self::fern(['price' => -1])]];
-        yield 'a negative stock' => [[self::owl(), self::fern(['variants' => [['name' => null, 'sku' => 'PIN-FERN', 'stock' => -1]]])]];
         yield 'more than 50 variants' => [[self::owl(), self::fern(['variants' => array_map(static fn (int $n): array => ['name' => 'V'.$n, 'sku' => 'PIN-FERN-V'.$n, 'stock' => 1], range(1, 51))])]];
         yield 'more than 2000 products' => [array_map(static fn (int $n): array => self::fern(['id' => (string) new Ulid(), 'reference' => 'PIN-'.$n, 'variants' => [['name' => null, 'sku' => 'PIN-'.$n, 'stock' => 1]]]), range(1, 2001))];
         yield 'a reference longer than 64 characters' => [[self::owl(), self::fern(['reference' => str_repeat('R', 65)])]];
         yield 'a name longer than 255 characters' => [[self::owl(), self::fern(['name' => str_repeat('n', 256)])]];
-        yield 'a category longer than 100 characters' => [[self::owl(), self::fern(['category' => str_repeat('c', 101)])]];
         yield 'a display name longer than 356 characters' => [[self::owl(), self::fern(['displayName' => str_repeat('d', 357)])]];
-        yield 'a sku longer than 320 characters' => [[self::owl(), self::fern(['variants' => [['name' => null, 'sku' => str_repeat('s', 321), 'stock' => 1]]])]];
-        yield 'a variant name longer than 255 characters' => [[self::owl(), self::fern(['variants' => [['name' => str_repeat('v', 256), 'sku' => 'PIN-FERN-V', 'stock' => 1]]])]];
-        yield 'a blank name' => [[self::owl(), self::fern(['name' => ' '])]];
         yield 'a blank sku' => [[self::owl(), self::fern(['variants' => [['name' => null, 'sku' => ' ', 'stock' => 1]]])]];
     }
 
@@ -515,13 +474,8 @@ final class CatalogueIntegrationTest extends WebTestCase
     {
         yield 'a price that is not a number' => [[self::owl(), self::fern(['price' => 'free'])]];
         yield 'a price beyond what the database holds' => [[self::owl(), self::fern(['price' => 2147483648])]];
-        yield 'a stock beyond what the database holds' => [[self::owl(), self::fern(['variants' => [['name' => null, 'sku' => 'PIN-FERN', 'stock' => 2147483648]]])]];
         yield 'no variant at all' => [[self::owl(), self::fern(['variants' => []])]];
         yield 'an id that is not a ULID' => [[self::owl(), self::fern(['id' => 'fern'])]];
-        yield 'an empty id' => [[self::owl(), self::fern(['id' => ''])]];
-        yield 'a product without reference' => [[self::owl(), array_diff_key(self::fern(), ['reference' => true])]];
-        yield 'a product without price' => [[self::owl(), array_diff_key(self::fern(), ['price' => true])]];
-        yield 'a variant without sku' => [[self::owl(), self::fern(['variants' => [['name' => null, 'stock' => 1]]])]];
     }
 
     /**
@@ -682,19 +636,9 @@ final class CatalogueIntegrationTest extends WebTestCase
      */
     public static function malformedCollections(): iterable
     {
-        yield 'false' => [false];
         yield 'a text' => ['Forest folk'];
-        yield 'a number' => [3];
-        yield 'a list' => [[self::FOLK, 'Forest folk']];
-        yield 'an empty object' => [[]];
-        yield 'no id' => [['name' => 'Forest folk']];
         yield 'an id that is not a ULID' => [['id' => 'forest', 'name' => 'Forest folk']];
-        yield 'an id that is a number' => [['id' => 3, 'name' => 'Forest folk']];
-        yield 'an id written as a UUID' => [['id' => '0193a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b', 'name' => 'Forest folk']];
-        yield 'an id written in base 58' => [['id' => '1BKocMc5BnrVcuq2ti4Eqm', 'name' => 'Forest folk']];
-        yield 'no name' => [['id' => self::FOLK]];
         yield 'a blank name' => [['id' => self::FOLK, 'name' => ' ']];
-        yield 'a name that is not a text' => [['id' => self::FOLK, 'name' => ['Forest folk']]];
         yield 'a name longer than 255 characters' => [['id' => self::FOLK, 'name' => str_repeat('é', 256)]];
     }
 

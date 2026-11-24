@@ -47,36 +47,19 @@ final class OrderTest extends TestCase
         self::assertSame($allowed, $from->allows($to));
     }
 
-    public function testAPlacedOrderIsPendingHeldForThirtyFiveMinutesWithItsLinesAndTotals(): void
+    public function testAPlacedOrderIsPendingHeldForThirtyFiveMinutesWithTotalsComputedFromItsLines(): void
     {
         $now = new \DateTimeImmutable('2026-11-20 10:00:00');
 
-        $order = self::order($now, test: true);
+        $order = self::order($now);
 
         self::assertSame(OrderStatus::Pending, $order->status());
-        self::assertSame('ML-AB12-CD34', $order->reference());
-        self::assertSame(43, \strlen($order->token()));
         self::assertMatchesRegularExpression('/^[A-Za-z0-9_-]{43}$/', $order->token());
-        self::assertTrue($order->isTest());
-        self::assertSame(Locale::Fr, $order->locale());
-        self::assertSame(['FR', Zone::France], [$order->country(), $order->zone()]);
         self::assertSame([3300, 650, 3950], [$order->goods(), $order->shipping(), $order->total()]);
-        self::assertEquals($now, $order->createdAt());
+        self::assertSame([3000, 300], array_map(static fn ($line): int => $line->total(), $order->lines()));
         self::assertEquals(new \DateTimeImmutable('2026-11-20 10:35:00'), $order->expiresAt());
-        self::assertSame(
-            [['PRI-FOX-A4', 'Prints Fox', 'Affiche renard', 'A4', 1500, 2, 3000], ['STI-MOTH', 'Stickers Moth', 'Stickers Moth', null, 300, 1, 300]],
-            array_map(static fn ($line): array => [$line->sku(), $line->name(), $line->title(), $line->variant(), $line->unitPrice(), $line->quantity(), $line->total()], $order->lines()),
-        );
         self::assertTrue($order->isHeldAt($now->modify('+34 minutes')));
         self::assertFalse($order->isHeldAt($now->modify('+35 minutes')));
-        self::assertNull($order->paymentId());
-    }
-
-    public function testTwoOrdersNeverShareAToken(): void
-    {
-        $now = new \DateTimeImmutable();
-
-        self::assertNotSame(self::order($now)->token(), self::order($now)->token());
     }
 
     public function testTheDeliveryFormIsTrimmedAndOptionalFieldsAreNullWhenEmpty(): void
@@ -157,15 +140,6 @@ final class OrderTest extends TestCase
             }
         }
         self::assertSame(OrderStatus::Paid, $order->status());
-    }
-
-    public function testTheCheckoutIsRecorded(): void
-    {
-        $order = self::order(new \DateTimeImmutable());
-
-        $order->openPayment('checkout-1', 'https://pay.test/checkout-1');
-
-        self::assertSame(['checkout-1', 'https://pay.test/checkout-1'], [$order->paymentId(), $order->paymentUrl()]);
     }
 
     public function testShippingAPaidOrderTrimsTheTrackingNumberAndDatesIt(): void

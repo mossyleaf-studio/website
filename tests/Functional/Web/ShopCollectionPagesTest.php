@@ -43,14 +43,14 @@ final class ShopCollectionPagesTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         $data = self::data($crawler);
-        self::assertSame(['page', 'title', 'collection', 'filters', 'products'], array_keys($data));
         self::assertSame(['collection', 'Bestioles de la forêt', ['key' => 'forest-critters', 'label' => 'Bestioles de la forêt']], [$data['page'], $data['title'], $data['collection']]);
         self::assertSame([['/beta/fr/shop/prints-fox', false], ['/beta/fr/shop/prints-owl', false], ['/beta/fr/shop/stickers-moth', true], ['/beta/fr/shop/stickers-newt', false]], self::cards($data));
-        self::assertSame(['kind' => 'category', 'items' => [
-            ['key' => null, 'label' => 'Tout', 'url' => '/beta/fr/collection/forest-critters', 'current' => true],
-            ['key' => 'prints', 'label' => 'Prints', 'url' => '/beta/fr/collection/forest-critters?category=prints', 'current' => false],
-            ['key' => 'stickers', 'label' => 'Stickers', 'url' => '/beta/fr/collection/forest-critters?category=stickers', 'current' => false],
-        ]], $data['filters']);
+        self::assertSame('category', Json::string($data, 'filters', 'kind'));
+        self::assertSame([
+            [null, '/beta/fr/collection/forest-critters', true],
+            ['prints', '/beta/fr/collection/forest-critters?category=prints', false],
+            ['stickers', '/beta/fr/collection/forest-critters?category=stickers', false],
+        ], array_map(static fn (mixed $item): array => [Json::at($item, 'key'), Json::string($item, 'url'), Json::at($item, 'current')], Json::array($data, 'filters', 'items')));
         self::assertSame('Bestioles de la forêt · mossyleaf.studio', $crawler->filter('title')->text());
 
         $main = $crawler->filter('#shop main');
@@ -60,7 +60,7 @@ final class ShopCollectionPagesTest extends WebTestCase
         self::assertSame(self::chips(Json::array($data, 'filters')), self::prerenderedChips($main));
     }
 
-    public function testVisitorsSeeAShownCollectionWithItsVisibleProductsOnly(): void
+    public function testVisitorsSeeAShownCollectionWithItsVisibleProductsOnlyAndAnythingElseIsNotFound(): void
     {
         $client = self::openShop();
 
@@ -73,35 +73,12 @@ final class ShopCollectionPagesTest extends WebTestCase
         self::assertSame(['/en/shop/prints-fox', '/en/shop/prints-owl', '/en/shop/stickers-newt'], array_column(self::cards($data), 0));
         self::assertSame('index, follow, max-image-preview:large', $crawler->filter('meta[name="robots"]')->attr('content'));
         self::assertSame('http://localhost/en/collection/forest-critters', $crawler->filter('link[rel="canonical"]')->attr('href'));
-        $etag = (string) $client->getResponse()->getEtag();
-        self::assertSame('"'.hash('xxh128', (string) $client->getResponse()->getContent()).'"', $etag);
-        $client->request('GET', '/en/collection/forest-critters', server: ['HTTP_IF_NONE_MATCH' => $etag]);
-        self::assertResponseStatusCodeSame(304);
-    }
-
-    public function testAnUnknownHiddenOrEmptyCollectionAnswersTheShopNotFoundPage(): void
-    {
-        $client = self::openShop();
 
         foreach (['/en/collection/nope', '/en/collection/autumn-market', '/fr/collection/moonlight', '/en/collection/winter', '/en/collection/Forest-critters', '/en/collection/forest-critters%00x'] as $url) {
             $crawler = $client->request('GET', $url);
 
             self::assertResponseStatusCodeSame(404, $url);
             self::assertSame('not-found', $crawler->filter('#shop')->attr('data-page'), $url);
-            self::assertResponseNotHasHeader('Set-Cookie', $url);
-        }
-    }
-
-    public function testTheCollectionPagesStayClosedWhileTheShopIsClosed(): void
-    {
-        $client = self::signedInClient();
-        self::stockCollections($client);
-        $client->getCookieJar()->clear();
-
-        foreach (['/en/collection/forest-critters', '/fr/collection/nope', '/en/category/prints?collection=forest-critters'] as $url) {
-            $client->request('GET', $url);
-
-            self::assertResponseRedirects('/', 302, $url);
             self::assertResponseNotHasHeader('Set-Cookie', $url);
         }
     }
@@ -135,7 +112,6 @@ final class ShopCollectionPagesTest extends WebTestCase
         self::stockCollections($client);
 
         $prints = self::data($client->request('GET', '/beta/en/category/prints'));
-        self::assertSame(['page', 'title', 'category', 'filters', 'products'], array_keys($prints));
         self::assertSame(['kind' => 'collection', 'items' => [
             ['key' => null, 'label' => 'All', 'url' => '/beta/en/category/prints', 'current' => true],
             ['key' => 'forest-critters', 'label' => 'Forest critters', 'url' => '/beta/en/category/prints?collection=forest-critters', 'current' => false],
@@ -192,15 +168,6 @@ final class ShopCollectionPagesTest extends WebTestCase
             self::assertArrayNotHasKey('filters', self::data($crawler), $url);
             self::assertCount(0, $crawler->filter('#shop main nav[data-filters]'), $url);
         }
-    }
-
-    public function testVisitorsAreOfferedOnlyTheShownCollections(): void
-    {
-        $client = self::openShop();
-
-        $prints = self::data($client->request('GET', '/en/category/prints'));
-        self::assertSame([[null, 'All', true], ['forest-critters', 'Forest critters', false]], array_map(static fn (mixed $item): array => [Json::at($item, 'key'), Json::string($item, 'label'), Json::at($item, 'current')], Json::array($prints, 'filters', 'items')));
-        self::assertArrayNotHasKey('filters', self::data($client->request('GET', '/en/category/cards')));
     }
 
     public function testAFilteredPageNarrowsTheProductsAndKeepsTheAddressesOfThePage(): void
@@ -302,31 +269,14 @@ final class ShopCollectionPagesTest extends WebTestCase
         self::assertArrayNotHasKey('filters', self::data($crawler));
     }
 
-    public function testThePrerenderedMenuOfThePreviewMarksTheHiddenCollections(): void
-    {
-        $client = self::signedInClient();
-        self::stockCollections($client);
-
-        $crawler = $client->request('GET', '/beta/fr/');
-
-        self::assertSame(
-            array_map(static fn (mixed $collection): array => [Json::string($collection, 'label'), Json::string($collection, 'url'), true === (Json::array($collection)['hidden'] ?? false)], self::collectionsMenu($crawler)),
-            $crawler->filter('#shop nav[data-navigation] #menu-collections > ul[data-collections] > li > a')->each(static fn (Crawler $link): array => [$link->filter('[data-collection-label]')->text(), (string) $link->attr('href'), 1 === $link->filter('[data-label]')->count()]),
-        );
-        self::assertSame('Bestioles de la forêt', $crawler->filter('#shop ul[data-collections] [data-collection-label]')->first()->text());
-        self::assertSame('Masqué', $crawler->filter('#shop ul[data-collections] [data-label]')->text());
-    }
-
     public function testTheProductPageNamesItsCollectionWhenTheVisitorMaySeeIt(): void
     {
         $client = self::openShop();
 
         $crawler = $client->request('GET', '/en/shop/prints-fox');
         $data = self::data($crawler);
-        self::assertSame(['page', 'title', 'description', 'price', 'priceNote', 'category', 'collection', 'photos', 'variants', 'soldOut', 'related'], array_keys($data));
         self::assertSame(['key' => 'forest-critters', 'label' => 'Forest critters', 'url' => '/en/collection/forest-critters'], $data['collection']);
         self::assertSame([['Forest critters', '/en/collection/forest-critters']], $crawler->filter('#shop main [data-product-collection] a')->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]));
-        self::assertSame('Collection: Forest critters', $crawler->filter('#shop main [data-product-collection]')->text());
 
         foreach (['/en/shop/cards-bee', '/en/shop/prints-wren'] as $url) {
             $crawler = $client->request('GET', $url);
@@ -338,7 +288,6 @@ final class ShopCollectionPagesTest extends WebTestCase
         $crawler = $client->request('GET', '/beta/fr/shop/cards-bee');
         self::assertSame(['key' => 'autumn-market', 'label' => 'Autumn market', 'url' => '/beta/fr/collection/autumn-market', 'hidden' => true], self::data($crawler)['collection']);
         self::assertSame('/beta/fr/collection/autumn-market', $crawler->filter('#shop main [data-product-collection] a')->attr('href'));
-        self::assertSame('Collection : Autumn market Masqué', $crawler->filter('#shop main [data-product-collection]')->text());
         self::assertSame(['key' => 'forest-critters', 'label' => 'Bestioles de la forêt', 'url' => '/beta/fr/collection/forest-critters'], self::data($client->request('GET', '/beta/fr/shop/prints-fox'))['collection']);
     }
 

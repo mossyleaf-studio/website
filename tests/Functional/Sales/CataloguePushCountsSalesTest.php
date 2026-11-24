@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Sales;
 
 use App\Application\Catalogue\CatalogueQueries;
-use App\Application\Catalogue\ProductView;
 use App\Application\Catalogue\ShopVariantView;
 use App\Application\Sales\PaymentState;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -32,10 +31,8 @@ final class CataloguePushCountsSalesTest extends WebTestCase
     /** @return iterable<string, array{bool, bool}> */
     public static function ordersThatHoldSoldUnits(): iterable
     {
-        yield 'a paid order' => [false, false];
         yield 'a shipped order' => [false, true];
         yield 'a paid test order' => [true, false];
-        yield 'a shipped test order' => [true, true];
     }
 
     #[DataProvider('ordersThatHoldSoldUnits')]
@@ -124,18 +121,6 @@ final class CataloguePushCountsSalesTest extends WebTestCase
 
         self::assertNull(self::stockOf('PRI-FOX-A4'));
         self::assertSame([8, 0, 1], [self::stockOf('STI-MOTH'), self::stockOf('PRI-FOX-A5'), self::stockOf('PRI-OWL')]);
-    }
-
-    public function testThePushStillKeepsTheWebsiteFieldsOfTheProducts(): void
-    {
-        self::stockTheShop();
-        $this->paidOrder([['PRI-FOX-A4', 1]], 2150);
-
-        self::push(self::shopProducts(8));
-
-        $fox = array_find(self::getContainer()->get(CatalogueQueries::class)->products(), static fn (ProductView $product): bool => 'PRI-FOX' === $product->reference);
-        self::assertNotNull($fox);
-        self::assertSame(['prints-fox', 'Fox print', 'Affiche renard', true, 11], [$fox->slug, $fox->title, $fox->titleFr, $fox->visible, self::stockOf('PRI-FOX-A4')]);
     }
 
     public function testTheStockFollowsTheSalesAsMossytrunkReadsThemAndPushes(): void

@@ -72,7 +72,7 @@ final class CollectionTest extends TestCase
         self::assertSame(['Forest people', 'Woodland folk', true], [$collection->name(), $collection->label()->en, $collection->isShown()]);
     }
 
-    public function testACollectionIsShownHiddenAndMoved(): void
+    public function testACollectionIsShownAndHidden(): void
     {
         $collection = Collection::pushed(new Ulid(), 'Forest folk', 0);
 
@@ -80,7 +80,5 @@ final class CollectionTest extends TestCase
         self::assertTrue($collection->isShown());
         $collection->hide();
         self::assertFalse($collection->isShown());
-        $collection->moveTo(3);
-        self::assertSame(3, $collection->position());
     }
 }

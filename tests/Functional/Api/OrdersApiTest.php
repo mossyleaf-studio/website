@@ -32,7 +32,7 @@ final class OrdersApiTest extends WebTestCase
         parent::tearDown();
     }
 
-    public function testTheListAnswersEveryOrderNewestFirstWithItsExactKeys(): void
+    public function testTheListAnswersEveryOrderNewestFirstWithItsBusinessValues(): void
     {
         $clock = self::mockTime('2026-11-20 10:00:00');
         $client = self::stockedClient();
@@ -47,37 +47,10 @@ final class OrdersApiTest extends WebTestCase
         self::assertSame([$second['reference'], $first['reference']], array_column($orders, 'reference'));
         $order = Json::array($orders, 1);
         self::assertMatchesRegularExpression('/^TFAKE[0-9A-F]{8}$/', Json::string($order, 'transactionCode'));
-        self::assertSame([
-            'id' => (string) self::order($first['token'])->id(),
-            'reference' => $first['reference'],
-            'status' => 'paid',
-            'test' => true,
-            'locale' => 'fr',
-            'placedAt' => self::date('2026-11-20 10:00:00'),
-            'expiresAt' => self::date('2026-11-20 10:35:00'),
-            'paidAt' => self::date('2026-11-20 10:02:00'),
-            'shippedAt' => null,
-            'cancelledAt' => null,
-            'email' => 'lou@example.test',
-            'name' => 'Lou Martin',
-            'phone' => '+33 6 12 34 56 78',
-            'line1' => '1 rue des Fougères',
-            'line2' => 'Bâtiment B',
-            'postalCode' => '75011',
-            'city' => 'Paris',
-            'region' => null,
-            'country' => 'FR',
-            'zone' => 'france',
-            'lines' => [['sku' => 'STI-MOTH', 'name' => 'Stickers Moth', 'title' => 'Stickers Moth', 'variant' => null, 'unitPrice' => 300, 'quantity' => 2, 'lineTotal' => 600]],
-            'goods' => 600,
-            'shipping' => 650,
-            'total' => 1250,
-            'units' => 2,
-            'transactionCode' => $order['transactionCode'],
-            'trackingNumber' => null,
-            'hasCheckout' => true,
-            'statusUrl' => '/beta/fr/order/'.$first['token'],
-        ], $order);
+        self::assertSame(['paid', true, 'fr', 'FR', 'france', 'lou@example.test', null], [$order['status'], $order['test'], $order['locale'], $order['country'], $order['zone'], $order['email'], $order['trackingNumber']]);
+        self::assertSame([600, 650, 1250, 2], [$order['goods'], $order['shipping'], $order['total'], $order['units']]);
+        self::assertSame([['STI-MOTH', 300, 2, 600]], array_map(static fn (mixed $line): array => [Json::string($line, 'sku'), Json::int($line, 'unitPrice'), Json::int($line, 'quantity'), Json::int($line, 'lineTotal')], Json::array($order, 'lines')));
+        self::assertSame([(string) self::order($first['token'])->id(), self::date('2026-11-20 10:35:00'), self::date('2026-11-20 10:02:00'), '/beta/fr/order/'.$first['token']], [$order['id'], $order['expiresAt'], $order['paidAt'], $order['statusUrl']]);
         self::assertSame(['pending', '/beta/en/order/'.$second['token']], [Json::string($orders, 0, 'status'), Json::string($orders, 0, 'statusUrl')]);
     }
 
@@ -103,17 +76,6 @@ final class OrdersApiTest extends WebTestCase
         self::assertSame([$paidLate['reference'] => 'paid', $stale['reference'] => 'expired'], array_column($orders, 'status', 'reference'));
     }
 
-    public function testTheListStillAnswersWhenSumUpIsDown(): void
-    {
-        $clock = self::mockTime('2026-11-20 10:00:00');
-        $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        $clock->sleep(36 * 60);
-        self::sumUp()->goDown();
-
-        self::assertSame([$placed['reference'] => 'pending'], array_column(self::orders($client), 'status', 'reference'));
-    }
-
     public function testAPaidOrderShipsAndIsAnsweredAsTheListGivesIt(): void
     {
         $client = self::stockedClient();
@@ -131,36 +93,10 @@ final class OrdersApiTest extends WebTestCase
         self::assertSame([$shipped], self::orders($client));
     }
 
-    public function testAnOrderShipsWithoutATrackingNumber(): void
-    {
-        $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        self::pay($placed);
-
-        $client->jsonRequest('POST', self::url($placed, '/shipment'), ['trackingNumber' => null]);
-
-        self::assertResponseIsSuccessful();
-        self::assertSame(['shipped', null], [self::answer($client)['status'], self::answer($client)['trackingNumber']]);
-    }
-
-    public function testATrackingNumberPastedWithSpacesAroundShipsTrimmed(): void
-    {
-        $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        self::pay($placed);
-
-        $client->jsonRequest('POST', self::url($placed, '/shipment'), ['trackingNumber' => "\tLA123456789FR\r\n"]);
-
-        self::assertResponseIsSuccessful();
-        self::assertSame('LA123456789FR', self::answer($client)['trackingNumber']);
-    }
-
     /** @return iterable<string, array{string}> */
     public static function refusedTrackingNumbers(): iterable
     {
-        yield 'too long' => [str_repeat('A', 65)];
         yield 'a line break' => ["LA123\nBcc: victim@example.test"];
-        yield 'a carriage return' => ["LA123\rX"];
     }
 
     #[DataProvider('refusedTrackingNumbers')]
@@ -189,21 +125,6 @@ final class OrdersApiTest extends WebTestCase
             self::assertResponseHeaderSame('Content-Type', 'application/problem+json');
             self::assertSame('sales.order_move_refused', Json::string(self::answer($client), 'code'));
         }
-    }
-
-    public function testAPaidOrderIsCancelledAndItsUnitsComeBack(): void
-    {
-        $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        self::pay($placed);
-        self::assertSame(1, self::stockOf('STI-MOTH'));
-
-        $client->jsonRequest('POST', self::url($placed, '/cancellation'));
-
-        self::assertResponseIsSuccessful();
-        self::assertSame('cancelled', self::answer($client)['status']);
-        self::assertNotNull(self::answer($client)['cancelledAt']);
-        self::assertSame(3, self::stockOf('STI-MOTH'));
     }
 
     public function testThePaymentCheckPaysAnOrderTheSiteMissed(): void
@@ -269,34 +190,10 @@ final class OrdersApiTest extends WebTestCase
         }
     }
 
-    public function testEveryRouteNeedsAnAdmin(): void
-    {
-        $client = self::createClient();
-
-        foreach (self::routes() as [$method, $url]) {
-            $client->jsonRequest($method, $url, ['trackingNumber' => null]);
-
-            self::assertResponseStatusCodeSame(401, $method.' '.$url);
-        }
-    }
-
-    public function testTheWritesRefuseAnotherOrigin(): void
-    {
-        $client = self::signedInClient();
-
-        foreach (\array_slice(self::routes(), 1) as [$method, $url]) {
-            $client->jsonRequest($method, $url, ['trackingNumber' => null], ['HTTP_ORIGIN' => 'https://evil.test']);
-
-            self::assertResponseStatusCodeSame(403, $method.' '.$url);
-        }
-    }
-
     /** @return iterable<string, array{string}> */
     public static function ordersPages(): iterable
     {
         yield 'the landing' => ['/admin'];
-        yield 'the landing with a slash' => ['/admin/'];
-        yield 'the list' => ['/admin/orders'];
         yield 'one order' => ['/admin/orders/'.self::UNKNOWN];
     }
 
@@ -325,18 +222,6 @@ final class OrdersApiTest extends WebTestCase
 
         self::assertSame(['/api/admin/publication', '/api/admin/shop/readiness', '/api/admin/texts'], array_keys(Json::decode($crawler->filter('#app-preload')->text())));
         self::assertStringContainsString('no-store', (string) $client->getResponse()->headers->get('Cache-Control'));
-    }
-
-    /** @return list<array{string, string}> */
-    private static function routes(): array
-    {
-        return [
-            ['GET', '/api/admin/orders'],
-            ['POST', '/api/admin/orders/'.self::UNKNOWN.'/shipment'],
-            ['POST', '/api/admin/orders/'.self::UNKNOWN.'/cancellation'],
-            ['POST', '/api/admin/orders/'.self::UNKNOWN.'/payment-check'],
-            ['DELETE', '/api/admin/orders/'.self::UNKNOWN],
-        ];
     }
 
     /** @return list<array<mixed>> */

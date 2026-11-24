@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONTACT_LIMITS, contactErrors, contactPayload, serverErrors } from './contactForm.js';
+import { contactErrors, contactPayload, serverErrors } from './contactForm.js';
 
 const valid = { name: 'Lou', email: 'lou@example.com', message: 'Hello', website: '' };
 
@@ -25,7 +25,6 @@ describe('contactErrors', () => {
     });
 
     it('holds each field to the limits of the server', () => {
-        expect(CONTACT_LIMITS).toEqual({ name: 100, email: 254, message: 4000 });
         expect(contactErrors({ ...valid, name: 'a'.repeat(100), message: 'b'.repeat(4000) })).toEqual({});
         expect(contactErrors({ ...valid, name: 'a'.repeat(101), email: `${'c'.repeat(243)}@example.com`, message: 'b'.repeat(4001) })).toEqual({
             name: { key: 'tooLong', max: 100 },

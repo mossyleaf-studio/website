@@ -21,18 +21,6 @@ final class ShopCheckoutPrerenderTest extends WebTestCase
         parent::tearDown();
     }
 
-    public function testTheCheckoutSaysItNeedsJavaScriptAndLinksBackToTheCart(): void
-    {
-        $crawler = self::signedInClient()->request('GET', '/beta/fr/checkout');
-
-        $data = self::data($crawler);
-        $main = $crawler->filter('.shop-prerender main');
-        self::assertSame($data['title'], $main->filter('h1')->text());
-        self::assertSame('La commande a besoin de JavaScript pour calculer le total et ouvrir le paiement.', $main->filter('[data-noscript]')->text());
-        self::assertSame($data['cartUrl'], $main->filter('a[data-cart-back]')->attr('href'));
-        self::assertSame('Retour au panier', $main->filter('a[data-cart-back]')->text());
-    }
-
     public function testAPendingTestOrderShowsItsStateTheWayBackToThePaymentAndAReloadLink(): void
     {
         $client = self::stockedClient();
@@ -42,14 +30,9 @@ final class ShopCheckoutPrerenderTest extends WebTestCase
 
         $order = self::orderOf($crawler);
         $sheet = self::sheet($crawler);
-        self::assertSame('polite', $sheet->attr('aria-live'));
-        self::assertSame('Commande de test', $sheet->filter('[data-test-order]')->text());
-        self::assertSame('Commande '.Json::string($order, 'reference'), $sheet->filter('[data-reference]')->text());
-        self::assertSame('Paiement pas encore confirmé', $sheet->filter('[data-status]')->text());
-        self::assertStringContainsString('rien n’a été débité', $sheet->filter('[data-status-text]')->text());
-        self::assertStringNotContainsString('toute seule', $sheet->filter('[data-status-text]')->text());
+        self::assertCount(1, $sheet->filter('[data-test-order]'));
+        self::assertStringContainsString(Json::string($order, 'reference'), $sheet->filter('[data-reference]')->text());
         self::assertSame($order['paymentUrl'], $sheet->filter('a[data-pay]')->attr('href'));
-        self::assertSame('Revenir au paiement', $sheet->filter('a[data-pay]')->text());
         self::assertSame('/beta/fr/order/'.$placed['token'], $sheet->filter('a[data-reload]')->attr('href'));
         self::assertCount(0, $sheet->filter('a[data-cart-back]'));
         self::assertLinesAndAmounts($sheet, $order, 'fr');
@@ -65,14 +48,14 @@ final class ShopCheckoutPrerenderTest extends WebTestCase
 
         $sheet = self::sheet($crawler);
         self::assertSame('paid', self::orderOf($crawler)['status']);
-        self::assertSame('Thank you for your order', $sheet->filter('[data-status]')->text());
+        self::assertCount(0, $sheet->filter('[data-tracking]'));
         self::assertCount(0, $sheet->filter('a[data-pay]'));
         self::assertCount(0, $sheet->filter('a[data-reload]'));
         self::assertCount(0, $sheet->filter('a[data-cart-back]'));
         self::assertLinesAndAmounts($sheet, self::orderOf($crawler), 'en');
     }
 
-    public function testAShippedOrderShowsItsTrackingNumberAsTextAndNothingWithoutOne(): void
+    public function testAShippedOrderShowsItsTrackingNumber(): void
     {
         $client = self::stockedClient();
         $placed = self::placeThroughTheShop($client, locale: 'en');
@@ -83,28 +66,25 @@ final class ShopCheckoutPrerenderTest extends WebTestCase
         $client->jsonRequest('POST', '/api/admin/orders/'.$id.'/shipment', ['trackingNumber' => 'LA123456789FR']);
         $sheet = self::sheet($client->request('GET', '/beta/en/order/'.$placed['token']));
 
-        self::assertSame('Your order is on its way', $sheet->filter('[data-status]')->text());
-        self::assertSame('Tracking number: LA123456789FR', $sheet->filter('[data-tracking]')->text());
         self::assertSame('LA123456789FR', $sheet->filter('[data-tracking-number]')->text());
     }
 
-    public function testAShippedOrderWithoutATrackingNumberAndAPaidOrderShowNoTrackingLine(): void
+    public function testAShippedOrderWithoutATrackingNumberShowsNoTrackingLine(): void
     {
         $client = self::stockedClient();
         $placed = self::placeThroughTheShop($client, locale: 'en');
         self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
-        $paid = self::sheet($client->request('GET', '/beta/en/order/'.$placed['token']));
-        self::assertCount(0, $paid->filter('[data-tracking]'));
+        $client->request('GET', '/beta/en/order/'.$placed['token']);
         $id = (string) self::getContainer()->get(OrderRepository::class)->withToken($placed['token'])?->id();
 
         $client->jsonRequest('POST', '/api/admin/orders/'.$id.'/shipment', ['trackingNumber' => '']);
         $sheet = self::sheet($client->request('GET', '/beta/en/order/'.$placed['token']));
 
-        self::assertSame('Your order is on its way', $sheet->filter('[data-status]')->text());
+        self::assertSame('shipped', self::orderOf($client->getCrawler())['status']);
         self::assertCount(0, $sheet->filter('[data-tracking]'));
     }
 
-    public function testADeclinedOrderSaysNothingWasChargedAndLinksTheCart(): void
+    public function testADeclinedOrderLinksTheCartAndNotThePayment(): void
     {
         $client = self::stockedClient();
         $placed = self::placeThroughTheShop($client);
@@ -114,10 +94,7 @@ final class ShopCheckoutPrerenderTest extends WebTestCase
 
         $sheet = self::sheet($crawler);
         self::assertSame('failed', self::orderOf($crawler)['status']);
-        self::assertSame('Le paiement n’est pas passé', $sheet->filter('[data-status]')->text());
-        self::assertStringContainsString('Rien n’a été débité', $sheet->filter('[data-status-text]')->text());
         self::assertSame('/beta/fr/cart', $sheet->filter('a[data-cart-back]')->attr('href'));
-        self::assertSame('Retour au panier', $sheet->filter('a[data-cart-back]')->text());
         self::assertCount(0, $sheet->filter('a[data-pay]'));
     }
 

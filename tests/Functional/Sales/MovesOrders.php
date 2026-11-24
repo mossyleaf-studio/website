@@ -7,8 +7,6 @@ namespace App\Tests\Functional\Sales;
 use App\Application\AtomicChange;
 use App\Application\Sales\CancelOrder\CancelOrder;
 use App\Application\Sales\CancelOrder\CancelOrderHandler;
-use App\Application\Sales\CheckPayment\CheckPayment;
-use App\Application\Sales\CheckPayment\CheckPaymentHandler;
 use App\Application\Sales\ConfirmPayment\ConfirmPaymentHandler;
 use App\Application\Sales\DeleteTestOrder\DeleteTestOrder;
 use App\Application\Sales\DeleteTestOrder\DeleteTestOrderHandler;
@@ -75,14 +73,6 @@ trait MovesOrders
             $container->get(AtomicChange::class),
             $container->get(ClockInterface::class),
         )();
-    }
-
-    private function checkPayment(string $token): OrderView
-    {
-        return new CheckPaymentHandler(
-            self::getContainer()->get(OrderRepository::class),
-            $this->confirmPayment(),
-        )(new CheckPayment(self::order($token)->id()));
     }
 
     private function confirmPayment(): ConfirmPaymentHandler

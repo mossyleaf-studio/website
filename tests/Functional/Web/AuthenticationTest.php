@@ -11,6 +11,9 @@ use App\Tests\Support\FakeAccounts;
 use App\Tests\Support\Json;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Uid\Ulid;
 
 final class AuthenticationTest extends WebTestCase
 {
@@ -18,14 +21,38 @@ final class AuthenticationTest extends WebTestCase
 
     private const array EDITOR = ['sub' => 'account-1', 'email' => 'fern@example.com', 'name' => 'Fern', 'groups' => ['mossyleaf-studio']];
 
-    public function testSignedOutApiCallsAreUnauthorized(): void
+    public function testEveryAdminAndPreviewAddressNeedsASignedInEditor(): void
     {
         $client = self::createClient();
+        $router = self::getContainer()->get(RouterInterface::class);
+        $open = [];
+        $walked = [];
 
-        $client->jsonRequest('GET', '/api/admin/texts');
+        foreach ($router->getRouteCollection() as $name => $route) {
+            $path = $route->getPath();
+            $api = str_starts_with($path, '/beta/api/') || (str_starts_with($path, '/api/') && !str_starts_with($path, '/api/shop/'));
+            if (!$api && !str_starts_with($path, '/admin') && !str_starts_with($path, '/beta')) {
+                continue;
+            }
+            $url = $router->generate($name, self::parameters($route));
 
-        self::assertResponseStatusCodeSame(401);
-        self::assertResponseHeaderSame('Content-Type', 'application/problem+json');
+            foreach ($route->getMethods() ?: ['GET'] as $method) {
+                $client->jsonRequest($method, $url);
+                $response = $client->getResponse();
+                $guarded = $api
+                    ? 401 === $response->getStatusCode() && 'application/problem+json' === $response->headers->get('Content-Type')
+                    : $response->isRedirect('/login');
+                if (!$guarded) {
+                    $open[] = "{$method} {$url} ({$name}) answered {$response->getStatusCode()}";
+                }
+            }
+            $walked[] = $name;
+        }
+
+        self::assertSame([], $open);
+        foreach (['app', 'api_products_describe', 'api_orders_ship', 'beta_shop_home', 'beta_note', 'beta_api_shop_orders_place'] as $name) {
+            self::assertContains($name, $walked);
+        }
     }
 
     public function testTheAdminSendsToTheMossyleafAccount(): void
@@ -90,6 +117,22 @@ final class AuthenticationTest extends WebTestCase
         self::assertResponseRedirects('https://accounts.test/end-session?client_id=mossyleaf-studio&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2F');
         $client->jsonRequest('GET', '/api/admin/texts');
         self::assertResponseStatusCodeSame(401);
+    }
+
+    /** @return array<string, string> */
+    private static function parameters(Route $route): array
+    {
+        $candidates = ['en', (string) new Ulid(), 'terms', 'france', 'heading'];
+        $parameters = [];
+        /** @var list<string> $variables */
+        $variables = $route->compile()->getPathVariables();
+        foreach ($variables as $variable) {
+            $requirement = $route->getRequirement($variable) ?? '[^/]++';
+            $parameters[$variable] = array_find($candidates, static fn (string $value): bool => 1 === preg_match('{^(?:'.$requirement.')$}', $value))
+                ?? self::fail("No sample value for {$variable} of {$route->getPath()}");
+        }
+
+        return $parameters;
     }
 
     /**

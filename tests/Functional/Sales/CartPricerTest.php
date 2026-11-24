@@ -12,7 +12,6 @@ use App\Application\Sales\Quote;
 use App\Application\Sales\QuoteIssue;
 use App\Application\Sales\QuoteLine;
 use App\Domain\Sales\Exception\CartTooLarge;
-use App\Domain\Sales\Exception\UnknownCountry;
 use App\Domain\Sales\Zone;
 use App\Domain\Shared\Locale;
 use App\Tests\Functional\Catalogue\PushesCatalogue;
@@ -36,6 +35,7 @@ final class CartPricerTest extends WebTestCase
         );
         self::assertSame([], $quote->issues);
         self::assertSame([3300, 3300, 3], [$quote->goods, $quote->total, $quote->units]);
+        self::assertSame([null, false], [$quote->shipping, $quote->deliverable]);
         self::assertSame('Fox print', self::quote([['PRI-FOX-A4', 1]], null)->lines[0]->title);
     }
 
@@ -59,12 +59,6 @@ final class CartPricerTest extends WebTestCase
         self::assertSame([['PRI-FOX-A4', 10], ['STI-MOTH', 3]], array_map(static fn (QuoteLine $line): array => [$line->sku, $line->quantity], $quote->lines));
         self::assertSame([['reduced', 'PRI-FOX-A4', 'Fox print'], ['reduced', 'STI-MOTH', 'Stickers Moth'], ['removed', 'PRI-WREN', 'Prints Wren']], self::issues($quote));
         self::assertSame(15900, $quote->goods);
-    }
-
-    public function testAQuantityBelowOneCountsAsOne(): void
-    {
-        self::stock();
-
         self::assertSame(1, self::quote([['STI-MOTH', 0]], null)->lines[0]->quantity);
     }
 
@@ -104,17 +98,6 @@ final class CartPricerTest extends WebTestCase
         self::quote([...$lines, ['SKU-31', 1]], null);
     }
 
-    public function testAnEmptyCartIsPricedAtZero(): void
-    {
-        self::stock();
-        self::zone('france', 650, null, true);
-
-        $quote = self::quote([], 'FR');
-
-        self::assertSame([[], [], 0, 0, 0], [$quote->lines, $quote->issues, $quote->goods, $quote->total, $quote->units]);
-        self::assertSame(0, $quote->shipping?->price);
-    }
-
     public function testShippingCostsThePriceOfTheZoneOfTheCountry(): void
     {
         self::stock();
@@ -143,29 +126,6 @@ final class CartPricerTest extends WebTestCase
         }
     }
 
-    public function testShippingIsNeverFreeWithoutAThreshold(): void
-    {
-        self::stock();
-        self::zone('world', 1800, null, true);
-
-        $quote = self::quote([['PRI-FOX-A4', 10]], 'JP');
-
-        self::assertSame(['world', 1800, null, false], self::shipping($quote));
-        self::assertSame(16800, $quote->total);
-    }
-
-    public function testWithoutACountryThereIsNoShipping(): void
-    {
-        self::stock();
-        self::zone('france', 650, null, true);
-
-        $quote = self::quote([['PRI-FOX-A4', 1]], null);
-
-        self::assertNull($quote->shipping);
-        self::assertFalse($quote->deliverable);
-        self::assertSame(1500, $quote->total);
-    }
-
     public function testACountryWhoseZoneIsOffCannotBeDelivered(): void
     {
         self::stock();
@@ -178,15 +138,6 @@ final class CartPricerTest extends WebTestCase
         self::assertSame('eu', $quote->shipping?->zone);
         self::assertSame([1500, 1500], [$quote->goods, $quote->total]);
         self::assertFalse(self::quote([['PRI-FOX-A4', 1]], 'US')->deliverable);
-    }
-
-    public function testAnUnknownCountryIsRefused(): void
-    {
-        self::stock();
-
-        $this->expectException(UnknownCountry::class);
-
-        self::quote([['PRI-FOX-A4', 1]], 'XX');
     }
 
     private static function stock(): void

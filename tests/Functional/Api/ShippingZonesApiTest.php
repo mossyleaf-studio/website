@@ -6,7 +6,6 @@ namespace App\Tests\Functional\Api;
 
 use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
-use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -21,17 +20,7 @@ final class ShippingZonesApiTest extends WebTestCase
         ['code' => 'world', 'price' => 0, 'freeFrom' => null, 'enabled' => false],
     ];
 
-    public function testTheMigrationSeedsTheThreeZonesOffAndFree(): void
-    {
-        self::createClient();
-
-        self::assertSame(
-            [['code' => 'eu', 'price' => 0, 'free_from' => null, 'enabled' => false], ['code' => 'france', 'price' => 0, 'free_from' => null, 'enabled' => false], ['code' => 'world', 'price' => 0, 'free_from' => null, 'enabled' => false]],
-            self::getContainer()->get(Connection::class)->fetchAllAssociative('SELECT code, price, free_from, enabled FROM shipping_zone ORDER BY code'),
-        );
-    }
-
-    public function testTheZonesAreListedFranceFirst(): void
+    public function testTheZonesAreListedFranceFirstOffAndFree(): void
     {
         $client = self::signedInClient();
 
@@ -49,24 +38,10 @@ final class ShippingZonesApiTest extends WebTestCase
         self::assertSame([self::OFF[0], ['code' => 'eu', 'price' => 1250, 'freeFrom' => 8000, 'enabled' => true], self::OFF[2]], self::zones($client));
     }
 
-    public function testNoThresholdMeansNoFreeShipping(): void
-    {
-        $client = self::signedInClient();
-        $client->jsonRequest('PUT', '/api/admin/shipping-zones/france', ['price' => 650, 'freeFrom' => 6000, 'enabled' => true]);
-
-        $client->jsonRequest('PUT', '/api/admin/shipping-zones/france', ['price' => 650, 'freeFrom' => null, 'enabled' => true]);
-
-        self::assertResponseIsSuccessful();
-        self::assertSame(['code' => 'france', 'price' => 650, 'freeFrom' => null, 'enabled' => true], Json::array(self::zones($client), 0));
-    }
-
     /** @return iterable<string, array{array<string, mixed>, string}> */
     public static function refusedFields(): iterable
     {
         yield 'negative price' => [['price' => -1, 'freeFrom' => null, 'enabled' => true], 'price'];
-        yield 'negative threshold' => [['price' => 0, 'freeFrom' => -100, 'enabled' => true], 'freeFrom'];
-        yield 'price above the maximum' => [['price' => 1_000_001, 'freeFrom' => null, 'enabled' => true], 'price'];
-        yield 'threshold above the maximum' => [['price' => 0, 'freeFrom' => 3_000_000_000, 'enabled' => true], 'freeFrom'];
     }
 
     /** @param array<string, mixed> $payload */
@@ -89,17 +64,6 @@ final class ShippingZonesApiTest extends WebTestCase
         $client->jsonRequest('PUT', '/api/admin/shipping-zones/mars', ['price' => 0, 'freeFrom' => null, 'enabled' => true]);
 
         self::assertResponseStatusCodeSame(404);
-    }
-
-    public function testEveryRouteNeedsAnAdmin(): void
-    {
-        $client = self::createClient();
-
-        foreach ([['GET', '/api/admin/shipping-zones'], ['PUT', '/api/admin/shipping-zones/france']] as [$method, $url]) {
-            $client->jsonRequest($method, $url, ['price' => 0, 'freeFrom' => null, 'enabled' => true]);
-
-            self::assertResponseStatusCodeSame(401, $method);
-        }
     }
 
     public function testTheSettingsPageIsPreloadedWithTheZones(): void

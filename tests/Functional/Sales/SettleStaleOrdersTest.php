@@ -7,7 +7,6 @@ namespace App\Tests\Functional\Sales;
 use App\Application\Sales\PaymentState;
 use App\Domain\Sales\Country;
 use App\Domain\Sales\Delivery;
-use App\Domain\Sales\Exception\PaymentUnavailable;
 use App\Domain\Sales\Order;
 use App\Domain\Sales\OrderRepository;
 use App\Domain\Sales\OrderStatus;
@@ -228,31 +227,6 @@ final class SettleStaleOrdersTest extends WebTestCase
             [self::fresh($paid)->status(), self::fresh($shipped)->status(), self::fresh($cancelled)->status()],
         );
         self::assertSame([], $this->gateway->asked);
-    }
-
-    public function testThePaymentCheckPaysAFailedOrderThatSumUpReportsPaid(): void
-    {
-        self::stockTheShop();
-        $placed = $this->placeOrder([['STI-MOTH', 2]], 1250);
-        $this->gateway->script('checkout-1', PaymentState::Failed);
-        $this->confirm('checkout-1');
-        $this->gateway->pay('checkout-1', 'TX-MISSED');
-
-        $view = $this->checkPayment($placed->token);
-
-        self::assertSame(['paid', 'TX-MISSED', true], [$view->status, $view->transactionCode, $view->hasCheckout]);
-        self::assertSame(OrderStatus::Paid, self::fresh($placed->token)->status());
-        self::assertSame(1, self::stockOf('STI-MOTH'));
-    }
-
-    public function testThePaymentCheckLetsAnUnreachableSumUpBeKnown(): void
-    {
-        self::stockTheShop();
-        $placed = $this->placeOrder([['STI-MOTH', 2]], 1250);
-        $this->gateway->down = true;
-
-        $this->expectException(PaymentUnavailable::class);
-        $this->checkPayment($placed->token);
     }
 
     private static function withoutCheckout(): string

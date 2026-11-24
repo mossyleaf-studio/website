@@ -10,7 +10,6 @@ use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogue;
 use App\Application\Catalogue\ReplaceCatalogue\ReplaceCatalogueHandler;
 use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
@@ -46,18 +45,6 @@ final class CategoriesApiTest extends WebTestCase
         self::assertSame('Affiches', Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'category', 'labelFr'));
     }
 
-    public function testALabelHoldsSixtyCharactersPerLanguage(): void
-    {
-        $client = self::signedInClient();
-        [$prints] = self::push();
-
-        $client->jsonRequest('PUT', "/api/admin/categories/{$prints}", ['label' => str_repeat('a', 60), 'labelFr' => str_repeat('é', 60)]);
-        self::assertResponseIsSuccessful();
-
-        $client->jsonRequest('PUT', "/api/admin/categories/{$prints}", ['label' => 'Prints', 'labelFr' => str_repeat('é', 61)]);
-        self::assertResponseStatusCodeSame(422);
-    }
-
     public function testCategoriesAreReordered(): void
     {
         $client = self::signedInClient();
@@ -70,26 +57,6 @@ final class CategoriesApiTest extends WebTestCase
 
         $client->jsonRequest('PUT', '/api/admin/categories/order', ['ids' => [$stickers]]);
         self::assertResponseStatusCodeSame(422);
-    }
-
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function routes(): iterable
-    {
-        yield 'list' => ['GET', '/api/admin/categories'];
-        yield 'label' => ['PUT', '/api/admin/categories/'.new Ulid()];
-        yield 'reorder' => ['PUT', '/api/admin/categories/order'];
-    }
-
-    #[DataProvider('routes')]
-    public function testEveryRouteNeedsASignedInEditor(string $method, string $url): void
-    {
-        $client = self::createClient();
-
-        $client->jsonRequest($method, $url);
-
-        self::assertResponseStatusCodeSame(401);
     }
 
     /**

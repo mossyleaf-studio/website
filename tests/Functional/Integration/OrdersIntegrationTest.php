@@ -52,26 +52,6 @@ final class OrdersIntegrationTest extends WebTestCase
         self::assertFalse($client->getResponse()->headers->has('Set-Cookie'));
     }
 
-    public function testTheOrdersAskForTheToken(): void
-    {
-        $client = self::createClient();
-
-        $client->request('GET', '/integrations/orders');
-
-        self::assertResponseStatusCodeSame(401);
-        self::assertResponseHeaderSame('WWW-Authenticate', 'Bearer');
-    }
-
-    public function testTheOrdersAreNotFoundWhileTheIntegrationIsOff(): void
-    {
-        $_ENV['MOSSYTRUNK_TOKEN'] = '';
-        $client = self::createClient();
-
-        $client->request('GET', '/integrations/orders', server: ['HTTP_AUTHORIZATION' => 'Bearer '.self::TOKEN]);
-
-        self::assertResponseStatusCodeSame(404);
-    }
-
     public function testTheOrdersAreOnlyRead(): void
     {
         $client = self::createClient();

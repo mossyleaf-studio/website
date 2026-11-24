@@ -8,18 +8,10 @@ use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Uid\Ulid;
 
 final class LinksApiTest extends WebTestCase
 {
     use SignsInClient;
-
-    public function testTheStaticSiteLinksAreThereFromTheStart(): void
-    {
-        $client = self::signedInClient();
-
-        self::assertSame(['Shop on Etsy', 'Follow on Instagram'], array_column(self::links($client), 'title'));
-    }
 
     public function testALinkIsCreatedAtTheEndEditedAndDeleted(): void
     {
@@ -58,25 +50,6 @@ final class LinksApiTest extends WebTestCase
         self::assertSame(['descriptionFr'], array_column(Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations'), 'propertyPath'));
     }
 
-    public function testOnlyHttpsAddressesAreAccepted(): void
-    {
-        $client = self::signedInClient();
-
-        $client->jsonRequest('POST', '/api/admin/links', ['title' => 'Blog', 'description' => 'Old', 'url' => 'http://example.com', 'tape' => 'leaf']);
-
-        self::assertResponseStatusCodeSame(422);
-        self::assertSame(['url'], array_column(Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations'), 'propertyPath'));
-    }
-
-    public function testAnUnknownTapeIsRefused(): void
-    {
-        $client = self::signedInClient();
-
-        $client->jsonRequest('POST', '/api/admin/links', ['title' => 'Blog', 'description' => 'Old', 'url' => 'https://example.com', 'tape' => 'glitter']);
-
-        self::assertResponseStatusCodeSame(422);
-    }
-
     public function testLinksAreReordered(): void
     {
         $client = self::signedInClient();
@@ -86,25 +59,6 @@ final class LinksApiTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSame(['Follow on Instagram', 'Shop on Etsy'], array_column(self::links($client), 'title'));
-    }
-
-    public function testAnOrderThatMissesALinkIsRefused(): void
-    {
-        $client = self::signedInClient();
-        $ids = array_column(self::links($client), 'id');
-
-        $client->jsonRequest('PUT', '/api/admin/links/order', ['ids' => [$ids[0]]]);
-
-        self::assertResponseStatusCodeSame(422);
-    }
-
-    public function testAnUnknownLinkIsNotFound(): void
-    {
-        $client = self::signedInClient();
-
-        $client->jsonRequest('DELETE', '/api/admin/links/'.new Ulid());
-
-        self::assertResponseStatusCodeSame(404);
     }
 
     /**

@@ -1,16 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CART_KEY, MAX_LINES, MAX_QUANTITY, addLine, cartUnits, emptyCart, issueNames, pricedLines, readCart, removeLine, setCountry, setQuantity, settle } from './cart.js';
+import { addLine, cartUnits, emptyCart, issueNames, pricedLines, readCart, removeLine, setCountry, setQuantity, settle } from './cart.js';
 
 const cart = (lines, country = null) => ({ lines: lines.map(([sku, quantity]) => ({ sku, quantity })), country });
 const priced = (sku, quantity, unitPrice = 1000, available = 10) => ({ sku, title: `Title ${sku}`, variant: null, unitPrice, quantity, lineTotal: unitPrice * quantity, image: null, url: `/fr/shop/${sku}`, available });
 
 describe('the stored cart', () => {
-    it('is stored under one key', () => {
-        expect(CART_KEY).toBe('mossyleaf.cart');
-        expect(MAX_QUANTITY).toBe(10);
-        expect(MAX_LINES).toBe(30);
-    });
-
     it('starts empty', () => {
         expect(emptyCart()).toEqual({ lines: [], country: null });
         expect(readCart(null)).toEqual(emptyCart());

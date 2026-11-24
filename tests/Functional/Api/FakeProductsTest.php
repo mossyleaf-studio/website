@@ -47,28 +47,25 @@ final class FakeProductsTest extends WebTestCase
         self::assertSame($before, self::references($client));
     }
 
-    public function testTheCountIsBounded(): void
+    public function testNoFakeRouteExistsOutsideTheTestEnvironment(): void
     {
-        self::createClient()->request('POST', '/_fake/products/201');
-
-        self::assertResponseStatusCodeSame(404);
-    }
-
-    public function testTheRoutesExistInTheTestEnvironmentOnly(): void
-    {
+        $names = ['fake_order_expire', 'fake_products_add', 'fake_products_remove', 'fake_sumup_page', 'fake_sumup_settle'];
         $routes = self::getContainer()->get(RouterInterface::class)->getRouteCollection();
-        self::assertNotNull($routes->get('fake_products_add'));
-        self::assertNotNull($routes->get('fake_products_remove'));
-        $cache = \dirname(__DIR__, 3).'/var/cache/prod-fake-products-check';
+        foreach ($names as $name) {
+            self::assertNotNull($routes->get($name), $name);
+        }
+        $cache = \dirname(__DIR__, 3).'/var/cache/prod-fake-routes-check';
         $_SERVER['APP_CACHE_DIR'] = $cache;
         $kernel = new Kernel('prod', false);
 
         try {
             $kernel->boot();
-            $paths = array_map(static fn ($route): string => $route->getPath(), $kernel->getContainer()->get('router')->getRouteCollection()->all());
+            $prodRoutes = $kernel->getContainer()->get('router')->getRouteCollection();
 
-            self::assertNotContains('/_fake/products/{count}', $paths);
-            self::assertNotContains('/_fake/products', $paths);
+            foreach ($names as $name) {
+                self::assertNull($prodRoutes->get($name), $name);
+            }
+            self::assertSame([], array_values(array_filter(array_map(static fn ($route): string => $route->getPath(), $prodRoutes->all()), static fn (string $path): bool => str_starts_with($path, '/_fake'))));
         } finally {
             $kernel->shutdown();
             unset($_SERVER['APP_CACHE_DIR']);

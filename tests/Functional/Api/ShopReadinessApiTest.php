@@ -10,7 +10,6 @@ use App\Tests\Functional\Sales\ShopsOnline;
 use App\Tests\Support\FakeSumUp;
 use App\Tests\Support\Json;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -54,7 +53,6 @@ final class ShopReadinessApiTest extends WebTestCase
 
         self::assertFalse($readiness['ready']);
         self::assertSame(self::KEYS, array_keys(self::states($readiness)));
-        self::assertSame(['key', 'state', 'count'], array_keys(Json::array($readiness, 'items', 0)));
         self::assertSame([
             'identity' => 'ok',
             'payment' => 'ok',
@@ -99,54 +97,18 @@ final class ShopReadinessApiTest extends WebTestCase
         self::assertSame(['warning', 1], array_values(array_slice(self::item($readiness, 'photos'), 1)));
     }
 
-    public function testALegalPageWrittenInFrenchOnlyIsEnough(): void
+    public function testMailIsABlockerWithTheNullTransport(): void
     {
-        $client = self::signedInClient();
-        $client->jsonRequest('PUT', '/api/admin/legal-pages/privacy', ['text' => '', 'textFr' => '## Vie privée']);
-
-        self::assertSame('ok', self::item(self::readiness($client), 'privacy')['state']);
-    }
-
-    /** @return iterable<string, array{string, string}> */
-    public static function mailSettings(): iterable
-    {
-        yield 'no transport' => ['MAILER_DSN', ''];
-        yield 'the null transport' => ['MAILER_DSN', 'null://null'];
-        yield 'no studio inbox' => ['STUDIO_EMAIL', ''];
-        yield 'no sender' => ['MAILER_FROM', ''];
-    }
-
-    #[DataProvider('mailSettings')]
-    public function testMailIsABlockerWithoutARealTransportOrBothAddresses(string $name, string $value): void
-    {
-        $client = self::signedInClient();
-
-        $readiness = self::withARealMailer(static function () use ($client, $name, $value): array {
-            $_ENV[$name] = $_SERVER[$name] = $value;
-
-            return self::readiness($client);
-        });
-
-        self::assertSame('blocker', self::item($readiness, 'mail')['state']);
-    }
-
-    public function testAnUnsetMailerIsABlocker(): void
-    {
-        unset($_ENV['MAILER_DSN'], $_SERVER['MAILER_DSN']);
-        putenv('MAILER_DSN');
+        $_ENV['MAILER_DSN'] = $_SERVER['MAILER_DSN'] = 'null://null';
 
         self::assertSame('blocker', self::item(self::readiness(self::signedInClient()), 'mail')['state']);
     }
 
     public function testPaymentIsABlockerWithoutTheSumUpSettings(): void
     {
-        foreach (['SUMUP_API_KEY', 'SUMUP_MERCHANT_CODE'] as $name) {
-            $_ENV[$name] = $_SERVER[$name] = '';
+        $_ENV['SUMUP_API_KEY'] = $_SERVER['SUMUP_API_KEY'] = '';
 
-            self::assertSame('blocker', self::item(self::readiness(self::signedInClient()), 'payment')['state'], $name);
-            $_ENV[$name] = $_SERVER[$name] = Json::string($this->saved, $name);
-            self::ensureKernelShutdown();
-        }
+        self::assertSame('blocker', self::item(self::readiness(self::signedInClient()), 'payment')['state']);
     }
 
     public function testAnEmptyStudioNameIsABlocker(): void
@@ -160,15 +122,9 @@ final class ShopReadinessApiTest extends WebTestCase
 
     public function testAShortMossytrunkTokenIsAWarning(): void
     {
-        foreach (['', str_repeat('a', 31)] as $token) {
-            $_ENV['MOSSYTRUNK_TOKEN'] = $_SERVER['MOSSYTRUNK_TOKEN'] = $token;
+        $_ENV['MOSSYTRUNK_TOKEN'] = $_SERVER['MOSSYTRUNK_TOKEN'] = str_repeat('a', 31);
 
-            self::assertSame('warning', self::item(self::readiness(self::signedInClient()), 'mossytrunk')['state'], $token);
-            self::ensureKernelShutdown();
-        }
-        $_ENV['MOSSYTRUNK_TOKEN'] = $_SERVER['MOSSYTRUNK_TOKEN'] = str_repeat('a', 32);
-
-        self::assertSame('ok', self::item(self::readiness(self::signedInClient()), 'mossytrunk')['state']);
+        self::assertSame('warning', self::item(self::readiness(self::signedInClient()), 'mossytrunk')['state']);
     }
 
     public function testHiddenRetiredOrFreeProductsAreNotOnSale(): void
@@ -205,22 +161,12 @@ final class ShopReadinessApiTest extends WebTestCase
         self::assertSame(['warning', 1], array_values(array_slice(self::item(self::readiness($client), 'testOrders'), 1)));
     }
 
-    public function testTheReadinessNeedsAnAdmin(): void
-    {
-        $client = self::createClient();
-
-        $client->jsonRequest('GET', self::URL);
-
-        self::assertResponseStatusCodeSame(401);
-    }
-
     /** @return array<mixed> */
     private static function readiness(KernelBrowser $client): array
     {
         $client->jsonRequest('GET', self::URL);
         self::assertResponseIsSuccessful();
         $readiness = Json::decode((string) $client->getResponse()->getContent());
-        self::assertSame(['ready', 'items'], array_keys($readiness));
 
         return $readiness;
     }

@@ -73,30 +73,30 @@ final class SeoTest extends WebTestCase
         self::assertResponseStatusCodeSame(304);
     }
 
-    public function testRobotsKeepCrawlersOnThePublicSite(): void
-    {
-        $client = self::createClient();
-
-        $client->request('GET', '/robots.txt');
-
-        self::assertResponseIsSuccessful();
-        self::assertSame("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /beta\nDisallow: /api/\nDisallow: /login\nDisallow: /logout\n\nSitemap: http://localhost/sitemap.xml\n", (string) $client->getResponse()->getContent());
-    }
-
-    public function testOnceTheShopIsOpenRobotsAlsoKeepCrawlersAwayFromTheOrders(): void
-    {
-        $client = self::openShopClient();
-
-        $client->request('GET', '/robots.txt');
-
-        self::assertResponseIsSuccessful();
-        self::assertSame("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /beta\nDisallow: /api/\nDisallow: /login\nDisallow: /logout\nDisallow: /en/order/\nDisallow: /fr/order/\n\nSitemap: http://localhost/sitemap.xml\n", (string) $client->getResponse()->getContent());
-    }
-
-    public function testTheSitemapListsTheHomePageWithItsPublicationDate(): void
+    public function testRobotsKeepCrawlersOnThePublicSiteAndOnceTheShopIsOpenOffTheOrders(): void
     {
         $client = self::signedInClient();
-        $client->jsonRequest('POST', '/api/admin/publication', ['page' => 'note']);
+
+        $client->request('GET', '/robots.txt');
+
+        self::assertResponseIsSuccessful();
+        $closed = (string) $client->getResponse()->getContent();
+        self::assertStringContainsString("Disallow: /admin\nDisallow: /beta\nDisallow: /api/\n", $closed);
+        self::assertStringContainsString('Sitemap: http://localhost/sitemap.xml', $closed);
+        self::assertStringNotContainsString('/order/', $closed);
+
+        self::openTheDemoShop($client);
+        $client->request('GET', '/robots.txt');
+
+        self::assertResponseIsSuccessful();
+        $open = (string) $client->getResponse()->getContent();
+        self::assertStringContainsString("Disallow: /en/order/\nDisallow: /fr/order/\n", $open);
+        self::assertStringContainsString('Sitemap: http://localhost/sitemap.xml', $open);
+    }
+
+    public function testTheSitemapListsTheHomePageAloneWithItsPublicationDateOnceThereIsOne(): void
+    {
+        $client = self::signedInClient();
 
         $client->request('GET', '/sitemap.xml');
 
@@ -104,19 +104,15 @@ final class SeoTest extends WebTestCase
         $sitemap = new \SimpleXMLElement((string) $client->getResponse()->getContent());
         self::assertCount(1, $sitemap->url);
         self::assertSame('http://localhost/', (string) $sitemap->url[0]->loc);
-        self::assertSame(new \DateTimeImmutable()->format('Y-m-d'), (string) $sitemap->url[0]->lastmod);
-    }
+        self::assertSame('', (string) $sitemap->url[0]->lastmod);
 
-    public function testBeforeAnyPublicationTheSitemapListsTheHomePageAlone(): void
-    {
-        $client = self::createClient();
-
+        $client->jsonRequest('POST', '/api/admin/publication', ['page' => 'note']);
         $client->request('GET', '/sitemap.xml');
 
         $sitemap = new \SimpleXMLElement((string) $client->getResponse()->getContent());
         self::assertCount(1, $sitemap->url);
         self::assertSame('http://localhost/', (string) $sitemap->url[0]->loc);
-        self::assertSame('', (string) $sitemap->url[0]->lastmod);
+        self::assertSame(new \DateTimeImmutable()->format('Y-m-d'), (string) $sitemap->url[0]->lastmod);
     }
 
     public function testTheSitemapOfTheOpenShopListsEveryPublicPageInBothLanguages(): void
@@ -186,41 +182,19 @@ final class SeoTest extends WebTestCase
         self::assertCount(0, $crawler->filter('script[type="application/ld+json"]'));
     }
 
-    public function testTheShopEntranceRedirectsVisitorsToTheFirstCategoryWithoutASession(): void
-    {
-        $client = self::openShopClient();
-
-        $client->request('GET', '/fr/shop');
-
-        self::assertResponseRedirects('/fr/category/prints', 302);
-        self::assertResponseNotHasHeader('Set-Cookie');
-    }
-
-    public function testTheCategoriesEntryIsCurrentOnACategoryAndOnAProductPage(): void
-    {
-        $client = self::openShopClient();
-
-        foreach (['/en/category/prints' => ['/en/category/prints'], '/en/shop/prints-fox' => []] as $url => $current) {
-            $crawler = $client->request('GET', $url);
-
-            $navigation = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'layout', 'navigation');
-            self::assertSame(['categories'], array_values(array_map(static fn (mixed $entry): string => Json::string($entry, 'key'), array_filter($navigation, static fn (mixed $entry): bool => true === Json::at($entry, 'current')))), $url);
-            self::assertSame(['/en/shop'], $crawler->filter('nav[data-navigation] a[aria-current="true"]')->each(static fn (Crawler $link): string => (string) $link->attr('href')), $url);
-            self::assertSame($current, $crawler->filter('nav[data-navigation] a[aria-current="page"]')->each(static fn (Crawler $link): string => (string) $link->attr('href')), $url);
-        }
-
-        $crawler = $client->request('GET', '/en/about');
-        self::assertSame(['/en/about'], $crawler->filter('nav[data-navigation] a[aria-current="page"]')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
-    }
-
     private static function openShopClient(): KernelBrowser
     {
         $client = self::signedInClient();
+        self::openTheDemoShop($client);
+
+        return self::asVisitor($client);
+    }
+
+    private static function openTheDemoShop(KernelBrowser $client): void
+    {
         $client->jsonRequest('PUT', '/api/admin/texts/identity', ['studioName' => 'mossyleaf.studio', 'intro' => 'Little critters.', 'metaDescription' => 'Illustrations of little critters among leaves and moss, drawn by hand.', 'metaDescriptionFr' => 'Des petites bêtes dessinées à la main.']);
         self::stockTheDemo($client);
         self::openTheShop($client);
-
-        return self::asVisitor($client);
     }
 
     /** @return array<string, string> */

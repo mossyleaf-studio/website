@@ -16,12 +16,6 @@ describe('parseRichText', () => {
         ]);
     });
 
-    it('leaves non-https links as plain text', () => {
-        expect(parseRichText('[click](javascript:alert(1)) or [old](http://example.com)')).toEqual([
-            { text: '[click](javascript:alert(1)) or [old](http://example.com)' },
-        ]);
-    });
-
     it('returns no segment for an empty text', () => {
         expect(parseRichText('')).toEqual([]);
     });

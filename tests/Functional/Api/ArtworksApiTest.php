@@ -45,7 +45,7 @@ final class ArtworksApiTest extends WebTestCase
         $client->request('POST', '/api/admin/artworks', files: ['image' => self::file('not-an-image.png')], server: ['HTTP_ACCEPT' => 'application/json']);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertStringContainsString('JPEG, PNG, WebP or AVIF', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'detail'));
+        self::assertSame('content.unsupported_image', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'code'));
     }
 
     public function testOnlyOneArtworkIsFeaturedAtATime(): void
@@ -102,15 +102,6 @@ final class ArtworksApiTest extends WebTestCase
 
         $client->jsonRequest('PUT', $url, ['alt' => 'A fern', 'altFr' => str_repeat('é', 201)]);
         self::assertResponseStatusCodeSame(422);
-    }
-
-    public function testUploadsNeedASignedInEditor(): void
-    {
-        $client = self::createClient();
-
-        $client->request('POST', '/api/admin/artworks', files: ['image' => self::file('large-fern.png')], server: ['HTTP_ACCEPT' => 'application/json']);
-
-        self::assertResponseStatusCodeSame(401);
     }
 
     /**

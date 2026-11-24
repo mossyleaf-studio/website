@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { POLL_INTERVAL, POLL_WINDOW, keepAsking, statusView, trackingOf } from './orderStatus.js';
+import { POLL_WINDOW, keepAsking, statusView, trackingOf } from './orderStatus.js';
 
 const order = (overrides = {}) => ({ reference: 'ML-ABCD-EFGH', status: 'pending', test: false, paymentUrl: '/_fake/sumup/fake-1', lines: [], goods: 3000, shipping: 450, total: 3450, placedAt: '2026-11-20T10:00:00+00:00', ...overrides });
 
@@ -49,18 +49,12 @@ describe('keepAsking', () => {
         expect(keepAsking('pending', start, start)).toBe(true);
         expect(keepAsking('pending', start, start + POLL_WINDOW - 1)).toBe(true);
         expect(keepAsking('pending', start, start + POLL_WINDOW)).toBe(false);
-        expect(POLL_WINDOW).toBe(10 * 60 * 1000);
     });
 
     it('stops on any other state', () => {
         for (const status of ['paid', 'failed', 'expired', 'shipped', 'cancelled']) {
             expect(keepAsking(status, start, start), status).toBe(false);
         }
-    });
-
-    it('asks every few seconds', () => {
-        expect(POLL_INTERVAL).toBeGreaterThanOrEqual(2000);
-        expect(POLL_INTERVAL).toBeLessThanOrEqual(10000);
     });
 });
 

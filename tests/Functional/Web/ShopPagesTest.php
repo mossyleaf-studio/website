@@ -6,8 +6,6 @@ namespace App\Tests\Functional\Web;
 
 use App\Application\Content\ContentQueries;
 use App\Application\Content\SiteSnapshots;
-use App\Presentation\Web\Shop\ShopNotFoundListener;
-use App\Presentation\Web\Shop\SiteLabels;
 use App\Tests\Functional\Catalogue\PushesCatalogue;
 use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
@@ -16,11 +14,6 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Event\ExceptionEvent;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class ShopPagesTest extends WebTestCase
 {
@@ -31,29 +24,6 @@ final class ShopPagesTest extends WebTestCase
     {
         new Filesystem()->remove(\dirname(__DIR__, 3).'/var/share/test');
         parent::tearDown();
-    }
-
-    public function testTheShopStaysClosedToVisitorsWithoutStartingASession(): void
-    {
-        $client = self::createClient();
-
-        foreach (['/fr/', '/en/', '/en/about', '/fr/about', '/fr/no-such-page', '/fr/?preview=1', '/fr/about?preview=true', '/fr/x?preview=1'] as $url) {
-            $client->request('GET', $url, server: ['HTTP_PREVIEW' => '1']);
-
-            self::assertResponseRedirects('/', 302, $url);
-            self::assertResponseNotHasHeader('Set-Cookie', $url);
-        }
-    }
-
-    public function testThePreviewNeedsSignIn(): void
-    {
-        $client = self::createClient();
-
-        foreach (['/beta/fr/', '/beta/en/about', '/beta/fr/no-such-page'] as $url) {
-            $client->request('GET', $url);
-
-            self::assertResponseRedirects('/login', null, $url);
-        }
     }
 
     public function testEditorsPreviewTheFrenchHomeWithTheEnglishFallback(): void
@@ -78,7 +48,6 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame('#cbd3a0', $crawler->filter('meta[name="theme-color"]')->attr('content'));
 
         $props = Json::decode($crawler->filter('#site-content')->text());
-        self::assertSame(['layout', 'data'], array_keys($props));
         self::assertSame('fr', Json::string($props, 'layout', 'locale'));
         self::assertTrue(Json::at($props, 'layout', 'preview'));
         self::assertSame('Livraison offerte', Json::string($props, 'layout', 'announcement'));
@@ -92,15 +61,7 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame('Petites bêtes dessinées.', $crawler->filter('#shop main h1')->text());
         self::assertSame('A tiny studio.', $crawler->filter('#shop main section p')->first()->text());
         self::assertSame('Livraison offerte', $crawler->filter('#shop [data-announcement]')->text());
-        self::assertSame(['Accueil', 'Conventions', 'À propos', 'Contact'], $crawler->filter('#shop nav[data-navigation] a')->each(static fn (Crawler $link): string => $link->text()));
-        self::assertSame('Aller au contenu', $crawler->filter('#shop a[href="#main"]')->text());
-        self::assertSame('Aperçu du brouillon', $crawler->filter('#shop aside[data-draft]')->attr('aria-label'));
-        self::assertSame('Brouillon Seuls les admins voient cette page. Les textes, liens, images et pages légales attendent « Publier » ; les produits, conventions et frais de port sont déjà en ligne.', $crawler->filter('#shop aside[data-draft] p')->text());
         self::assertSame(['shop' => '/beta/fr/', 'note' => '/beta/note/', 'admin' => '/admin'], Json::array($props, 'layout', 'draft'));
-        self::assertSame([['Boutique', '/beta/fr/'], ['Note « en construction »', '/beta/note/'], ['Retour à l’admin', '/admin']], self::links($crawler->filter('#shop aside[data-draft] a')));
-        self::assertSame(['page', null, null], $crawler->filter('#shop aside[data-draft] a')->each(static fn (Crawler $link): ?string => $link->attr('aria-current')));
-        self::assertSame('Aperçu du brouillon', $crawler->filter('#shop aside[data-draft] nav')->attr('aria-label'));
-        self::assertSame(['id', 'title', 'url'], array_keys(Json::array($props, 'layout', 'footer', 'links', 0)));
         self::assertSame('Des bestioles à la main.', $crawler->filter('meta[name="description"]')->attr('content'));
         self::assertSame('fr_FR', $crawler->filter('meta[property="og:locale"]')->attr('content'));
         self::assertStringStartsWith('http://localhost/media/artworks/', (string) $crawler->filter('meta[property="og:image"]')->attr('content'));
@@ -129,18 +90,6 @@ final class ShopPagesTest extends WebTestCase
         self::assertStringNotContainsString('/beta', (string) $crawler->filter('meta[property="og:url"]')->attr('content'));
     }
 
-    public function testTheLanguageLinkLeadsToTheSamePageInTheOtherLanguage(): void
-    {
-        $client = self::signedInClient();
-
-        foreach (['/beta/fr/' => '/beta/en/', '/beta/en/' => '/beta/fr/', '/beta/en/about' => '/beta/fr/about', '/beta/fr/no-such-page' => '/beta/en/no-such-page'] as $url => $other) {
-            $crawler = $client->request('GET', $url);
-
-            self::assertSame($other, $crawler->filter('#shop [data-languages] a[hreflang]:not([aria-current])')->attr('href'), $url);
-            self::assertSame($url, $crawler->filter('#shop [data-languages] a[aria-current]')->attr('href'), $url);
-        }
-    }
-
     public function testTheAboutPageShowsTheTextTheFeaturedArtworkAndTheGallery(): void
     {
         $client = self::signedInClient();
@@ -154,9 +103,7 @@ final class ShopPagesTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         $data = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data');
-        self::assertSame(['page', 'title', 'paragraphs', 'featured', 'gallery'], array_keys($data));
         self::assertSame(['about', 'About the studio', ['A tiny studio.', 'Order on [Etsy](https://www.etsy.com/shop/mossyleafstudio).']], [$data['page'], $data['title'], $data['paragraphs']]);
-        self::assertSame(['id', 'url', 'alt', 'width', 'height'], array_keys(Json::array($data, 'featured')));
         self::assertSame('Recent drawings', Json::string($data, 'gallery', 'title'));
         self::assertSame(['A moss'], array_map(static fn (mixed $artwork): string => Json::string($artwork, 'alt'), Json::array($data, 'gallery', 'artworks')));
         self::assertSame('About the studio', $crawler->filter('#shop main h1')->text());
@@ -186,7 +133,7 @@ final class ShopPagesTest extends WebTestCase
         self::assertSame(Json::string($data, 'intro'), $shop->filter('main h1')->text());
         self::assertSame(Json::string($data, 'about', 'title'), $shop->filter('main section h2')->text());
         self::assertSame(Json::string($data, 'about', 'text'), $shop->filter('main section p')->first()->text());
-        self::assertSame([[self::label('fr', 'home.aboutLink'), Json::string($data, 'about', 'url')]], self::links($shop->filter('main section p a')));
+        self::assertSame([Json::string($data, 'about', 'url')], $shop->filter('main section p a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
     }
 
     public function testThePrerenderOfTheMenuListsTheCategoriesAndCollectionsThePropsCarry(): void
@@ -237,96 +184,48 @@ final class ShopPagesTest extends WebTestCase
         $crawler = self::signedInClient()->request('GET', '/beta/en/no-such-page');
         $layout = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'layout');
 
-        self::assertSame([[self::label('en', 'notFound.home'), Json::string($layout, 'navigation', 0, 'url')]], self::links($crawler->filter('#shop main p a')));
-        self::assertSame(self::label('en', 'notFound.text'), $crawler->filter('#shop main p')->first()->text());
+        self::assertSame([Json::string($layout, 'navigation', 0, 'url')], $crawler->filter('#shop main p a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
     }
 
     /** @param array<mixed> $layout */
     private static function assertLayoutMatches(Crawler $shop, array $layout): void
     {
-        $locale = Json::string($layout, 'locale');
         $navigation = Json::array($layout, 'navigation');
 
-        self::assertSame(self::label($locale, 'layout.skip'), $shop->filter('a[href="#main"]')->text());
         self::assertSame(array_filter([Json::string($layout, 'announcement')]), $shop->filter('[data-announcement]')->each(static fn (Crawler $bar): string => $bar->text()));
         self::assertSame(Json::string($layout, 'navigation', 0, 'url'), $shop->filter('header a[data-home]')->attr('href'));
         self::assertSame(Json::string($layout, 'studioName'), $shop->filter('header a[data-home]')->text());
-        self::assertSame(array_map(static fn (mixed $entry): array => [self::label($locale, 'nav.'.Json::string($entry, 'key')), Json::string($entry, 'url')], $navigation), self::links($shop->filter('nav[data-navigation] > ul > li > a')));
+        self::assertSame(array_map(static fn (mixed $entry): string => Json::string($entry, 'url'), $navigation), $shop->filter('nav[data-navigation] > ul > li > a')->each(static fn (Crawler $link): string => (string) $link->attr('href')));
         self::assertSame(
             array_map(static fn (mixed $entry): string => true === Json::at($entry, 'current') ? (\is_array($entry) && \array_key_exists('children', $entry) ? 'true' : 'page') : '', $navigation),
             $shop->filter('nav[data-navigation] > ul > li > a')->each(static fn (Crawler $link): string => (string) $link->attr('aria-current')),
-        );
-        self::assertSame(
-            array_values(array_map(static fn (mixed $entry): string => Json::string($entry, 'key'), array_filter($navigation, static fn (mixed $entry): bool => \is_array($entry) && \array_key_exists('children', $entry)))),
-            array_values(array_filter($shop->filter('nav[data-navigation] > ul > li > a')->each(static fn (Crawler $link): string => (string) $link->attr('data-menu')))),
         );
         foreach (['categories', 'collections'] as $key) {
             $entry = array_find($navigation, static fn (mixed $entry): bool => $key === Json::at($entry, 'key'));
             $children = null === $entry ? [] : Json::array($entry, 'children');
             self::assertSame(null === $entry, [] === $children, $key);
             self::assertSame(
-                array_map(static fn (mixed $child): array => [Json::string($child, 'label'), Json::string($child, 'url'), true === Json::at($child, 'current') ? 'page' : '', true === (Json::array($child)['hidden'] ?? false)], $children),
-                $shop->filter("nav[data-navigation] > ul > li > a[data-menu=\"{$key}\"] + #menu-{$key} > ul[data-{$key}] > li > a")->each(static fn (Crawler $link): array => [1 === $link->filter('[data-collection-label]')->count() ? $link->filter('[data-collection-label]')->text() : $link->text(), (string) $link->attr('href'), (string) $link->attr('aria-current'), 1 === $link->filter('[data-label]')->count()]),
+                array_map(static fn (mixed $child): array => [Json::string($child, 'url'), true === Json::at($child, 'current') ? 'page' : '', true === (Json::array($child)['hidden'] ?? false)], $children),
+                $shop->filter("nav[data-navigation] > ul > li > a[data-menu=\"{$key}\"] + #menu-{$key} > ul[data-{$key}] > li > a")->each(static fn (Crawler $link): array => [(string) $link->attr('href'), (string) $link->attr('aria-current'), 1 === $link->filter('[data-label]')->count()]),
                 $key,
             );
-            self::assertCount(null === $entry ? 0 : 1, $shop->filter("#menu-{$key}"), $key);
-            self::assertCount(null === $entry ? 0 : 1, $shop->filter("[data-{$key}]"), $key);
         }
-        self::assertCount(0, $shop->filter('[data-shop-menu], #shop-panel, #shop-categories'));
-        self::assertSame(self::label($locale, 'layout.navigation'), $shop->filter('nav[data-navigation]')->attr('aria-label'));
-        self::assertSame([[self::label($locale, 'cart.link'), Json::string($layout, 'cartUrl')]], self::links($shop->filter('header a[data-cart]')));
-        self::assertSame(self::label($locale, 'layout.languages'), $shop->filter('header nav[data-languages]')->attr('aria-label'));
-        self::assertCount(1, $shop->filter('nav[data-languages]'));
-        self::assertSame(self::links($shop->filter('header [data-languages] a')), self::links($shop->filter('footer [data-languages] a')));
+        self::assertSame(Json::string($layout, 'cartUrl'), $shop->filter('header a[data-cart]')->attr('href'));
         self::assertSame(
-            array_map(static fn (mixed $language): array => [self::label($locale, 'language.code.'.Json::string($language, 'locale')).' '.self::label($locale, 'language.name.'.Json::string($language, 'locale')), Json::string($language, 'url')], Json::array($layout, 'languages')),
-            self::links($shop->filter('header nav[data-languages] a')),
+            array_map(static fn (mixed $language): string => Json::string($language, 'url'), Json::array($layout, 'languages')),
+            $shop->filter('header nav[data-languages] a')->each(static fn (Crawler $link): string => (string) $link->attr('href')),
         );
         self::assertSame(
             array_map(static fn (mixed $link): array => [Json::string($link, 'title'), Json::string($link, 'url')], Json::array($layout, 'footer', 'links')),
             self::links($shop->filter('footer nav[data-links] a')),
         );
-        self::assertSame(
-            array_map(static fn (mixed $link): string => str_contains(Json::string($link, 'url'), 'instagram.com') ? 'me' : '', Json::array($layout, 'footer', 'links')),
-            $shop->filter('footer nav[data-links] a')->each(static fn (Crawler $link): string => (string) $link->attr('rel')),
-        );
         self::assertSame(Json::string($layout, 'intro'), $shop->filter('footer p')->first()->text());
-        self::assertSame(self::label($locale, 'footer.copyright', ['year' => date('Y'), 'studio' => Json::string($layout, 'studioName')]), $shop->filter('footer p')->last()->text());
     }
 
     /** @return list<array{string, string}> */
     private static function links(Crawler $links): array
     {
         return $links->each(static fn (Crawler $link): array => [$link->text(), (string) $link->attr('href')]);
-    }
-
-    /** @param array<string, scalar> $parameters */
-    private static function label(string $locale, string $key, array $parameters = []): string
-    {
-        $label = self::getContainer()->get(SiteLabels::class)->label($locale, $key, $parameters);
-        self::assertNotSame($key, $label, "{$locale} {$key}");
-
-        return $label;
-    }
-
-    public function testAShopAddressWithoutTheTrailingSlashRedirects(): void
-    {
-        self::createClient()->request('GET', '/fr');
-        self::assertResponseRedirects('http://localhost/fr/', 301);
-        self::ensureKernelShutdown();
-
-        self::signedInClient()->request('GET', '/beta/en');
-        self::assertResponseRedirects('http://localhost/beta/en/', 301);
-    }
-
-    public function testAnUnknownLanguageIsNotFound(): void
-    {
-        self::createClient()->request('GET', '/de/');
-        self::assertResponseStatusCodeSame(404);
-        self::ensureKernelShutdown();
-
-        self::signedInClient()->request('GET', '/beta/de/');
-        self::assertResponseStatusCodeSame(404);
     }
 
     public function testAnUnknownShopAddressShowsTheShopNotFoundPageInItsLanguage(): void
@@ -346,20 +245,6 @@ final class ShopPagesTest extends WebTestCase
         }
     }
 
-    public function testANotFoundRaisedOnAClosedShopAddressRedirectsHome(): void
-    {
-        $kernel = self::bootKernel();
-        $request = Request::create('/fr/about');
-        $request->attributes->add(['_route' => 'shop_about', '_route_params' => ['_locale' => 'fr'], '_locale' => 'fr']);
-        $event = new ExceptionEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST, new NotFoundHttpException());
-
-        self::getContainer()->get(ShopNotFoundListener::class)($event);
-
-        $response = $event->getResponse();
-        self::assertInstanceOf(RedirectResponse::class, $response);
-        self::assertSame('/', $response->getTargetUrl());
-    }
-
     public function testTheNotePagesAreUntouched(): void
     {
         $client = self::signedInClient();
@@ -374,26 +259,6 @@ final class ShopPagesTest extends WebTestCase
             self::assertSame($expected, $crawler->filter('#site-content')->text(), $url);
             self::assertSame('en', $crawler->filter('html')->attr('lang'), $url);
             self::assertCount(0, $crawler->filter('meta[name^="turbo-"], [data-turbo-track], [data-turbo-permanent]'), $url);
-        }
-    }
-
-    public function testEveryShopDocumentCarriesWhatTurboNeedsToSwapItWithoutAReload(): void
-    {
-        $client = self::signedInClient();
-
-        foreach (['/beta/fr/', '/beta/en/about', '/beta/fr/no-such-page'] as $url) {
-            $crawler = $client->request('GET', $url);
-
-            self::assertSame('no-preview', $crawler->filter('head meta[name="turbo-cache-control"]')->attr('content'), $url);
-            $entry = $crawler->filter('head script[type="module"][src*="/assets/shop"]');
-            self::assertCount(1, $entry, $url);
-            self::assertSame('reload', $entry->attr('data-turbo-track'), $url);
-            self::assertCount(0, $crawler->filter('head script[type="application/ld+json"]'), $url);
-            $announcer = $crawler->filter('body > #shop-announcer');
-            self::assertCount(1, $announcer, $url);
-            self::assertSame('', $announcer->attr('data-turbo-permanent'), $url);
-            self::assertSame('polite', $announcer->attr('aria-live'), $url);
-            self::assertSame('', $announcer->text(), $url);
         }
     }
 

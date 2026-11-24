@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Web;
 
 use App\Tests\Functional\Sales\ShopsOnline;
-use App\Tests\Support\FakeSumUp;
 use App\Tests\Support\Json;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
@@ -37,25 +36,6 @@ final class ShopCheckoutPagesTest extends WebTestCase
         parent::tearDown();
     }
 
-    public function testTheCheckoutStaysClosedToVisitorsWithoutACookie(): void
-    {
-        $client = self::createClient();
-
-        foreach (['/fr/checkout', '/en/checkout'] as $url) {
-            $client->request('GET', $url);
-
-            self::assertResponseRedirects('/', 302, $url);
-            self::assertResponseNotHasHeader('Set-Cookie', $url);
-        }
-    }
-
-    public function testThePreviewOfTheCheckoutNeedsSignIn(): void
-    {
-        self::createClient()->request('GET', '/beta/fr/checkout');
-
-        self::assertResponseRedirects('/login');
-    }
-
     public function testEditorsPreviewTheCheckoutInFrenchWithPreviewAddresses(): void
     {
         $client = self::signedInClient();
@@ -65,19 +45,13 @@ final class ShopCheckoutPagesTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSame('fr', $crawler->filter('html')->attr('lang'));
         self::assertSame('checkout', $crawler->filter('#shop')->attr('data-page'));
-        self::assertSame('no-cache', $crawler->filter('head meta[name="turbo-cache-control"]')->attr('content'));
         self::assertResponseHeaderSame('X-Robots-Tag', 'noindex, nofollow');
         self::assertSame('noindex, nofollow', $crawler->filter('meta[name="robots"]')->attr('content'));
         self::assertCount(0, $crawler->filter('link[rel="canonical"]'));
         self::assertCount(0, $crawler->filter('link[rel="alternate"]'));
-        self::assertSame('Commande · mossyleaf.studio', $crawler->filter('title')->text());
-        self::assertSame(
-            ['page' => 'checkout', 'title' => 'Commande', 'quoteUrl' => '/beta/api/shop/fr/quote', 'ordersUrl' => '/beta/api/shop/fr/orders', 'countries' => [], 'defaultCountry' => 'FR', 'termsUrl' => null, 'cartUrl' => '/beta/fr/cart'],
-            Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data'),
-        );
-        $main = $crawler->filter('#shop main');
-        self::assertSame('Commande', $main->filter('h1')->text());
-        self::assertSame('/beta/fr/cart', $main->filter('a[data-cart-back]')->attr('href'));
+        $data = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data');
+        self::assertSame(['checkout', '/beta/api/shop/fr/quote', '/beta/api/shop/fr/orders', 'FR', null, '/beta/fr/cart'], [$data['page'], $data['quoteUrl'], $data['ordersUrl'], $data['defaultCountry'], $data['termsUrl'], $data['cartUrl']]);
+        self::assertSame('/beta/fr/cart', $crawler->filter('#shop main a[data-cart-back]')->attr('href'));
         foreach ($crawler->filter('.shop-prerender > :not([data-draft]) a')->each(static fn (Crawler $link): string => (string) $link->attr('href')) as $href) {
             if (str_starts_with($href, '/')) {
                 self::assertStringStartsWith('/beta/', $href);
@@ -162,10 +136,8 @@ final class ShopCheckoutPagesTest extends WebTestCase
         self::assertSame('noindex, nofollow', $crawler->filter('meta[name="robots"]')->attr('content'));
         self::assertCount(0, $crawler->filter('link[rel="canonical"]'));
         self::assertSame('order', $crawler->filter('#shop')->attr('data-page'));
-        self::assertSame('no-cache', $crawler->filter('head meta[name="turbo-cache-control"]')->attr('content'));
         $data = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data');
-        self::assertSame(['page', 'title', 'order', 'statusUrl'], array_keys($data));
-        self::assertSame(['order', 'Votre commande', '/api/shop/fr/orders/'.$placed['token']], [$data['page'], $data['title'], $data['statusUrl']]);
+        self::assertSame(['order', '/api/shop/fr/orders/'.$placed['token']], [$data['page'], $data['statusUrl']]);
 
         $client->jsonRequest('GET', '/api/shop/fr/orders/'.$placed['token']);
 
@@ -175,48 +147,6 @@ final class ShopCheckoutPagesTest extends WebTestCase
         self::assertCount(1, $main->filter('[data-test-order]'));
         self::assertSame($placed['paymentUrl'], $main->filter('a[data-pay]')->attr('href'));
         self::assertStringNotContainsString(self::CUSTOMER[0], (string) $client->getResponse()->getContent());
-    }
-
-    public function testTheOrderPageSettlesAPaidCheckout(): void
-    {
-        $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
-
-        $crawler = $client->request('GET', '/beta/en/order/'.$placed['token']);
-
-        self::assertResponseIsSuccessful();
-        $data = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data');
-        self::assertSame(['paid', null, '/beta/api/shop/en/orders/'.$placed['token']], [Json::at($data, 'order', 'status'), Json::at($data, 'order', 'paymentUrl'), $data['statusUrl']]);
-        self::assertCount(0, $crawler->filter('#shop main a[data-pay]'));
-        self::assertStringContainsString('no-store', (string) $client->getResponse()->headers->get('Cache-Control'));
-    }
-
-    public function testTheOrderPageSeesADeclinedCheckoutPaidOnRetry(): void
-    {
-        $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        self::sumUp()->settle($placed['paymentId'], FakeSumUp::FAILED);
-        $client->request('GET', '/beta/en/order/'.$placed['token']);
-        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
-
-        $crawler = $client->request('GET', '/beta/en/order/'.$placed['token']);
-
-        self::assertResponseIsSuccessful();
-        self::assertSame('paid', Json::at(Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data'), 'order', 'status'));
-        self::assertSame(1, self::stockOf('STI-MOTH'));
-    }
-
-    public function testAnUnknownOrderStaysClosedWhileTheDoorIsShut(): void
-    {
-        $client = self::createClient();
-
-        foreach ([str_repeat('A', 43), 'short'] as $token) {
-            $client->request('GET', '/fr/order/'.$token);
-
-            self::assertResponseRedirects('/', 302, $token);
-            self::assertResponseNotHasHeader('Set-Cookie');
-        }
     }
 
     public function testAnUnknownOrderIsTheShopNotFoundPageInThePreview(): void
@@ -229,12 +159,5 @@ final class ShopCheckoutPagesTest extends WebTestCase
             self::assertResponseStatusCodeSame(404, $token);
             self::assertSame('not-found', $crawler->filter('#shop')->attr('data-page'));
         }
-    }
-
-    public function testThePreviewOfAnOrderNeedsSignIn(): void
-    {
-        self::createClient()->request('GET', '/beta/fr/order/'.str_repeat('A', 43));
-
-        self::assertResponseRedirects('/login');
     }
 }

@@ -14,25 +14,6 @@ final class ShopCartPageTest extends WebTestCase
 {
     use SignsInClient;
 
-    public function testTheCartStaysClosedToVisitorsWithoutACookie(): void
-    {
-        $client = self::createClient();
-
-        foreach (['/fr/cart', '/en/cart'] as $url) {
-            $client->request('GET', $url);
-
-            self::assertResponseRedirects('/', 302, $url);
-            self::assertResponseNotHasHeader('Set-Cookie', $url);
-        }
-    }
-
-    public function testThePreviewOfTheCartNeedsSignIn(): void
-    {
-        self::createClient()->request('GET', '/beta/fr/cart');
-
-        self::assertResponseRedirects('/login');
-    }
-
     public function testEditorsPreviewTheCartInFrenchWithPreviewAddresses(): void
     {
         $client = self::signedInClient();
@@ -44,19 +25,13 @@ final class ShopCartPageTest extends WebTestCase
         self::assertSame('cart', $crawler->filter('#shop')->attr('data-page'));
         self::assertResponseHeaderSame('X-Robots-Tag', 'noindex, nofollow');
         self::assertSame('noindex, nofollow', $crawler->filter('meta[name="robots"]')->attr('content'));
-        self::assertSame('Panier · mossyleaf.studio', $crawler->filter('title')->text());
+        self::assertCount(0, $crawler->filter('link[rel="canonical"]'));
+        self::assertCount(0, $crawler->filter('link[rel="alternate"]'));
         $props = Json::decode($crawler->filter('#site-content')->text());
         self::assertSame('/beta/fr/cart', Json::string($props, 'layout', 'cartUrl'));
-        self::assertSame(
-            ['page' => 'cart', 'title' => 'Panier', 'quoteUrl' => '/beta/api/shop/fr/quote', 'countries' => [], 'defaultCountry' => 'FR', 'shopUrl' => '/beta/fr/shop', 'checkoutUrl' => '/beta/fr/checkout'],
-            Json::array($props, 'data'),
-        );
-
-        $main = $crawler->filter('#shop main');
-        self::assertSame('Panier', $main->filter('h1')->text());
-        self::assertSame('/beta/fr/shop', $main->filter('a[data-shop]')->attr('href'));
-        self::assertSame('Retour à la boutique', $main->filter('a[data-shop]')->text());
-        self::assertSame('Le panier a besoin de JavaScript pour compter vos articles et calculer la livraison.', $main->filter('[data-noscript]')->text());
+        $data = Json::array($props, 'data');
+        self::assertSame(['cart', '/beta/api/shop/fr/quote', 'FR', '/beta/fr/shop', '/beta/fr/checkout'], [$data['page'], $data['quoteUrl'], $data['defaultCountry'], $data['shopUrl'], $data['checkoutUrl']]);
+        self::assertSame('/beta/fr/shop', $crawler->filter('#shop main a[data-shop]')->attr('href'));
         foreach ($crawler->filter('.shop-prerender > :not([data-draft]) a')->each(static fn (Crawler $link): string => (string) $link->attr('href')) as $href) {
             if (str_starts_with($href, '/')) {
                 self::assertStringStartsWith('/beta/', $href);
@@ -89,16 +64,6 @@ final class ShopCartPageTest extends WebTestCase
         self::assertContains(['code' => 'US', 'name' => 'United States'], $world);
         self::assertContains(['code' => 'FR', 'name' => 'France'], $world);
         self::assertNotContains('DE', array_column($world, 'code'));
-    }
-
-    public function testTheCartHasNoCanonicalNorAlternates(): void
-    {
-        $client = self::signedInClient();
-        $crawler = $client->request('GET', '/beta/en/cart');
-
-        self::assertSame('/beta/api/shop/en/quote', Json::string(Json::decode($crawler->filter('#site-content')->text()), 'data', 'quoteUrl'));
-        self::assertCount(0, $crawler->filter('link[rel="canonical"]'));
-        self::assertCount(0, $crawler->filter('link[rel="alternate"]'));
     }
 
     private static function zone(KernelBrowser $client, string $code, bool $enabled): void

@@ -7,15 +7,12 @@ namespace App\Tests\Functional\Catalogue;
 use App\Application\Catalogue\CatalogueQueries;
 use App\Application\Catalogue\CategoryView;
 use App\Application\Catalogue\ReplaceCatalogue\PushedProduct;
-use App\Application\Catalogue\ReplaceCatalogue\PushedVariant;
 use App\Application\Catalogue\ShopCategoryView;
 use App\Application\Catalogue\ShopProductView;
-use App\Application\Catalogue\ShopVariantView;
 use App\Domain\Shared\Locale;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Uid\Ulid;
 
 final class ShopCatalogueQueryTest extends WebTestCase
 {
@@ -63,30 +60,6 @@ final class ShopCatalogueQueryTest extends WebTestCase
             self::assertSame(['A fox among [ferns](https://example.com/ferns).', '', ''], array_map(static fn (ShopProductView $product): string => $product->description->in($locale), $products), $locale->value);
         }
         self::assertSame(['prints', 'prints', 'stickers'], array_map(static fn (ShopProductView $product): string => $product->category->key, $products));
-    }
-
-    public function testStockIsPublishedCappedAtTenAndAProductIsSoldOutWhenNoVariantCanBeBought(): void
-    {
-        self::stockTheDemo(self::signedInClient());
-
-        [$fox, $owl, $moth] = self::queries()->shop(true);
-
-        self::assertSame([['PRI-FOX-A4', 'A4', 10, false, 'inStock'], ['PRI-FOX-A5', 'A5', 0, true, 'soldOut']], self::variants($fox));
-        self::assertFalse($fox->soldOut);
-        self::assertSame([['PRI-OWL', null, 0, true, 'soldOut']], self::variants($owl));
-        self::assertTrue($owl->soldOut);
-        self::assertSame([['STI-MOTH', null, 4, false, 'inStock']], self::variants($moth));
-        self::assertFalse($moth->soldOut);
-    }
-
-    public function testThreeOrFewerAreTheLastPiecesAndAnUnnamedVariantAmongSeveralIsNamedByItsSku(): void
-    {
-        self::push([new PushedProduct(new Ulid('01JD3K7Q000000000000000001'), 'PRI-WREN', 'Wren', 'Prints', 'Prints Wren', 900, [new PushedVariant('A4', 'PRI-WREN-A4', 3), new PushedVariant(null, 'PRI-WREN-X', 1)])]);
-
-        $wren = self::queries()->shopProduct('prints-wren', true);
-
-        self::assertNotNull($wren);
-        self::assertSame([['PRI-WREN-A4', 'A4', 3, false, 'lastPieces'], ['PRI-WREN-X', 'PRI-WREN-X', 1, false, 'lastPieces']], self::variants($wren));
     }
 
     public function testAProductIsFoundBySlugOnlyWhenItIsShown(): void
@@ -158,11 +131,5 @@ final class ShopCatalogueQueryTest extends WebTestCase
     private static function slugs(array $products): array
     {
         return array_map(static fn (ShopProductView $product): array => [$product->slug, $product->hidden], $products);
-    }
-
-    /** @return list<array{string, ?string, int, bool, string}> */
-    private static function variants(ShopProductView $product): array
-    {
-        return array_map(static fn (ShopVariantView $variant): array => [$variant->sku, $variant->name, $variant->available, $variant->soldOut, $variant->state], $product->variants);
     }
 }

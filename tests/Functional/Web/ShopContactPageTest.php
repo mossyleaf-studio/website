@@ -35,25 +35,6 @@ final class ShopContactPageTest extends WebTestCase
         parent::tearDown();
     }
 
-    public function testTheContactPageStaysClosedToVisitors(): void
-    {
-        $client = self::createClient();
-
-        foreach (['/fr/contact', '/en/contact'] as $url) {
-            $client->request('GET', $url);
-
-            self::assertResponseRedirects('/', 302, $url);
-            self::assertResponseNotHasHeader('Set-Cookie', $url);
-        }
-    }
-
-    public function testThePreviewOfTheContactPageNeedsSignIn(): void
-    {
-        self::createClient()->request('GET', '/beta/fr/contact');
-
-        self::assertResponseRedirects('/login');
-    }
-
     public function testEditorsPreviewTheFormAndTheLinksOfTheStudioInFrench(): void
     {
         $client = self::signedInClient();
@@ -67,20 +48,15 @@ final class ShopContactPageTest extends WebTestCase
         self::assertResponseHeaderSame('X-Robots-Tag', 'noindex, nofollow');
         $props = Json::decode($crawler->filter('#site-content')->text());
         $data = Json::array($props, 'data');
-        self::assertSame(['page', 'title', 'endpoint', 'links'], array_keys($data));
         self::assertSame('contact', $data['page']);
         self::assertSame('Contact', $data['title']);
         self::assertSame('/beta/api/shop/fr/contact', $data['endpoint']);
-        self::assertSame(['id', 'title', 'description', 'url', 'tape'], array_keys(Json::array($data, 'links', 0)));
         self::assertSame(['Instagram', 'Nouveaux dessins', 'https://www.instagram.com/mossyleaf.studio/', 'blossom'], array_slice(array_values(Json::array($data, 'links', 2)), 1));
         self::assertContains(['key' => 'contact', 'url' => '/beta/fr/contact', 'current' => true], Json::array($props, 'layout', 'navigation'));
         self::assertSame('Contact · mossyleaf.studio', $crawler->filter('title')->text());
 
         $shop = $crawler->filter('#shop');
         self::assertSame('Contact', $shop->filter('main h1')->text());
-        self::assertSame('Une question, une commande ou simplement un bonjour : le studio lit chaque message.', $shop->filter('main [data-intro]')->text());
-        self::assertSame('Le formulaire a besoin de JavaScript. Vous pouvez joindre le studio par les liens de cette page.', $shop->filter('main [data-noscript]')->text());
-        self::assertSame('Retrouver le studio ailleurs', $shop->filter('main [data-links]')->attr('aria-label'));
         self::assertSame(
             array_map(static fn (mixed $link): array => [Json::string($link, 'title'), Json::string($link, 'url')], Json::array($data, 'links')),
             $shop->filter('main [data-links] a')->each(static fn (Crawler $link): array => [$link->filter('h2')->text(), (string) $link->attr('href')]),
@@ -93,35 +69,26 @@ final class ShopContactPageTest extends WebTestCase
         }
     }
 
-    public function testTheEnglishPageSendsToTheEnglishRoute(): void
+    public function testTheFormPointsAtTheRouteOfThePageLanguageAndIsOfferedOnlyWithAStudioAddressAndASender(): void
     {
         $crawler = self::signedInClient()->request('GET', '/beta/en/contact');
 
         self::assertSame('/beta/api/shop/en/contact', Json::string(Json::decode($crawler->filter('#site-content')->text()), 'data', 'endpoint'));
-    }
+        self::assertCount(1, $crawler->filter('#shop main [data-noscript]'));
 
-    public function testWithoutAStudioAddressThePageOffersNoForm(): void
-    {
-        $_ENV['STUDIO_EMAIL'] = '';
-        $crawler = self::signedInClient()->request('GET', '/beta/en/contact');
+        foreach (['STUDIO_EMAIL', 'MAILER_FROM'] as $name) {
+            self::ensureKernelShutdown();
+            $_ENV[$name] = '';
+            $crawler = self::signedInClient()->request('GET', '/beta/en/contact');
+            $_ENV[$name] = $this->saved[$name];
 
-        self::assertResponseIsSuccessful();
-        $data = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data');
-        self::assertNull($data['endpoint']);
-        self::assertSame('Questions, commissions or simply a hello: the studio reads every message.', $crawler->filter('#shop main [data-intro]')->text());
-        self::assertCount(0, $crawler->filter('#shop main [data-noscript]'));
-        self::assertNotEmpty(Json::array($data, 'links'));
-        self::assertCount(\count(Json::array($data, 'links')), $crawler->filter('#shop main [data-links] li'));
-    }
-
-    public function testWithoutASenderAddressThePageOffersNoForm(): void
-    {
-        $_ENV['MAILER_FROM'] = '';
-        $crawler = self::signedInClient()->request('GET', '/beta/en/contact');
-
-        self::assertResponseIsSuccessful();
-        self::assertNull(Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data')['endpoint']);
-        self::assertCount(0, $crawler->filter('#shop main [data-noscript]'));
+            self::assertResponseIsSuccessful($name);
+            $data = Json::array(Json::decode($crawler->filter('#site-content')->text()), 'data');
+            self::assertNull($data['endpoint'], $name);
+            self::assertCount(0, $crawler->filter('#shop main [data-noscript]'), $name);
+            self::assertNotEmpty(Json::array($data, 'links'), $name);
+            self::assertCount(\count(Json::array($data, 'links')), $crawler->filter('#shop main [data-links] li'), $name);
+        }
     }
 
     public function testTheApplicationBootsWithTheMailSettingsUnset(): void

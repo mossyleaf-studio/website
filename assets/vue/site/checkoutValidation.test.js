@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHECKOUT_FIELDS, CHECKOUT_LIMITS, checkoutErrors, emptyDelivery, firstInvalid, needsRegion, orderPayload, serverErrors } from './checkoutValidation.js';
+import { CHECKOUT_LIMITS, checkoutErrors, emptyDelivery, firstInvalid, needsRegion, orderPayload, serverErrors } from './checkoutValidation.js';
 
 const filled = (overrides = {}) => ({
     ...emptyDelivery(),
@@ -79,10 +79,6 @@ describe('checkoutErrors', () => {
     it('asks for a country when none is chosen', () => {
         expect(checkoutErrors(filled(), { country: null, zone: null })).toEqual({ country: { key: 'checkout.errors.country' } });
     });
-
-    it('mirrors the limits of the delivery address', () => {
-        expect(CHECKOUT_LIMITS).toEqual({ email: 254, name: 120, phone: 32, line1: 120, line2: 120, postalCode: 16, city: 80, region: 80 });
-    });
 });
 
 describe('needsRegion', () => {
@@ -143,6 +139,5 @@ describe('firstInvalid', () => {
     it('follows the order of the form', () => {
         expect(firstInvalid({ terms: {}, city: {}, region: {} })).toBe('city');
         expect(firstInvalid({})).toBeNull();
-        expect(CHECKOUT_FIELDS).toEqual(['email', 'name', 'phone', 'line1', 'line2', 'postalCode', 'city', 'country', 'region', 'terms']);
     });
 });

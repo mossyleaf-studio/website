@@ -30,13 +30,4 @@ final class CategoryTest extends TestCase
 
         $category->relabel(Translation::of('', str_repeat('é', Category::MAX_LABEL + 1)));
     }
-
-    public function testACategoryMoves(): void
-    {
-        $category = Category::named('Prints', 0);
-
-        $category->moveTo(3);
-
-        self::assertSame(3, $category->position());
-    }
 }

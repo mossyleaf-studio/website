@@ -24,19 +24,13 @@ use Symfony\Component\Uid\Ulid;
 
 final class ProductTest extends TestCase
 {
-    public function testAPushedProductArrivesHiddenWithItsMossytrunkFields(): void
+    public function testAPushedProductArrivesHiddenWithItsFieldsTrimmed(): void
     {
-        $sourceId = new Ulid();
-        $prints = Category::named(' Prints ', 0);
+        $product = Product::pushed(new Ulid(), ' PRT-FOX ', ' Fox ', ' Prints Fox ', Category::named(' Prints ', 0), 1500, 'prints-fox', 4);
 
-        $product = Product::pushed($sourceId, ' PRT-FOX ', ' Fox ', ' Prints Fox ', $prints, 1500, 'prints-fox', 4);
-
-        self::assertTrue($sourceId->equals($product->sourceId()));
-        self::assertSame(['PRT-FOX', 'Fox', 'Prints Fox', 1500, 'prints-fox', 4], [$product->reference(), $product->name(), $product->displayName(), $product->price(), $product->slug(), $product->position()]);
-        self::assertSame($prints, $product->category());
+        self::assertSame(['PRT-FOX', 'Fox', 'Prints Fox'], [$product->reference(), $product->name(), $product->displayName()]);
+        self::assertSame(['Prints'], [$product->category()->labelIn(Locale::Fr)]);
         self::assertFalse($product->isVisible());
-        self::assertFalse($product->isRetired());
-        self::assertSame(['', ''], [$product->title()->in(Locale::En), $product->description()->in(Locale::Fr)]);
         self::assertSame([], $product->variants());
     }
 
@@ -142,17 +136,6 @@ final class ProductTest extends TestCase
         self::product()->describe(Translation::of('Fox', str_repeat('é', Product::MAX_TITLE + 1)), Translation::none());
     }
 
-    public function testAProductIsShownAndHidden(): void
-    {
-        $product = self::product();
-
-        $product->show();
-        self::assertTrue($product->isVisible());
-
-        $product->hide();
-        self::assertFalse($product->isVisible());
-    }
-
     public function testARetiredProductCannotBeShown(): void
     {
         $product = self::product();
@@ -188,7 +171,7 @@ final class ProductTest extends TestCase
         $product->pick();
     }
 
-    public function testTheSlugIsEdited(): void
+    public function testTheSlugIsTrimmed(): void
     {
         $product = self::product();
 

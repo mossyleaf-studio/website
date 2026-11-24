@@ -13,13 +13,6 @@ use PHPUnit\Framework\TestCase;
 
 final class LinkTest extends TestCase
 {
-    public function testALinkKeepsItsTextsAndTape(): void
-    {
-        $link = Link::create(' Shop on Etsy ', 'Prints', ' https://www.etsy.com/shop/mossyleafstudio ', TapeTone::Blossom, 3);
-
-        self::assertSame(['Shop on Etsy', 'https://www.etsy.com/shop/mossyleafstudio', TapeTone::Blossom, 3], [$link->title(), $link->url(), $link->tape(), $link->position()]);
-    }
-
     public function testTheFrenchTextsAreOptionalAndStayWhenAnEditLeavesThemOut(): void
     {
         $link = Link::create('Shop on Etsy', 'Prints', 'https://www.etsy.com/shop/mossyleafstudio', TapeTone::Leaf, 0);

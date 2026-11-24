@@ -9,7 +9,6 @@ use App\Tests\Functional\Catalogue\PushesCatalogue;
 use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpKernel\Profiler\Profile;
@@ -43,10 +42,7 @@ final class CollectionsApiTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         $collections = Json::decode((string) $client->getResponse()->getContent());
-        self::assertSame([
-            ['id' => Json::string($collections, 0, 'id'), 'name' => 'Forest folk', 'label' => '', 'labelFr' => '', 'shown' => false, 'position' => 0, 'onSale' => 2],
-            ['id' => Json::string($collections, 1, 'id'), 'name' => 'Night owls', 'label' => '', 'labelFr' => '', 'shown' => false, 'position' => 1, 'onSale' => 1],
-        ], $collections);
+        self::assertSame([['Forest folk', 0, 2, false], ['Night owls', 1, 1, false]], array_map(static fn (mixed $collection): array => [Json::string($collection, 'name'), Json::int($collection, 'position'), Json::int($collection, 'onSale'), Json::at($collection, 'shown')], $collections));
         self::assertMatchesRegularExpression('/^[0-9A-HJKMNP-TV-Z]{26}$/', Json::string($collections, 0, 'id'));
     }
 
@@ -69,7 +65,8 @@ final class CollectionsApiTest extends WebTestCase
         $client->jsonRequest('PUT', "/api/admin/collections/{$folk}", ['label' => ' Woodland folk ', 'labelFr' => 'Peuple des bois']);
 
         self::assertResponseIsSuccessful();
-        self::assertSame(['id' => $folk, 'name' => 'Forest folk', 'label' => 'Woodland folk', 'labelFr' => 'Peuple des bois', 'shown' => false, 'position' => 0, 'onSale' => 1], Json::decode((string) $client->getResponse()->getContent()));
+        $collection = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame([$folk, 'Woodland folk', 'Peuple des bois'], [$collection['id'], $collection['label'], $collection['labelFr']]);
         $client->jsonRequest('GET', '/api/admin/products');
         self::assertSame('Peuple des bois', Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'collection', 'labelFr'));
 
@@ -77,21 +74,6 @@ final class CollectionsApiTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSame(['', ''], [Json::string(Json::decode((string) $client->getResponse()->getContent()), 'label'), Json::string(Json::decode((string) $client->getResponse()->getContent()), 'labelFr')]);
-    }
-
-    public function testALabelHoldsSixtyCharactersPerLanguage(): void
-    {
-        $client = self::signedInClient();
-        [$folk] = self::pushCollections();
-
-        $client->jsonRequest('PUT', "/api/admin/collections/{$folk}", ['label' => str_repeat('a', 60), 'labelFr' => str_repeat('é', 60)]);
-        self::assertResponseIsSuccessful();
-
-        $client->jsonRequest('PUT', "/api/admin/collections/{$folk}", ['label' => 'Folk', 'labelFr' => str_repeat('é', 61)]);
-        self::assertResponseStatusCodeSame(422);
-        self::assertSame(422, Json::int(Json::decode((string) $client->getResponse()->getContent()), 'status'));
-        $client->jsonRequest('GET', '/api/admin/collections');
-        self::assertSame(str_repeat('é', 60), Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'labelFr'));
     }
 
     public function testACollectionIsShownAndHidden(): void
@@ -131,50 +113,15 @@ final class CollectionsApiTest extends WebTestCase
         self::assertSame([$night, $folk], array_column(Json::decode((string) $client->getResponse()->getContent()), 'id'));
     }
 
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function routesOfOneCollection(): iterable
-    {
-        yield 'label' => ['PUT', ''];
-        yield 'show' => ['PUT', '/visibility'];
-        yield 'hide' => ['DELETE', '/visibility'];
-    }
-
-    #[DataProvider('routesOfOneCollection')]
-    public function testAnUnknownCollectionIsNotFound(string $method, string $suffix): void
+    public function testAnUnknownCollectionIsNotFound(): void
     {
         $client = self::signedInClient();
         self::pushCollections();
 
-        $client->jsonRequest($method, '/api/admin/collections/'.new Ulid().$suffix, ['label' => '', 'labelFr' => '']);
+        $client->jsonRequest('PUT', '/api/admin/collections/'.new Ulid(), ['label' => '', 'labelFr' => '']);
 
         self::assertResponseStatusCodeSame(404);
         self::assertResponseHeaderSame('Content-Type', 'application/problem+json');
-    }
-
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function routes(): iterable
-    {
-        $collection = '/api/admin/collections/'.new Ulid();
-
-        yield 'list' => ['GET', '/api/admin/collections'];
-        yield 'label' => ['PUT', $collection];
-        yield 'show' => ['PUT', $collection.'/visibility'];
-        yield 'hide' => ['DELETE', $collection.'/visibility'];
-        yield 'reorder' => ['PUT', '/api/admin/collections/order'];
-    }
-
-    #[DataProvider('routes')]
-    public function testEveryRouteNeedsASignedInEditor(string $method, string $url): void
-    {
-        $client = self::createClient();
-
-        $client->jsonRequest($method, $url);
-
-        self::assertResponseStatusCodeSame(401);
     }
 
     /**

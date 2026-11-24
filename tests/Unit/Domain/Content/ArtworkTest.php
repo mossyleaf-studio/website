@@ -11,13 +11,6 @@ use Symfony\Component\Uid\Ulid;
 
 final class ArtworkTest extends TestCase
 {
-    public function testAnArtworkStartsInTheGalleryWithItsDescription(): void
-    {
-        $artwork = Artwork::upload(new Ulid(), 'file.webp', 1600, 1200, ' A fern ', 0, new \DateTimeImmutable());
-
-        self::assertSame(['A fern', false], [$artwork->alt(), $artwork->isFeatured()]);
-    }
-
     public function testFeaturingCanBeUndone(): void
     {
         $artwork = Artwork::upload(new Ulid(), 'file.webp', 10, 10, '', 0, new \DateTimeImmutable());

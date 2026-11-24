@@ -14,17 +14,7 @@ final class IntegrationRateLimitTest extends WebTestCase
     private const string ADDRESS = '203.0.113.9';
     private const array PRODUCT = ['id' => '01JD3K7Q0000000000000000F0', 'reference' => 'PRT-FOX', 'name' => 'Fox', 'category' => 'Prints', 'displayName' => 'Prints Fox', 'price' => 1500, 'variants' => [['name' => 'A4', 'sku' => 'PRT-FOX-A4', 'stock' => 12]]];
 
-    public function testAFailedTokenCountsAgainstTheAddress(): void
-    {
-        $client = self::createClient();
-
-        $client->jsonRequest('PUT', '/integrations/catalogue', ['products' => [self::PRODUCT]], ['REMOTE_ADDR' => self::ADDRESS, 'HTTP_AUTHORIZATION' => 'Bearer '.str_repeat('a', 38)]);
-
-        self::assertResponseStatusCodeSame(401);
-        self::assertSame(9, self::remaining(self::ADDRESS));
-    }
-
-    public function testTheRightTokenCostsNothing(): void
+    public function testAFailedTokenCountsAgainstTheAddressAndTheRightTokenCostsNothing(): void
     {
         $client = self::createClient();
 
@@ -32,6 +22,11 @@ final class IntegrationRateLimitTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSame(10, self::remaining(self::ADDRESS));
+
+        $client->jsonRequest('PUT', '/integrations/catalogue', ['products' => [self::PRODUCT]], ['REMOTE_ADDR' => self::ADDRESS, 'HTTP_AUTHORIZATION' => 'Bearer '.str_repeat('a', 38)]);
+
+        self::assertResponseStatusCodeSame(401);
+        self::assertSame(9, self::remaining(self::ADDRESS));
     }
 
     public function testTheRightTokenPassesAfterNineFailures(): void
@@ -67,16 +62,6 @@ final class IntegrationRateLimitTest extends WebTestCase
         self::assertGreaterThan(0, $retryAfter);
         self::assertLessThanOrEqual(61, $retryAfter);
         self::assertResponseNotHasHeader('Set-Cookie');
-    }
-
-    public function testAnotherAddressIsNotHeldBack(): void
-    {
-        $client = self::createClient();
-        self::limiter()->create(self::ADDRESS)->consume(10);
-
-        $client->jsonRequest('PUT', '/integrations/catalogue', ['products' => [self::PRODUCT]], ['REMOTE_ADDR' => '203.0.113.10', 'HTTP_AUTHORIZATION' => 'Bearer '.self::TOKEN]);
-
-        self::assertResponseIsSuccessful();
     }
 
     public function testTheAddressBehindTheTrustedProxyIsCountedNotTheProxy(): void

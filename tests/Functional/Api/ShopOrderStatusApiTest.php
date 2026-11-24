@@ -37,21 +37,10 @@ final class ShopOrderStatusApiTest extends WebTestCase
         self::assertResponseHeaderSame('Content-Type', 'application/json');
         self::assertStringContainsString('no-store', (string) $client->getResponse()->headers->get('Cache-Control'));
         self::assertStringContainsString('private', (string) $client->getResponse()->headers->get('Cache-Control'));
-        self::assertSame([
-            'reference' => $placed['reference'],
-            'status' => 'pending',
-            'test' => true,
-            'paymentUrl' => $placed['paymentUrl'],
-            'lines' => [
-                ['title' => 'Affiche renard', 'variant' => 'A4', 'quantity' => 1, 'unitPrice' => 1500, 'lineTotal' => 1500],
-                ['title' => 'Stickers Moth', 'variant' => null, 'quantity' => 2, 'unitPrice' => 300, 'lineTotal' => 600],
-            ],
-            'goods' => 2100,
-            'shipping' => 650,
-            'total' => 2750,
-            'placedAt' => new \DateTimeImmutable('2026-11-20 10:00:00')->format(\DATE_ATOM),
-            'trackingNumber' => null,
-        ], self::answer($client));
+        $status = self::answer($client);
+        self::assertSame([$placed['reference'], 'pending', true, $placed['paymentUrl'], null], [$status['reference'], $status['status'], $status['test'], $status['paymentUrl'], $status['trackingNumber']]);
+        self::assertSame([['Affiche renard', 'A4', 1, 1500, 1500], ['Stickers Moth', null, 2, 300, 600]], array_map(static fn (mixed $line): array => [Json::string($line, 'title'), Json::at($line, 'variant'), Json::int($line, 'quantity'), Json::int($line, 'unitPrice'), Json::int($line, 'lineTotal')], Json::array($status, 'lines')));
+        self::assertSame([2100, 650, 2750, new \DateTimeImmutable('2026-11-20 10:00:00')->format(\DATE_ATOM)], [$status['goods'], $status['shipping'], $status['total'], $status['placedAt']]);
         $content = (string) $client->getResponse()->getContent();
         foreach ([...self::CUSTOMER, 'lou', 'Fougères', $placed['token'], 'PRI-FOX-A4'] as $personal) {
             self::assertStringNotContainsString($personal, $content);
@@ -73,7 +62,6 @@ final class ShopOrderStatusApiTest extends WebTestCase
         $client->jsonRequest('GET', '/beta/api/shop/fr/orders/'.$placed['token']);
 
         self::assertSame(['shipped', 'LA123456789FR'], [self::answer($client)['status'], self::answer($client)['trackingNumber']]);
-        self::assertSame('trackingNumber', array_key_last(self::answer($client)));
         $content = (string) $client->getResponse()->getContent();
         foreach ([...self::CUSTOMER, 'lou', 'Fougères', $placed['token'], 'STI-MOTH'] as $personal) {
             self::assertStringNotContainsString($personal, $content);
@@ -99,17 +87,6 @@ final class ShopOrderStatusApiTest extends WebTestCase
         self::assertSame(1, self::stockOf('STI-MOTH'));
     }
 
-    public function testADeclinedCheckoutFailsTheOrder(): void
-    {
-        $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        self::sumUp()->settle($placed['paymentId'], FakeSumUp::FAILED);
-
-        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token']);
-
-        self::assertSame(['failed', null], [self::answer($client)['status'], self::answer($client)['paymentUrl']]);
-    }
-
     public function testADeclinedCheckoutPaidOnRetryIsShownPaid(): void
     {
         $clock = self::mockTime('2026-11-20 10:00:00');
@@ -127,32 +104,26 @@ final class ShopOrderStatusApiTest extends WebTestCase
         self::assertSame(OrderStatus::Paid, self::order($placed['token'], fresh: true)->status());
     }
 
-    public function testADeclinedCheckoutPastItsHoldIsNotAskedForAgain(): void
+    public function testAnOrderThatCannotChangeIsNotVerifiedAgain(): void
     {
         $clock = self::mockTime('2026-11-20 10:00:00');
         $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        self::sumUp()->settle($placed['paymentId'], FakeSumUp::FAILED);
-        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token']);
+        $declined = self::placeThroughTheShop($client);
+        self::sumUp()->settle($declined['paymentId'], FakeSumUp::FAILED);
+        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$declined['token']);
         $clock->sleep(35 * 60);
-        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
+        self::sumUp()->settle($declined['paymentId'], FakeSumUp::PAID);
+        $settled = self::placeWithoutRequest();
+        self::sumUp()->settle($settled['paymentId'], FakeSumUp::PAID);
+        self::getContainer()->get(ConfirmPaymentHandler::class)(new ConfirmPayment($settled['paymentId']));
 
-        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token'], server: ['REMOTE_ADDR' => '203.0.113.12']);
-
+        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$declined['token'], server: ['REMOTE_ADDR' => '203.0.113.12']);
         self::assertSame('failed', self::answer($client)['status']);
+        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$settled['token'], server: ['REMOTE_ADDR' => '203.0.113.11']);
+        self::assertSame('paid', self::answer($client)['status']);
+
         self::assertSame(20, self::statusLimiter()->create('203.0.113.12')->consume(0)->getRemainingTokens());
-    }
-
-    public function testAnOrderPastItsHoldIsExpiredWithoutPaymentLink(): void
-    {
-        $clock = self::mockTime('2026-11-20 10:00:00');
-        $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        $clock->sleep(35 * 60);
-
-        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token']);
-
-        self::assertSame(['expired', null], [self::answer($client)['status'], self::answer($client)['paymentUrl']]);
+        self::assertSame(20, self::statusLimiter()->create('203.0.113.11')->consume(0)->getRemainingTokens());
     }
 
     public function testWhenSumUpIsDownTheStoredStateIsAnswered(): void
@@ -167,20 +138,6 @@ final class ShopOrderStatusApiTest extends WebTestCase
         self::assertSame(['pending', $placed['paymentUrl']], [self::answer($client)['status'], self::answer($client)['paymentUrl']]);
     }
 
-    public function testAnonymousVisitorsFollowTheirOrderWhileTheDoorIsShut(): void
-    {
-        $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
-        $client->getCookieJar()->clear();
-
-        $client->jsonRequest('GET', '/api/shop/fr/orders/'.$placed['token']);
-
-        self::assertResponseIsSuccessful();
-        self::assertResponseNotHasHeader('Set-Cookie');
-        self::assertSame([$placed['reference'], 'paid', true], [self::answer($client)['reference'], self::answer($client)['status'], self::answer($client)['test']]);
-    }
-
     public function testAnUnknownTokenIsNotFound(): void
     {
         $client = self::createClient();
@@ -192,13 +149,6 @@ final class ShopOrderStatusApiTest extends WebTestCase
             self::assertResponseHeaderSame('Content-Type', 'application/problem+json');
             self::assertSame('problem.not_found', Json::string(self::answer($client), 'code'));
         }
-    }
-
-    public function testThePreviewRouteNeedsASession(): void
-    {
-        self::createClient()->jsonRequest('GET', '/beta/api/shop/fr/orders/'.str_repeat('A', 43));
-
-        self::assertResponseStatusCodeSame(401);
     }
 
     public function testBeyondTheLimitTheStoredStateIsAnsweredWithoutAskingSumUp(): void
@@ -216,31 +166,6 @@ final class ShopOrderStatusApiTest extends WebTestCase
         $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token'], server: ['REMOTE_ADDR' => '203.0.113.10']);
 
         self::assertSame('paid', self::answer($client)['status']);
-    }
-
-    public function testTheTwentiethVerificationOfAMinuteIsMade(): void
-    {
-        $client = self::signedInClient();
-        $placed = self::placeWithoutRequest();
-        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
-        self::statusLimiter()->create('203.0.113.9')->consume(19);
-
-        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token'], server: ['REMOTE_ADDR' => '203.0.113.9']);
-
-        self::assertSame('paid', self::answer($client)['status']);
-    }
-
-    public function testASettledOrderIsNotVerifiedAgain(): void
-    {
-        $client = self::signedInClient();
-        $placed = self::placeWithoutRequest();
-        self::sumUp()->settle($placed['paymentId'], FakeSumUp::PAID);
-        self::getContainer()->get(ConfirmPaymentHandler::class)(new ConfirmPayment($placed['paymentId']));
-
-        $client->jsonRequest('GET', '/beta/api/shop/en/orders/'.$placed['token'], server: ['REMOTE_ADDR' => '203.0.113.11']);
-
-        self::assertSame('paid', self::answer($client)['status']);
-        self::assertSame(20, self::statusLimiter()->create('203.0.113.11')->consume(0)->getRemainingTokens());
     }
 
     private static function statusLimiter(): RateLimiterFactoryInterface

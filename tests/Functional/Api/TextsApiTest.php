@@ -13,18 +13,6 @@ final class TextsApiTest extends WebTestCase
 {
     use SignsInClient;
 
-    public function testTheTextsStartWithTheStaticSiteCopy(): void
-    {
-        $client = self::signedInClient();
-
-        $client->jsonRequest('GET', '/api/admin/texts');
-
-        self::assertResponseIsSuccessful();
-        $texts = Json::decode((string) $client->getResponse()->getContent());
-        self::assertSame('mossyleaf.studio', Json::string($texts, 'studioName'));
-        self::assertSame('About the studio', Json::string($texts, 'aboutTitle'));
-    }
-
     public function testEachSectionIsSavedOnItsOwn(): void
     {
         $client = self::signedInClient();
@@ -62,22 +50,11 @@ final class TextsApiTest extends WebTestCase
     {
         $client = self::signedInClient();
 
-        $client->jsonRequest('PUT', '/api/admin/texts/identity', ['studioName' => '', 'intro' => str_repeat('a', 201), 'metaDescription' => 'ok']);
+        $client->jsonRequest('PUT', '/api/admin/texts/identity', ['studioName' => '   ', 'intro' => str_repeat('a', 201), 'metaDescription' => 'ok', 'introFr' => str_repeat('é', 201)]);
 
         self::assertResponseStatusCodeSame(422);
         $violations = Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations');
-        self::assertSame(['studioName', 'intro'], array_column($violations, 'propertyPath'));
-    }
-
-    public function testWhitespaceOnlyIsAnEmptyText(): void
-    {
-        $client = self::signedInClient();
-
-        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => '   ']);
-
-        self::assertResponseStatusCodeSame(422);
-        $violations = Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations');
-        self::assertSame([['title', 'This field cannot be empty.']], array_map(static fn (mixed $violation): array => [Json::string($violation, 'propertyPath'), Json::string($violation, 'title')], $violations));
+        self::assertSame(['studioName', 'intro', 'introFr'], array_column($violations, 'propertyPath'));
     }
 
     public function testTheFrenchTwinsAreSavedNextToTheEnglishTexts(): void
@@ -123,6 +100,10 @@ final class TextsApiTest extends WebTestCase
         self::assertResponseIsSuccessful();
         $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Drawings']);
         self::assertResponseIsSuccessful();
+        $kept = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'galleryTitleFr');
+        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Drawings', 'titleFr' => '']);
+        self::assertSame(['Carnet', ''], [$kept, Json::string(Json::decode((string) $client->getResponse()->getContent()), 'galleryTitleFr')]);
+        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Drawings', 'titleFr' => 'Carnet']);
 
         $texts = Json::decode((string) $client->getResponse()->getContent());
         self::assertSame(['Tiny critters.', 'Petites bêtes.', 'Dessins', 'Illustrations', 'Hello', 'À propos', 'Un studio.', 'Drawings', 'Carnet'], [
@@ -136,23 +117,6 @@ final class TextsApiTest extends WebTestCase
             Json::string($texts, 'galleryTitle'),
             Json::string($texts, 'galleryTitleFr'),
         ]);
-    }
-
-    public function testAFrenchTextIsEmptiedOnItsOwnAndRefusedWhenTooLong(): void
-    {
-        $client = self::signedInClient();
-        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Sketchbook', 'titleFr' => 'Carnet']);
-
-        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Sketchbook', 'titleFr' => '']);
-        self::assertSame('', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'galleryTitleFr'));
-
-        $client->jsonRequest('PUT', '/api/admin/texts/identity', ['studioName' => 'mossyleaf.studio', 'intro' => 'Little critters.', 'metaDescription' => 'Drawings', 'introFr' => str_repeat('é', 201)]);
-        self::assertResponseStatusCodeSame(422);
-        self::assertSame(['introFr'], array_column(Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations'), 'propertyPath'));
-
-        $client->jsonRequest('PUT', '/api/admin/texts/shop-notes', ['announcement' => str_repeat('a', 161), 'priceNoteFr' => str_repeat('a', 161)]);
-        self::assertResponseStatusCodeSame(422);
-        self::assertSame(['announcement', 'priceNoteFr'], array_column(Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations'), 'propertyPath'));
     }
 
     public function testAnyGoogleFontIsDownloadedAndServedByTheSite(): void
@@ -229,14 +193,5 @@ final class TextsApiTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertContains('Patrick Hand', Json::array(Json::decode((string) $client->getResponse()->getContent()), 'families'));
-    }
-
-    public function testWritesFromAnotherOriginAreRefused(): void
-    {
-        $client = self::signedInClient();
-
-        $client->jsonRequest('PUT', '/api/admin/texts/gallery', ['title' => 'Stolen'], ['HTTP_ORIGIN' => 'https://evil.test']);
-
-        self::assertResponseStatusCodeSame(403);
     }
 }

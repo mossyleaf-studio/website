@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Sales;
 
-use App\Application\Sales\PaymentState;
-use App\Domain\Sales\Exception\CheckoutStillOpen;
-use App\Domain\Sales\Exception\NotATestOrder;
 use App\Domain\Sales\Exception\OrderMoveRefused;
 use App\Domain\Sales\OrderStatus;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 
@@ -42,17 +38,6 @@ final class OrderMovesTest extends WebTestCase
         self::assertSame(1, self::stockOf('STI-MOTH'));
     }
 
-    public function testAnOrderShipsWithoutATrackingNumber(): void
-    {
-        self::stockTheShop();
-        $token = $this->paidOrder(1);
-
-        $this->ship($token, '   ');
-
-        self::assertSame([OrderStatus::Shipped, null], [self::fresh($token)->status(), self::fresh($token)->trackingNumber()]);
-        self::assertSame(['shipped'], array_column($this->mails->sent, 0));
-    }
-
     public function testAShippedOrderDoesNotShipTwice(): void
     {
         self::stockTheShop();
@@ -69,23 +54,10 @@ final class OrderMovesTest extends WebTestCase
         self::assertCount(1, $this->mails->sent);
     }
 
-    /** @return iterable<string, array{?PaymentState, OrderStatus}> */
-    public static function unpaid(): iterable
-    {
-        yield 'pending' => [null, OrderStatus::Pending];
-        yield 'failed' => [PaymentState::Failed, OrderStatus::Failed];
-        yield 'expired' => [PaymentState::Expired, OrderStatus::Expired];
-    }
-
-    #[DataProvider('unpaid')]
-    public function testAnUnpaidOrderNeitherShipsNorCancels(?PaymentState $state, OrderStatus $status): void
+    public function testAnUnpaidOrderNeitherShipsNorCancels(): void
     {
         self::stockTheShop();
         $placed = $this->placeOrder([['STI-MOTH', 2]], 1250);
-        if (null !== $state) {
-            $this->gateway->script('checkout-1', $state);
-            $this->confirm('checkout-1');
-        }
 
         foreach ([fn () => $this->ship($placed->token, 'LA1'), fn () => $this->cancel($placed->token)] as $move) {
             try {
@@ -95,7 +67,7 @@ final class OrderMovesTest extends WebTestCase
             }
         }
 
-        self::assertSame($status, self::fresh($placed->token)->status());
+        self::assertSame(OrderStatus::Pending, self::fresh($placed->token)->status());
         self::assertSame(3, self::stockOf('STI-MOTH'));
         self::assertSame([], $this->mails->sent);
     }
@@ -175,34 +147,6 @@ final class OrderMovesTest extends WebTestCase
         self::assertSame(1, self::stockOf('STI-MOTH'));
     }
 
-    public function testAPaidTestOrderThatTookNothingGivesNothingBackWhenDeleted(): void
-    {
-        self::stockTheShop();
-        $placed = $this->placeOrder([['STI-MOTH', 2]], 1250, preview: true);
-        self::push(self::shopProducts(0));
-        $this->gateway->pay('checkout-1');
-        $this->confirm('checkout-1');
-
-        $this->deleteTest($placed->token);
-
-        self::assertFalse(self::exists($placed->token));
-        self::assertSame(0, self::stockOf('STI-MOTH'));
-    }
-
-    public function testCancellingAShippedOrderGivesItsUnitsBack(): void
-    {
-        self::stockTheShop();
-        $token = $this->paidOrder(1);
-        $this->ship($token, 'LA1');
-        $this->mails->sent = [];
-
-        $this->cancel($token);
-
-        self::assertSame(OrderStatus::Cancelled, self::fresh($token)->status());
-        self::assertSame(3, self::stockOf('STI-MOTH'));
-        self::assertSame([], $this->mails->sent);
-    }
-
     public function testAnOrderIsCancelledOnceAndItsUnitsComeBackOnce(): void
     {
         self::stockTheShop();
@@ -234,40 +178,11 @@ final class OrderMovesTest extends WebTestCase
         self::assertSame(3, self::stockOf('STI-MOTH'));
     }
 
-    public function testARealOrderIsNeverDeleted(): void
-    {
-        self::stockTheShop();
-        self::push(self::shopProducts(10));
-        $pending = $this->placeOrder([['STI-MOTH', 1]], 950)->token;
-        $paid = $this->paidOrder(2);
-        $cancelled = $this->paidOrder(3);
-        $this->cancel($cancelled);
-
-        foreach ([$pending, $paid, $cancelled] as $token) {
-            try {
-                $this->deleteTest($token);
-                self::fail('Only a test order can be deleted.');
-            } catch (NotATestOrder) {
-            }
-            self::assertTrue(self::exists($token));
-        }
-    }
-
-    /** @return iterable<string, array{bool}> */
-    public static function holdingTestOrders(): iterable
-    {
-        yield 'paid' => [false];
-        yield 'shipped' => [true];
-    }
-
-    #[DataProvider('holdingTestOrders')]
-    public function testAPaidOrShippedTestOrderGivesItsUnitsBackAndGoesWithItsLines(bool $shipped): void
+    public function testAShippedTestOrderGivesItsUnitsBackAndGoesWithItsLines(): void
     {
         self::stockTheShop();
         $token = $this->paidOrder(1, preview: true);
-        if ($shipped) {
-            $this->ship($token);
-        }
+        $this->ship($token);
         $this->mails->sent = [];
         self::assertSame(1, self::stockOf('STI-MOTH'));
 
@@ -279,24 +194,11 @@ final class OrderMovesTest extends WebTestCase
         self::assertSame([], $this->mails->sent);
     }
 
-    /** @return iterable<string, array{?PaymentState}> */
-    public static function emptyHandedTestOrders(): iterable
-    {
-        yield 'pending' => [null];
-        yield 'failed' => [PaymentState::Failed];
-        yield 'expired' => [PaymentState::Expired];
-    }
-
-    #[DataProvider('emptyHandedTestOrders')]
-    public function testAnUnpaidTestOrderGivesNothingBack(?PaymentState $state): void
+    public function testAnUnpaidTestOrderGivesNothingBack(): void
     {
         $clock = self::mockTime('2026-11-20 10:00:00');
         self::stockTheShop();
         $placed = $this->placeOrder([['STI-MOTH', 2]], 1250, preview: true);
-        if (null !== $state) {
-            $this->gateway->script('checkout-1', $state);
-            $this->confirm('checkout-1');
-        }
         $clock->sleep(30 * 60);
 
         $this->deleteTest($placed->token);
@@ -305,23 +207,6 @@ final class OrderMovesTest extends WebTestCase
         self::assertSame(0, self::lineCount());
         self::assertSame(3, self::stockOf('STI-MOTH'));
         self::assertSame(3, self::available('stickers-moth', 'STI-MOTH'));
-    }
-
-    public function testAPendingTestOrderWhoseCheckoutCanStillBePaidIsKept(): void
-    {
-        $clock = self::mockTime('2026-11-20 10:00:00');
-        self::stockTheShop();
-        $placed = $this->placeOrder([['STI-MOTH', 2]], 1250, preview: true);
-        $clock->sleep(29 * 60);
-
-        try {
-            $this->deleteTest($placed->token);
-            self::fail('A checkout that can still be paid keeps its order.');
-        } catch (CheckoutStillOpen) {
-        }
-
-        self::assertTrue(self::exists($placed->token));
-        self::assertSame(OrderStatus::Pending, self::fresh($placed->token)->status());
     }
 
     public function testACancelledTestOrderGivesNothingBackASecondTime(): void

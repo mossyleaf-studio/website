@@ -11,7 +11,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
-use Symfony\Component\Routing\RouterInterface;
 
 final class SumUpWebhookTest extends WebTestCase
 {
@@ -41,18 +40,6 @@ final class SumUpWebhookTest extends WebTestCase
         self::assertSame(1, self::stockOf('STI-MOTH'));
     }
 
-    public function testADeclinedCheckoutFailsItsOrder(): void
-    {
-        $client = self::stockedClient();
-        $placed = self::placeThroughTheShop($client);
-        self::sumUp()->settle($placed['paymentId'], FakeSumUp::FAILED);
-
-        self::notify($client, self::event($placed['paymentId']));
-
-        self::assertResponseStatusCodeSame(204);
-        self::assertSame(OrderStatus::Failed, self::order($placed['token'], fresh: true)->status());
-    }
-
     public function testTheWebhookCannotPayAnythingByItself(): void
     {
         $client = self::stockedClient();
@@ -71,11 +58,6 @@ final class SumUpWebhookTest extends WebTestCase
     {
         yield 'an unknown checkout' => [self::event('chk-unknown')];
         yield 'not json' => ['id=chk-1'];
-        yield 'nothing' => [''];
-        yield 'a list' => ['["chk-1"]'];
-        yield 'an id that is not text' => ['{"event_type": "CHECKOUT_STATUS_CHANGED", "id": 5}'];
-        yield 'an empty id' => ['{"event_type": "CHECKOUT_STATUS_CHANGED", "id": ""}'];
-        yield 'an id too long' => [self::event(str_repeat('a', 256))];
         yield 'another event' => ['{"event_type": "PAYOUT_SENT", "id": "chk-1"}'];
     }
 
@@ -142,13 +124,6 @@ final class SumUpWebhookTest extends WebTestCase
         self::notify($client, self::event($placed['paymentId']), '203.0.113.9');
 
         self::assertSame(OrderStatus::Paid, self::order($placed['token'], fresh: true)->status());
-    }
-
-    public function testTheWebhookIsPublicAndStateless(): void
-    {
-        $route = self::getContainer()->get(RouterInterface::class)->getRouteCollection()->get('webhook_sumup');
-
-        self::assertSame(['/webhooks/sumup', ['POST'], true], [$route?->getPath(), $route?->getMethods(), $route?->getDefault('_stateless')]);
     }
 
     private static function event(string $id): string

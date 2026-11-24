@@ -23,10 +23,20 @@ final class FaviconTest extends WebTestCase
         parent::tearDown();
     }
 
-    public function testWithoutALogoThereIsNoFavicon(): void
+    public function testWithoutALogoOrWithItsFileMissingThereIsNoFavicon(): void
     {
-        $client = self::createClient();
+        $client = self::signedInClient();
+        $client->getCookieJar()->clear();
 
+        $client->request('GET', '/favicon');
+
+        self::assertResponseStatusCodeSame(404);
+        self::assertPublicAndCookieless($client->getResponse());
+
+        $client->loginUser(SecurityUser::fromUser(self::createUser()));
+        $logo = self::upload($client, 'fern');
+        new Filesystem()->remove(self::file($logo));
+        $client->getCookieJar()->clear();
         $client->request('GET', '/favicon');
 
         self::assertResponseStatusCodeSame(404);
@@ -72,8 +82,9 @@ final class FaviconTest extends WebTestCase
         $client = self::signedInClient();
         self::upload($client, 'fern');
         $client->request('GET', '/favicon');
-        self::picture($client);
+        $png = self::picture($client);
         $first = (string) $client->getResponse()->headers->get('ETag');
+        self::assertSame('"'.hash('xxh128', $png).'"', $first);
 
         $client->getCookieJar()->clear();
         $client->request('GET', '/favicon', server: ['HTTP_IF_NONE_MATCH' => $first]);
@@ -86,47 +97,17 @@ final class FaviconTest extends WebTestCase
         $client->request('GET', '/favicon', server: ['HTTP_IF_NONE_MATCH' => $first]);
         self::picture($client);
 
-        self::assertNotSame('', $first);
         self::assertNotSame($first, $client->getResponse()->headers->get('ETag'));
     }
 
-    public function testTheETagIsDerivedFromThePictureServed(): void
+    public function testThePagesLinkTheFaviconAsIconAndTouchIcon(): void
     {
-        $client = self::signedInClient();
-        self::upload($client, 'fern');
+        $crawler = self::createClient()->request('GET', '/');
 
-        $client->getCookieJar()->clear();
-        $client->request('GET', '/favicon');
-        $png = self::picture($client);
-
-        self::assertSame('"'.hash('xxh128', $png).'"', $client->getResponse()->headers->get('ETag'));
-    }
-
-    public function testAMissingLogoFileAnswersNotFound(): void
-    {
-        $client = self::signedInClient();
-        $logo = self::upload($client, 'fern');
-        new Filesystem()->remove(self::file($logo));
-
-        $client->getCookieJar()->clear();
-        $client->request('GET', '/favicon');
-
-        self::assertResponseStatusCodeSame(404);
-        self::assertPublicAndCookieless($client->getResponse());
-    }
-
-    public function testEveryPageLinksTheFaviconAsIconAndTouchIcon(): void
-    {
-        $client = self::signedInClient();
-
-        foreach (['/', '/beta/note/', '/beta/en/', '/admin'] as $url) {
-            $crawler = $client->request('GET', $url);
-
-            self::assertResponseIsSuccessful($url);
-            self::assertSame('/favicon', $crawler->filter('link[rel="icon"]')->attr('href'), $url);
-            self::assertSame('image/png', $crawler->filter('link[rel="icon"]')->attr('type'), $url);
-            self::assertSame('/favicon', $crawler->filter('link[rel="apple-touch-icon"]')->attr('href'), $url);
-        }
+        self::assertResponseIsSuccessful();
+        self::assertSame('/favicon', $crawler->filter('link[rel="icon"]')->attr('href'));
+        self::assertSame('image/png', $crawler->filter('link[rel="icon"]')->attr('type'));
+        self::assertSame('/favicon', $crawler->filter('link[rel="apple-touch-icon"]')->attr('href'));
     }
 
     private static function picture(KernelBrowser $client): string

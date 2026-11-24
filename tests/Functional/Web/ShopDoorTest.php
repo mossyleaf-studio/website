@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Web;
 
+use App\Application\Catalogue\CatalogueQueries;
 use App\Tests\Functional\Content\OpensTheShop;
 use App\Tests\Functional\Sales\ShopsOnline;
 use App\Tests\Support\Json;
@@ -18,7 +19,7 @@ final class ShopDoorTest extends WebTestCase
     use OpensTheShop;
     use ShopsOnline;
 
-    private const array PAGES = ['/fr/', '/en/', '/en/category/prints', '/fr/category/stickers', '/fr/shop/prints-fox', '/en/shop/no-such-product', '/en/cart', '/fr/checkout', '/en/conventions', '/fr/about', '/en/contact', '/fr/legal/terms', '/fr/no-such-page'];
+    private const array PAGES = ['/fr/', '/en/', '/en/category/prints', '/fr/category/stickers', '/en/collection/forest-critters', '/fr/shop/prints-fox', '/en/shop/no-such-product', '/en/cart', '/fr/checkout', '/en/conventions', '/fr/about', '/en/contact', '/fr/legal/terms', '/fr/no-such-page'];
     private const array TRICKS = ['/fr/?preview=1', '/fr/category/prints?preview=true', '/fr/%63ategory/prints', '/%66r/about'];
     private const array ENTRANCES = ['/fr/shop', '/en/shop?preview=1', '/fr/%73hop'];
 
@@ -40,7 +41,7 @@ final class ShopDoorTest extends WebTestCase
     #[DataProvider('closedStates')]
     public function testAClosedShopKeepsEveryPublicAddressShut(?string $state): void
     {
-        $client = self::stockedClient();
+        $client = self::stockedWithACollection();
         self::readyTheShop($client);
         $placed = self::placeThroughTheShop($client);
         self::enter($client, $state);
@@ -78,7 +79,7 @@ final class ShopDoorTest extends WebTestCase
 
     public function testAnOpenShopAnswersEveryPublicAddressWithoutTheEditorialBits(): void
     {
-        $client = self::stockedClient();
+        $client = self::stockedWithACollection();
         $placed = self::placeThroughTheShop($client);
         self::openTheShop($client);
         $client->getCookieJar()->clear();
@@ -127,7 +128,7 @@ final class ShopDoorTest extends WebTestCase
 
     public function testShowingTheNoteAgainClosesTheShop(): void
     {
-        $client = self::stockedClient();
+        $client = self::stockedWithACollection();
         self::openTheShop($client);
         self::publish($client, 'note');
         $client->getCookieJar()->clear();
@@ -140,6 +141,18 @@ final class ShopDoorTest extends WebTestCase
         $client->jsonRequest('POST', '/api/shop/en/quote', ['lines' => [], 'country' => 'FR']);
         self::assertResponseStatusCodeSame(404);
         self::assertSame('note', $client->request('GET', '/')->filter('#site')->attr('data-page'));
+    }
+
+    private static function stockedWithACollection(): KernelBrowser
+    {
+        $client = self::stockedClient();
+        $products = self::shopProducts(3);
+        $products[0] = self::product(11, 'Prints', 'Fox', 1500, ['A4' => 12, 'A5' => 0], self::collection(1, 'Forest critters'));
+        self::push($products);
+        $client->jsonRequest('PUT', '/api/admin/collections/'.self::getContainer()->get(CatalogueQueries::class)->collections()[0]->id.'/visibility');
+        self::assertResponseIsSuccessful();
+
+        return $client;
     }
 
     /** @return array<string, array<string, mixed>> */
