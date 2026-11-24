@@ -13,7 +13,7 @@ export default defineConfig({
         trace: 'retain-on-failure',
     },
     projects: [
-        { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } }, testIgnore: /mobile\.spec\.js/ },
+        { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } }, testIgnore: process.env.SHOTS ? /mobile\.spec\.js/ : [/mobile\.spec\.js/, /shots\.spec\.js/] },
         { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /mobile\.spec\.js/ },
     ],
 });

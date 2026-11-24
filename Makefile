@@ -92,9 +92,11 @@ e2e-run: ## Playwright against already built assets (E2E_ASSETS_DIR, default bui
 	$(DC) --profile e2e run $(NO_TTY) --rm playwright sh -c "npm ci --no-audit --no-fund && ./node_modules/.bin/playwright test $(PLAYWRIGHT_ARGS)"
 
 shots: ## Screenshot the public pages and the admin at phone and desktop widths into e2e/shots/
-	$(MAKE) e2e-run PLAYWRIGHT_ARGS="shots.spec.js --project=desktop"
+	SHOTS=1 $(MAKE) e2e-run PLAYWRIGHT_ARGS="shots.spec.js --project=desktop"
 
-qa: cs phpstan deptrac test test-js e2e
+qa: ## Full local gate: the checks in parallel, then e2e (shots excluded, see make shots)
+	$(MAKE) -j4 $(OUTPUT_SYNC) ci-checks
+	$(MAKE) e2e
 
 ci: ci-build ## Full suite from a fresh checkout (GitHub Actions runs ci-build once, then ci-checks and ci-e2e shards in parallel jobs)
 	$(MAKE) -j4 $(OUTPUT_SYNC) ci-checks

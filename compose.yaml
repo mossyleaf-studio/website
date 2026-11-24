@@ -46,6 +46,7 @@ services:
     environment:
       BASE_URL: http://php-e2e
       CI: ${CI:-}
+      SHOTS: ${SHOTS:-}
     volumes:
       - ./:/app
     depends_on:
