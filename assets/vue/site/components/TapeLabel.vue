@@ -28,6 +28,9 @@ defineProps({
 }
 
 .tape-label--blossom {
+    padding: 0.375rem 1.25rem;
+    font-size: var(--font-size);
+    rotate: -4deg;
     color: var(--color-paper);
     background: color-mix(in oklch, var(--color-tape-blossom) 85%, white);
 }

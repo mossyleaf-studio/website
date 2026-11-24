@@ -38,6 +38,7 @@ defineProps({
 
 .pill--meadow {
     background: var(--color-meadow);
+    border-width: 0.0625rem;
 }
 
 .pill--meadow:hover {

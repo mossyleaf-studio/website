@@ -11,8 +11,8 @@ defineProps({
 <style scoped>
 .washi {
     display: block;
-    width: 5.5rem;
-    height: 1.5rem;
+    width: 7rem;
+    height: 1.875rem;
     opacity: 0.9;
     clip-path: polygon(0 0, 100% 0, 97% 25%, 100% 50%, 97% 75%, 100% 100%, 0 100%, 3% 75%, 0 50%, 3% 25%);
 }

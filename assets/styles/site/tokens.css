@@ -1,8 +1,8 @@
 :root {
     --color-paper: #fffdf4;
-    --color-meadow: #BFCD93;
+    --color-meadow: #ffd97f;
     --color-fur: #ffeddb;
-    --color-bark: color-mix(in oklch, var(--color-meadow) 85%, var(--color-paper));
+    --color-bark: #cbd3a0;
     --color-ink: #583e2f;
     --color-leaf: #c2da5a;
     --color-star: #D45B27;

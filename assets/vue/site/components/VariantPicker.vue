@@ -68,7 +68,6 @@ const sku = defineModel({ type: String, required: true });
 .variant-picker__option--chosen {
     font-weight: 600;
     background: var(--color-meadow);
-    border: var(--border-strong);
 }
 
 .variant-picker__input:focus-visible + span::after {

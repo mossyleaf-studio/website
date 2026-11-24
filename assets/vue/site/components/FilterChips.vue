@@ -56,7 +56,6 @@ defineProps({
     padding-left: var(--space-3);
     font-weight: 600;
     background: var(--color-meadow);
-    border: var(--border-strong);
 }
 
 .filter-chips__chip--current:hover {

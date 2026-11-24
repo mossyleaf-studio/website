@@ -29,7 +29,7 @@ defineProps({
 
 .paper-sheet__tape {
     position: absolute;
-    top: -0.75rem;
+    top: -0.9375rem;
     left: 50%;
     translate: -50% 0;
     rotate: -2deg;
