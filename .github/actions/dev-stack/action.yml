@@ -1,5 +1,5 @@
 name: Dev stack
-description: Build the dev image from the cache and pull the service images in the background
+description: Build the dev image from the cache, restore vendor and node_modules, and pull the service images in the background
 inputs:
   save-cache:
     description: Whether this job writes the dev image layers back to the cache
@@ -21,3 +21,11 @@ runs:
         tags: mossyleaf-studio-dev
         cache-from: type=gha,scope=dev
         cache-to: ${{ inputs.save-cache == 'true' && 'type=gha,scope=dev,mode=max' || '' }}
+
+    - name: Restore vendor and node_modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          vendor
+          node_modules
+        key: deps-${{ hashFiles('composer.lock', 'package-lock.json') }}

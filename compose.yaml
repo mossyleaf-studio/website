@@ -73,6 +73,7 @@ services:
       APP_DEBUG: 0
       E2E_NATIVE_SESSIONS: 1
       APP_SHARE_DIR: var/share/e2e
+      APP_CACHE_DIR: var/cache/e2e
       ACCOUNTS_URL: http://oidc:8080/mossyleaf
       OIDC_CLIENT_SECRET: e2e
       OIDC_AUTHORIZE_URL: http://oidc:8080/mossyleaf/authorize
