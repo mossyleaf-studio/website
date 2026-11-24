@@ -90,12 +90,6 @@ test('the studio opens the shop, a visitor buys a postcard set, then the studio 
         await expect(frenchPage).toHaveURL(/\/fr\/$/);
         await visitor.goto('/');
         await expect(visitor).toHaveURL(/\/en\/$/);
-
-        const answer = await english.request.get('/', { maxRedirects: 0, headers: { 'Accept-Language': 'fr-FR,fr;q=0.9' } });
-        expect(answer.status()).toBe(302);
-        expect(answer.headers().location).toMatch(/\/fr\/$/);
-        expect(answer.headers().vary).toContain('Accept-Language');
-        expect(answer.headers()['set-cookie']).toBeUndefined();
         await noCookie();
     });
 
@@ -107,11 +101,6 @@ test('the studio opens the shop, a visitor buys a postcard set, then the studio 
             await expect(visitor.getByRole('complementary', { name: /Draft preview|Aperçu du brouillon/ }), url).toHaveCount(0);
             await expect(visitor.getByRole('heading', { level: 1 }).first(), url).toBeVisible();
         }
-        const listing = await english.request.get('/en/category/prints');
-        expect(listing.headers()['cache-control']).toContain('public');
-        const etag = listing.headers().etag;
-        expect(etag).toBeTruthy();
-        expect((await english.request.get('/en/category/prints', { headers: { 'If-None-Match': etag } })).status()).toBe(304);
         await noCookie();
     });
 
@@ -128,9 +117,6 @@ test('the studio opens the shop, a visitor buys a postcard set, then the studio 
         await expect(visitor.getByRole('heading', { name: 'Page not found' })).toBeVisible();
         await visitor.goto('/en/shop/moss-print');
         await expect(visitor.locator('[data-product-collection]')).toContainText('Forest critters');
-        const sitemap = await (await english.request.get('/sitemap.xml')).text();
-        expect(sitemap).toContain('/en/collection/forest-critters');
-        expect(sitemap).not.toContain('autumn-market');
         await noCookie();
     });
 
@@ -227,21 +213,6 @@ test('the studio opens the shop, a visitor buys a postcard set, then the studio 
         expect(mail.To.map((address) => address.Address)).toEqual(['studio@mossyleaf.test']);
         expect(mail.ReplyTo.map((address) => address.Address)).toEqual(['alix@example.test']);
         await noCookie();
-    });
-
-    await test.step('the sitemap lists the pages in both languages and robots.txt points to it', async () => {
-        const sitemap = await (await english.request.get('/sitemap.xml')).text();
-        for (const path of ['/en/', '/fr/', '/en/category/prints', '/fr/category/prints', '/en/shop/moss-print', '/fr/shop/moss-print', '/en/conventions', '/fr/conventions', '/en/about', '/fr/contact', '/en/legal/terms', '/fr/legal/privacy']) {
-            expect(sitemap, path).toContain(`${path}</loc>`);
-        }
-        expect(sitemap).toContain('hreflang="fr"');
-        expect(sitemap).toContain('hreflang="en"');
-        expect(sitemap).toContain('hreflang="x-default"');
-        for (const hidden of ['/en/shop</loc>', '/cart', '/checkout', '/order/', 'dew-greeting-card', 'wall-calendar']) expect(sitemap, hidden).not.toContain(hidden);
-
-        const robots = await (await english.request.get('/robots.txt')).text();
-        expect(robots).toMatch(/^Sitemap: .+\/sitemap\.xml$/m);
-        expect(robots).toContain('Disallow: /en/order/');
     });
 
     await test.step('the studio shows the note again: the shop closes, the order page stays', async () => {

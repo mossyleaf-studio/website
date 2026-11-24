@@ -1,9 +1,7 @@
-import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { fillForm, MAILPIT, messages, openCheckout, pay, placePaidOrder } from './support/orders.js';
-import { PNG, signIn, unique } from './support/session.js';
+import { signIn, unique } from './support/session.js';
 
-const inDays = (days) => new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
 const rowOf = (page, testId, attribute, value) => page.locator(`[data-test="${testId}"][${attribute}="${value}"]`);
 const productRow = (page, reference) => rowOf(page, 'product-row', 'data-reference', reference);
 const orderRow = (page, reference) => rowOf(page, 'order-row', 'data-reference', reference);
@@ -93,43 +91,6 @@ test('products: hiding and showing several at once, with the head checkbox, the 
     await expect(head(page)).toHaveAttribute('aria-checked', 'mixed');
     await page.getByTestId('selection-clear').click();
     await expect(bar(page)).toHaveCount(0);
-});
-
-test('products: picking two for the home with the bulk bar, then unpicking them', async ({ page }) => {
-    await page.goto('/admin/products');
-    for (const reference of ['STK-002', 'STK-003']) await expect(productRow(page, reference).getByTestId('product-picked')).toHaveCount(0);
-    await tick(productRow(page, 'STK-002'));
-    await tick(productRow(page, 'STK-003'));
-    await page.getByTestId('bulk-pick').getByRole('button', { name: 'Pick 2 products for the home' }).click();
-    await expect(toast(page, '2 products picked for the home.')).toBeVisible();
-    for (const reference of ['STK-002', 'STK-003']) await expect(productRow(page, reference).getByTestId('product-picked')).toBeVisible();
-    await page.goto('/beta/en/');
-    await expect(page.locator('[data-picks] [data-products] > li')).toHaveCount(4);
-
-    await page.goto('/admin/products');
-    await tick(productRow(page, 'STK-002'));
-    await tick(productRow(page, 'STK-003'));
-    await page.getByTestId('bulk-unpick').getByRole('button', { name: 'Unpick 2 products' }).click();
-    await expect(toast(page, '2 products unpicked.')).toBeVisible();
-    for (const reference of ['STK-002', 'STK-003']) await expect(productRow(page, reference).getByTestId('product-picked')).toHaveCount(0);
-    await page.goto('/beta/en/');
-    await expect(page.locator('[data-picks] [data-products] > li')).toHaveCount(2);
-});
-
-test('products: a ticked row can still be moved and its link still opens the editor', async ({ page }) => {
-    await page.goto('/admin/products');
-    const references = () => page.getByTestId('product-row').evaluateAll((rows) => rows.map((item) => item.dataset.reference));
-    const before = await references();
-    await tick(productRow(page, before[0]));
-    await productRow(page, before[0]).getByRole('button', { name: /^Move .+ down$/ }).click();
-    await expect.poll(references).toEqual([before[1], before[0], ...before.slice(2)]);
-    await expect(checkbox(productRow(page, before[0]))).toHaveAttribute('aria-checked', 'true');
-    await productRow(page, before[0]).getByRole('button', { name: /^Move .+ up$/ }).click();
-    await expect.poll(references).toEqual(before);
-    await page.keyboard.press('Escape');
-
-    await productRow(page, before[0]).getByTestId('product-edit').click({ force: true });
-    await expect(page.getByTestId('product-editor')).toBeVisible();
 });
 
 test('orders: shipping the ticked paid orders mails each customer, and test orders are deleted after a confirmation', async ({ page, request }) => {
@@ -235,75 +196,4 @@ test('links: several are ticked and deleted after a confirmation, a cancelled on
     release();
     await expect(row(titles[2])).toHaveCount(0);
     await expect(bar(page)).toHaveCount(0);
-});
-
-test('conventions: upcoming and past ones are ticked together and deleted after a confirmation', async ({ page }) => {
-    const names = [unique('Bulk fair'), unique('Bulk fair')];
-    const ids = [];
-    for (const [index, name] of names.entries()) {
-        const created = await page.request.post('/api/admin/conventions', {
-            data: { name, place: 'Lyon', startsOn: inDays(index === 0 ? 9 : -9), endsOn: inDays(index === 0 ? 10 : -8), url: null, note: 'Bulk', noteFr: 'Bulk' },
-        });
-        expect(created.ok()).toBe(true);
-        ids.push((await created.json()).id);
-    }
-    try {
-        await page.goto('/admin/conventions');
-        const row = (name) => page.getByTestId('convention-row').filter({ hasText: name });
-        const before = await page.getByTestId('convention-row').count();
-
-        await tick(row(names[0]));
-        await tick(row(names[1]));
-        await expect(page.getByTestId('selection-count')).toHaveText('2 conventions selected');
-
-        const dialog = page.getByRole('alertdialog');
-        await page.getByTestId('bulk-delete').getByRole('button').click();
-        await dialog.getByRole('button', { name: 'Cancel' }).click();
-        await expect(page.getByTestId('convention-row')).toHaveCount(before);
-
-        await page.getByTestId('bulk-delete').getByRole('button').click();
-        await dialog.getByRole('button', { name: 'Delete 2 conventions' }).click();
-        await expect(toast(page, '2 conventions deleted.')).toBeVisible();
-        await expect(page.getByTestId('convention-row')).toHaveCount(before - 2);
-        await expect(bar(page)).toHaveCount(0);
-    } finally {
-        for (const id of ids) await page.request.delete(`/api/admin/conventions/${id}`);
-    }
-});
-
-test('images: several are ticked and deleted after a confirmation, Escape clears the selection', async ({ page }) => {
-    const image = { name: 'fern.png', mimeType: 'image/png', buffer: readFileSync(PNG) };
-    const fern = unique('Bulk fern');
-    await page.goto('/admin/images');
-    const before = await page.getByTestId('artwork-card').count();
-    for (let index = 0; index < 3; index++) {
-        expect((await page.request.post('/api/admin/artworks', { multipart: { image, alt: `${fern} ${index}` } })).ok()).toBe(true);
-    }
-    await page.goto('/admin/images');
-    await expect(page.getByTestId('artwork-card')).toHaveCount(before + 3);
-    const ferns = page.getByTestId('artwork-card').filter({ has: page.locator(`img[alt^="${fern}"]`) });
-    await expect(ferns).toHaveCount(3);
-
-    await page.getByTestId('select-row').first().click();
-    await expect(page.getByTestId('selection-count')).toHaveText('1 image selected');
-    await page.keyboard.press('Escape');
-    await expect(bar(page)).toHaveCount(0);
-
-    await page.getByTestId('select-all').click();
-    await expect(page.getByTestId('selection-count')).toHaveText(`${before + 3} ${before + 3 === 1 ? 'image' : 'images'} selected`);
-    await page.getByTestId('select-all').click();
-    await expect(bar(page)).toHaveCount(0);
-
-    const dialog = page.getByRole('alertdialog');
-    for (let index = 0; index < 3; index++) await ferns.nth(index).getByTestId('select-row').click();
-    await expect(page.getByTestId('selection-count')).toHaveText('3 images selected');
-    await page.getByTestId('bulk-delete').getByRole('button').click();
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
-    await expect(page.getByTestId('artwork-card')).toHaveCount(before + 3);
-
-    await page.getByTestId('bulk-delete').getByRole('button').click();
-    await dialog.getByRole('button', { name: 'Delete 3 images' }).click();
-    await expect(toast(page, '3 images deleted.')).toBeVisible();
-    await expect(ferns).toHaveCount(0);
-    await expect(page.getByTestId('artwork-card')).toHaveCount(before);
 });

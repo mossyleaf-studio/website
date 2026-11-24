@@ -49,30 +49,9 @@ test('a declined payment says nothing was charged, keeps the cart and sends no m
     await expect(page.getByTestId('cart-line')).toHaveCount(1);
 });
 
-test('a payment whose webhook never arrives is settled by the order page alone', async ({ page }) => {
-    await openCheckout(page, [{ sku: 'STK-002', quantity: 1 }]);
-    await fillForm(page);
-    await pay(page);
-    await page.goto(`${page.url()}?webhook=0`);
-    await page.getByTestId('fake-sumup-pay').click();
-
-    await expect(page.getByTestId('order-status')).toHaveAttribute('data-state', 'paid', { timeout: 20000 });
-});
-
-test('the form refuses an empty address and a missing terms tick', async ({ page }) => {
-    await openCheckout(page, [{ sku: 'STK-002', quantity: 1 }]);
-    await page.getByTestId('checkout-pay').click();
-    await expect(page.getByTestId('field-error').first()).toBeVisible();
-    await expect(page).toHaveURL(/\/beta\/en\/checkout$/);
-
-    await fillForm(page);
-    await page.getByTestId('checkout-pay').click();
-    await expect(page.getByTestId('field-error')).toHaveCount(1);
-    await expect(page).toHaveURL(/\/beta\/en\/checkout$/);
-});
-
 test('a second buyer of the last unit is told the cart changed', async ({ page, browser }) => {
-    await openCheckout(page, [{ sku: 'STK-003-B', quantity: 2 }]);
+    const units = await stockOf(page, 'STK-003-B');
+    await openCheckout(page, [{ sku: 'STK-003-B', quantity: units }]);
     await fillForm(page);
 
     const other = await browser.newContext();

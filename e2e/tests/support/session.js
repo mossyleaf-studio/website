@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 export const EDITOR = {
     account: 'editor',
     claims: { email: 'editor@mossyleaf.test', name: 'Editor', groups: ['mossyleaf-studio'] },
@@ -14,9 +16,17 @@ export async function signInWithAccount(page, account) {
     await page.getByRole('button', { name: 'Sign-in' }).click();
 }
 
-export async function signIn(page, account = EDITOR) {
+export const EDITOR_STATE = new URL('../../.auth/editor.json', import.meta.url).pathname;
+
+export async function signInThroughAccounts(page, account = EDITOR) {
     await page.goto('/admin/');
     await signInWithAccount(page, account);
+    await page.waitForURL('/admin/orders');
+}
+
+export async function signIn(page) {
+    await page.context().addCookies(JSON.parse(readFileSync(EDITOR_STATE, 'utf8')).cookies);
+    await page.goto('/admin/');
     await page.waitForURL('/admin/orders');
 }
 

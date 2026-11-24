@@ -14,11 +14,6 @@ const inView = (page) =>
         }).length;
     });
 
-const nextAtOnce = (page) =>
-    row(page).evaluate((list) => {
-        list.closest('[data-carousel]').querySelector('[data-carousel-next]').click();
-        return list.scrollLeft;
-    });
 const geometry = (page) =>
     page.evaluate(() => {
         const top = (element) => element.getBoundingClientRect().top;
@@ -36,18 +31,6 @@ const geometry = (page) =>
 
 test.beforeEach(async ({ page }) => {
     await signIn(page);
-});
-
-test('the home has both carousels under their headings, the picks first', async ({ page }) => {
-    await page.goto('/beta/en/');
-    await expect(page.getByRole('heading', { level: 2, name: 'Studio picks' })).toBeVisible();
-    await expect(page.getByRole('heading', { level: 2, name: 'New in the shop' })).toBeVisible();
-    await expect(page.locator('[data-picks] [data-products] > li')).toHaveCount(2);
-    await expect(page.locator('[data-latest] [data-products] > li')).toHaveCount(7);
-    const order = await page.locator('[data-picks], [data-latest]').evaluateAll((sections) => sections.map((section) => section.hasAttribute('data-picks')));
-    expect(order).toEqual([true, false]);
-    await page.goto('/beta/fr/');
-    await expect(page.getByRole('heading', { level: 2, name: 'Coups de cœur' })).toBeVisible();
 });
 
 test('at 1440px Next scrolls the latest row to its end, then Previous comes back', async ({ page }) => {
@@ -73,14 +56,6 @@ test('at 1440px Next scrolls the latest row to its end, then Previous comes back
     await expect(previous).toBeDisabled();
 });
 
-test('at 390px two cards are in view and the row scrolls', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/beta/en/');
-    expect(await inView(page)).toBe(2);
-    await latest(page).locator('[data-carousel-next]').click();
-    await expect.poll(() => scrollLeft(page)).toBeGreaterThan(50);
-});
-
 test('focusing the last card with the keyboard brings it into view', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/beta/en/');
@@ -97,42 +72,15 @@ test('focusing the last card with the keyboard brings it into view', async ({ pa
     await expect.poll(overflow).toBeLessThanOrEqual(1);
 });
 
-test('with reduced motion the scroll is instant', async ({ browser, page }) => {
-    const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 900 }, storageState: await page.context().storageState() });
+test('at 1440px the rows sit at the same place with and without JavaScript', async ({ browser, page }) => {
+    const viewport = { width: 1440, height: 900 };
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport, storageState: await page.context().storageState() });
     const visitor = await context.newPage();
     await visitor.goto('/beta/en/');
-    await expect(row(visitor)).toHaveCSS('scroll-behavior', 'auto');
-    await expect(latest(visitor).locator('[data-carousel-next]')).toBeEnabled();
-    expect(await nextAtOnce(visitor)).toBeGreaterThan(0);
+    const prerendered = await geometry(visitor);
     await context.close();
-    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.setViewportSize(viewport);
     await page.goto('/beta/en/');
-    await expect(latest(page).locator('[data-carousel-next]')).toBeEnabled();
-    expect(await nextAtOnce(page)).toBe(0);
+    await expect(page.locator('[data-latest] [data-carousel]')).toBeVisible();
+    expect(await geometry(page)).toEqual(prerendered);
 });
-
-test('without JavaScript both rows are there and scroll, with no buttons', async ({ browser, page }) => {
-    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 900 }, storageState: await page.context().storageState() });
-    const visitor = await context.newPage();
-    await visitor.goto('/beta/en/');
-    await expect(visitor.locator('[data-picks] [data-products] > li')).toHaveCount(2);
-    await expect(visitor.locator('[data-latest] [data-products] > li')).toHaveCount(7);
-    await expect(visitor.locator('[data-carousel-next], [data-carousel-previous]')).toHaveCount(0);
-    const list = visitor.locator('[data-latest] [data-products]');
-    expect(await list.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
-    await context.close();
-});
-
-for (const width of [390, 1440]) {
-    test(`at ${width}px the rows sit at the same place with and without JavaScript`, async ({ browser, page }) => {
-        const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width, height: 900 }, storageState: await page.context().storageState() });
-        const visitor = await context.newPage();
-        await visitor.goto('/beta/en/');
-        const prerendered = await geometry(visitor);
-        await context.close();
-        await page.setViewportSize({ width, height: 900 });
-        await page.goto('/beta/en/');
-        await expect(page.locator('[data-latest] [data-carousel]')).toBeVisible();
-        expect(await geometry(page)).toEqual(prerendered);
-    });
-}

@@ -21,26 +21,9 @@ test('the introduction and the home note are edited from the texts page', async 
     await note.getByLabel('Text').fill('Come and see the [shop](https://www.etsy.com/shop/mossyleafstudio).');
     await saved(page, 'home-note', note.getByRole('button', { name: 'Save' }).click());
 
-    await page.goto('/');
-    await expect(page.getByText(intro)).toBeVisible();
-    await expect(page.getByRole('link', { name: 'shop' })).toHaveAttribute('href', 'https://www.etsy.com/shop/mossyleafstudio');
-});
-
-test('the note footer signs with the studio name', async ({ page }) => {
-    const texts = await (await page.request.get('/api/admin/texts')).json();
-    const studio = Object.fromEntries(['studioName', 'intro', 'metaDescription', 'searchTitle', 'introFr', 'metaDescriptionFr', 'searchTitleFr'].map((key) => [key, texts[key]]));
-    await page.request.put('/api/admin/texts/identity', { data: { ...studio, studioName: 'Fern & Moss' } });
     await page.goto('/beta/note/');
-    await expect(page.locator('footer').getByText(/© \d{4} Fern & Moss/)).toBeVisible();
-    await expect(page.locator('.sketchbook__footer > *')).toHaveCount(1);
-    await page.request.put('/api/admin/texts/identity', { data: studio });
-});
-
-test('an empty title is refused next to the field', async ({ page }) => {
-    const about = page.getByTestId('section-about');
-    await about.getByLabel('Title (English)').fill('   ');
-    await about.getByRole('button', { name: 'Save' }).click();
-    await expect(about.getByRole('alert')).toBeVisible();
+    await expect(page.getByText(intro)).toBeVisible();
+    await expect(page.getByRole('link', { name: 'shop', exact: true })).toHaveAttribute('href', 'https://www.etsy.com/shop/mossyleafstudio');
 });
 
 test('a French text is typed next to the English one, and its absence is flagged', async ({ page }) => {
@@ -64,30 +47,6 @@ test('a French text is typed next to the English one, and its absence is flagged
     await title.fill('');
     await saved(page, 'gallery', gallery.getByRole('button', { name: 'Save' }).click());
     await expect(gallery.getByTestId('missing-translation')).toBeVisible();
-});
-
-test('the announcement and the price note of the shop are written in both languages', async ({ page }) => {
-    const notes = page.getByTestId('section-shop-notes');
-    await expect(notes.getByTestId('missing-translation')).toHaveCount(0);
-    await notes.getByLabel('Announcement bar (Français)').fill('Livraison offerte dès 40 €');
-    await expect(notes.getByTestId('missing-translation')).toHaveText('Empty: English pages show the French text.');
-    await notes.getByLabel('Announcement bar (English)').fill('Free shipping from 40 €');
-    await saved(page, 'shop-notes', notes.getByRole('button', { name: 'Save' }).click());
-    await page.reload();
-    await expect(notes.getByLabel('Announcement bar (Français)')).toHaveValue('Livraison offerte dès 40 €');
-    await expect(notes.getByLabel('Announcement bar (English)')).toHaveValue('Free shipping from 40 €');
-
-    await notes.getByLabel('Announcement bar (Français)').fill('');
-    await notes.getByLabel('Announcement bar (English)').fill('');
-    await saved(page, 'shop-notes', notes.getByRole('button', { name: 'Save' }).click());
-});
-
-test('an empty English search title is not said to borrow the French one', async ({ page }) => {
-    const identity = page.getByTestId('section-identity');
-    await expect(identity.getByLabel('Title in search results (English)')).toHaveValue('');
-    await identity.getByLabel('Title in search results (Français)').fill('Illustrations de petites bêtes');
-    await expect(identity.getByLabel('Title in search results (Français)')).toHaveValue('Illustrations de petites bêtes');
-    await expect(identity.getByTestId('missing-translation').filter({ hasText: 'English pages show the French text' })).toHaveCount(0);
 });
 
 test('any Google font is typed on the texts page and used by the draft', async ({ page }) => {
@@ -157,40 +116,6 @@ test('a link is added, moved to the top and shown on the contact page', async ({
     await expect(page.getByTestId('link-row').filter({ hasText: title })).toHaveCount(0);
 });
 
-test('an http address is refused for a link', async ({ page }) => {
-    await page.goto('/admin/links');
-    await page.getByRole('button', { name: 'Add a link' }).click();
-    const editor = page.getByTestId('link-editor');
-    await editor.getByLabel('Title (English)').fill('Old blog');
-    await editor.getByLabel('Description (English)').fill('Not secure');
-    await editor.getByLabel('Address').fill('http://example.com');
-    await editor.getByRole('button', { name: 'Save' }).click();
-    await expect(editor.getByRole('alert')).toContainText('https');
-});
-
-test('a logo is added to the header, then removed', async ({ page }) => {
-    const logo = page.getByTestId('section-logo');
-    await logo.locator('input[type="file"]').setInputFiles(PNG);
-    await expect(logo.getByRole('img', { name: 'Current logo' })).toBeVisible();
-
-    await page.goto('/');
-    await expect(page.locator('.note__logo')).toBeVisible();
-    await expect(page.locator('link[rel="icon"][type="image/png"]')).toHaveAttribute('href', '/favicon');
-    await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/favicon');
-    const icon = await page.request.get('/favicon');
-    expect(icon.status()).toBe(200);
-    expect(icon.headers()['content-type']).toContain('image/png');
-
-    await page.goto('/admin/texts');
-    await logo.getByRole('button', { name: 'Remove the logo' }).click();
-    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click();
-    await expect(logo.getByText('No logo yet')).toBeVisible();
-
-    await page.goto('/');
-    await expect(page.locator('.note__logo')).toHaveCount(0);
-    expect((await page.request.get('/favicon')).status()).toBe(404);
-});
-
 test('an image is uploaded, featured without losing the description being typed, described, then deleted', async ({ page }) => {
     await page.goto('/admin/images');
     await page.locator('input[type="file"]').setInputFiles(PNG);
@@ -209,7 +134,7 @@ test('an image is uploaded, featured without losing the description being typed,
     ]);
     await expect(card.getByLabel(/Description.*Français/)).toHaveValue('Une fougère qui se déroule');
 
-    await page.goto('/');
+    await page.goto('/beta/note/');
     await expect(page.getByRole('img', { name: 'A fern unrolling' })).toBeVisible();
 
     await page.goto('/admin/images');

@@ -139,6 +139,9 @@ async function shootTheHeader(page, size) {
             await page.screenshot({ path: `shots/shop-header-categories-open-${width}.png`, animations: 'disabled' });
             await page.keyboard.press('Escape');
         }
+        await page.setViewportSize({ width: 800, height: 900 });
+        await page.goto('/beta/en/category/stickers');
+        await page.screenshot({ path: 'shots/shop-category-stickers-800.png', fullPage: true, animations: 'disabled' });
         await page.setViewportSize(VIEWPORTS.desktop);
     } else {
         await page.locator('#shop .site-header__menu').click();

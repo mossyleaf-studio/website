@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test';
 import { fillForm, openCheckout, pay } from './support/orders.js';
 import { signIn } from './support/session.js';
 
+const POLL_INTERVAL = 4000;
+
 const ZONES = { france: { price: 450, freeFrom: 4000, enabled: true }, eu: { price: 900, freeFrom: null, enabled: true }, world: { price: 1500, freeFrom: null, enabled: true } };
 
 async function publish(page, button) {
@@ -148,14 +150,32 @@ test.describe('in the preview', () => {
             if (asked.length === 1) await held;
             await route.continue();
         });
+        await page.addInitScript(() => {
+            const send = window.fetch;
+            window.__asked = 0;
+            window.fetch = (...request) => {
+                if (String(request[0]).includes('/api/shop/en/orders/')) window.__asked += 1;
+                return send(...request);
+            };
+        });
+        await page.clock.install();
         await page.goto(statusUrl);
         await expect(page.getByTestId('order-status')).toHaveAttribute('data-state', 'pending');
         await mark(page);
-        await expect.poll(() => asked.length, { timeout: 10_000 }).toBe(1);
+        await page.clock.runFor(POLL_INTERVAL);
+        await expect.poll(() => asked.length).toBe(1);
 
         await visit(page, '/beta', '/en/cart', /\/beta\/en\/cart$/);
+        const answered = page.waitForEvent('requestfinished', (request) => request.url().includes('/api/shop/en/orders/'));
         release();
-        await page.waitForTimeout(6000);
+        await answered;
+        await page.evaluate(() => new Promise((resolve) => {
+            const channel = new MessageChannel();
+            channel.port1.onmessage = resolve;
+            channel.port2.postMessage(null);
+        }));
+        await page.clock.runFor(POLL_INTERVAL * 3);
+        expect(await page.evaluate(() => window.__asked)).toBe(1);
         expect(asked).toHaveLength(1);
 
         await page.unroute('**/beta/api/shop/en/orders/*');
