@@ -11,7 +11,7 @@ import { dateFormat, intlLocale } from '../../i18n/locale.js';
 import BulkBar from '../components/BulkBar.vue';
 import OrderStatusBadge from '../components/OrderStatusBadge.vue';
 import SelectCheck from '../components/SelectCheck.vue';
-import { formatCents } from '../money.js';
+import { formatPrice } from '../../site/money.js';
 import { countryName, ordersOfTab, searchOrders, TABS, tabCounts } from '../orders.js';
 import { useOrders } from '../useOrders.js';
 import { useSelection } from '../useSelection.js';
@@ -112,7 +112,7 @@ const actions = [
                             <span class="orders-page__customer">{{ order.name }}</span>
                             <span class="orders-page__country">{{ countryName(order.country, locale) }}</span>
                             <span class="orders-page__items">{{ t('admin.orders.items', { count: order.units }, order.units) }}</span>
-                            <span class="orders-page__total tabular">{{ formatCents(order.total, locale) }}</span>
+                            <span class="orders-page__total tabular">{{ formatPrice(order.total, locale) }}</span>
                             <span class="orders-page__status"><OrderStatusBadge :status="order.status" /></span>
                         </li>
                     </ul>

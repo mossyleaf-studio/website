@@ -20,7 +20,7 @@ import BulkBar from '../components/BulkBar.vue';
 import CategoryNames from '../components/CategoryNames.vue';
 import CollectionSettings from '../components/CollectionSettings.vue';
 import SelectCheck from '../components/SelectCheck.vue';
-import { formatCents } from '../money.js';
+import { formatPrice } from '../../site/money.js';
 import { canShift, collectionLabel, completeness, filterProducts, pageFromQuery, pageOf, pickSkip, placePage, shift, totalStock, unpickSkip } from '../products.js';
 import { useSelection } from '../useSelection.js';
 import { useCategories, useCollections, useProducts } from '../useShop.js';
@@ -166,7 +166,7 @@ function toggle(product, visible) {
                                     <StatusBadge v-for="gap in completeness(product)" :key="gap" tone="warning" data-test="product-chip">{{ t(`admin.products.chips.${gap}`) }}</StatusBadge>
                                 </div>
                             </div>
-                            <p class="products-page__price tabular">{{ formatCents(product.price, intlLocale()) }}</p>
+                            <p class="products-page__price tabular">{{ formatPrice(product.price, intlLocale()) }}</p>
                             <p class="products-page__stock tabular">{{ totalStock(product) > 0 ? t('admin.products.stock', { count: totalStock(product) }) : t('admin.products.soldOut') }}</p>
                             <BaseSwitch
                                 :model-value="product.visible"

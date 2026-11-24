@@ -11,7 +11,7 @@ import { useToast } from '../../composables/useToast.js';
 import { dateFormat, intlLocale, LANGUAGES } from '../../i18n/locale.js';
 import OrderActions from '../components/OrderActions.vue';
 import OrderStatusBadge from '../components/OrderStatusBadge.vue';
-import { formatCents } from '../money.js';
+import { formatPrice } from '../../site/money.js';
 import { addressLines, countryName } from '../orders.js';
 import { useOrders } from '../useOrders.js';
 
@@ -29,7 +29,7 @@ const order = computed(() => orders.value.find((candidate) => candidate.id === p
 
 const locale = intlLocale();
 const moment = dateFormat({ dateStyle: 'medium', timeStyle: 'short' });
-const money = (cents) => formatCents(cents, locale);
+const money = (cents) => formatPrice(cents, locale);
 
 const address = computed(() => addressLines(order.value, countryName(order.value.country, locale)));
 const language = computed(() => LANGUAGES.find((known) => known.value === order.value.locale)?.label ?? order.value.locale);

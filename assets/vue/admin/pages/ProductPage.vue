@@ -16,7 +16,7 @@ import { useToast } from '../../composables/useToast.js';
 import { intlLocale } from '../../i18n/locale.js';
 import ProductPhotos from '../components/ProductPhotos.vue';
 import { LIMITS } from '../limits.js';
-import { formatCents } from '../money.js';
+import { formatPrice } from '../../site/money.js';
 import { pickState } from '../products.js';
 import { useProducts } from '../useShop.js';
 
@@ -182,7 +182,7 @@ function togglePick(picked) {
                         <div><dt>{{ t('admin.product.mossytrunk.name') }}</dt><dd>{{ product.displayName }}</dd></div>
                         <div><dt>{{ t('admin.product.mossytrunk.category') }}</dt><dd>{{ product.category.name }}</dd></div>
                         <div><dt>{{ t('admin.product.mossytrunk.collection') }}</dt><dd data-test="product-collection">{{ product.collection?.name ?? t('admin.product.mossytrunk.noCollection') }}</dd></div>
-                        <div><dt>{{ t('admin.product.mossytrunk.price') }}</dt><dd class="tabular" data-test="product-price">{{ formatCents(product.price, intlLocale()) }}</dd></div>
+                        <div><dt>{{ t('admin.product.mossytrunk.price') }}</dt><dd class="tabular" data-test="product-price">{{ formatPrice(product.price, intlLocale()) }}</dd></div>
                     </dl>
                     <table class="product-page__variants">
                         <caption class="visually-hidden">{{ t('admin.product.mossytrunk.variants') }}</caption>
