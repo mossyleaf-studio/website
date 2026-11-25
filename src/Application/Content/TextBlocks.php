@@ -21,13 +21,11 @@ final class TextBlocks
         $items = [];
 
         foreach (explode("\n", str_replace(["\r\n", "\r"], "\n", $text)) as $line) {
-            $line = ltrim($line, self::BLANKS);
-            $marker = str_starts_with($line, '## ') ? 'heading' : (str_starts_with($line, '- ') ? 'item' : null);
-            $content = trim(null === $marker ? $line : substr($line, 'heading' === $marker ? 3 : 2), self::BLANKS);
+            [$marker, $content] = self::read($line);
             if (null !== $marker && '' === $content) {
                 continue;
             }
-            if ('' === $content || 'heading' === $marker || ('item' === $marker ? [] !== $paragraph : [] !== $items)) {
+            if (self::endsOpenBlock($marker, $content, $paragraph, $items)) {
                 self::close($blocks, $paragraph, $items);
             }
             if ('heading' === $marker) {
@@ -41,6 +39,24 @@ final class TextBlocks
         self::close($blocks, $paragraph, $items);
 
         return $blocks;
+    }
+
+    /** @return array{'heading'|'item'|null, string} */
+    private static function read(string $line): array
+    {
+        $line = ltrim($line, self::BLANKS);
+        $marker = str_starts_with($line, '## ') ? 'heading' : (str_starts_with($line, '- ') ? 'item' : null);
+
+        return [$marker, trim(null === $marker ? $line : substr($line, 'heading' === $marker ? 3 : 2), self::BLANKS)];
+    }
+
+    /**
+     * @param list<string>        $paragraph
+     * @param list<list<Segment>> $items
+     */
+    private static function endsOpenBlock(?string $marker, string $content, array $paragraph, array $items): bool
+    {
+        return '' === $content || 'heading' === $marker || ('item' === $marker ? [] !== $paragraph : [] !== $items);
     }
 
     /**

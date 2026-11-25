@@ -74,13 +74,7 @@ final readonly class GdFaviconPainter implements FaviconPainter
             return null;
         }
         $image = @imagecreatefromwebp($path);
-        if (!$image instanceof \GdImage) {
-            return null;
-        }
-        if (!imageistruecolor($image)) {
-            imagepalettetotruecolor($image);
-        }
 
-        return $image;
+        return $image instanceof \GdImage ? $image : null;
     }
 }

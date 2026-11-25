@@ -30,34 +30,52 @@ final readonly class SettleStaleOrdersHandler
     public function __invoke(): void
     {
         $checks = self::MAX_CHECKS;
-        $verified = [];
         $deadline = $this->clock->now()->modify(self::MAX_RUN);
 
         try {
-            foreach ($this->orders->staleHolds($this->clock->now()) as $order) {
-                $paymentId = $order->paymentId();
-                if (null === $paymentId) {
-                    $this->atomicChange->apply(fn () => $this->expire($order->id()));
-                } elseif ($checks > 0 && $this->clock->now() < $deadline) {
-                    --$checks;
-                    ($this->confirmPayment)(new ConfirmPayment($paymentId));
-                    $verified[] = $paymentId;
-                }
-            }
-
-            foreach ($this->orders->unpaidPlacedBefore($this->clock->now()->modify(self::KEEP_UNPAID)) as $order) {
-                $paymentId = $order->paymentId();
-                if (null !== $paymentId && !\in_array($paymentId, $verified, true)) {
-                    if (0 === $checks || $this->clock->now() >= $deadline) {
-                        continue;
-                    }
-                    --$checks;
-                    ($this->confirmPayment)(new ConfirmPayment($paymentId));
-                }
-                $this->atomicChange->apply(fn () => $this->purge($order->id()));
-            }
+            $verified = $this->settleStaleHolds($checks, $deadline);
+            $this->purgeOldUnpaid($verified, $checks, $deadline);
         } catch (PaymentUnavailable) {
         }
+    }
+
+    /** @return list<string> */
+    private function settleStaleHolds(int &$checks, \DateTimeImmutable $deadline): array
+    {
+        $verified = [];
+        foreach ($this->orders->staleHolds($this->clock->now()) as $order) {
+            $paymentId = $order->paymentId();
+            if (null === $paymentId) {
+                $this->atomicChange->apply(fn () => $this->expire($order->id()));
+            } elseif ($this->mayCallGateway($checks, $deadline)) {
+                --$checks;
+                ($this->confirmPayment)(new ConfirmPayment($paymentId));
+                $verified[] = $paymentId;
+            }
+        }
+
+        return $verified;
+    }
+
+    /** @param list<string> $verified */
+    private function purgeOldUnpaid(array $verified, int &$checks, \DateTimeImmutable $deadline): void
+    {
+        foreach ($this->orders->unpaidPlacedBefore($this->clock->now()->modify(self::KEEP_UNPAID)) as $order) {
+            $paymentId = $order->paymentId();
+            if (null !== $paymentId && !\in_array($paymentId, $verified, true)) {
+                if (!$this->mayCallGateway($checks, $deadline)) {
+                    continue;
+                }
+                --$checks;
+                ($this->confirmPayment)(new ConfirmPayment($paymentId));
+            }
+            $this->atomicChange->apply(fn () => $this->purge($order->id()));
+        }
+    }
+
+    private function mayCallGateway(int $checks, \DateTimeImmutable $deadline): bool
+    {
+        return $checks > 0 && $this->clock->now() < $deadline;
     }
 
     private function expire(Ulid $id): void

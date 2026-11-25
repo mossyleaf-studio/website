@@ -31,15 +31,41 @@ final readonly class CatalogueFilters
     public function apply(Request $request, string $kind, array $products, bool $preview): array
     {
         $chosen = $request->query->all()[$kind] ?? null;
-        $key = static fn (ShopProductView $product): ?string => self::COLLECTION === $kind ? $product->collection?->key : $product->category->key;
         $options = self::COLLECTION === $kind ? ShopCollectionView::shownIn($products) : ShopCategoryView::shownIn($products);
         if (null !== $chosen && null === array_find($options, static fn (ShopCollectionView|ShopCategoryView $option): bool => $option->key === $chosen)) {
             throw new NotFoundHttpException();
         }
-        if ([] === $options || (1 === \count($options) && array_all($products, static fn (ShopProductView $product): bool => $key($product) === $options[0]->key))) {
+        if (self::filtersNothing($kind, $options, $products)) {
             return [$products, []];
         }
 
+        $items = $this->items($request, $kind, $options, $chosen, $preview);
+        $shown = null === $chosen ? $products : array_values(array_filter($products, static fn (ShopProductView $product): bool => self::key($kind, $product) === $chosen));
+
+        return [$shown, ['filters' => ['kind' => $kind, 'items' => $items]]];
+    }
+
+    private static function key(string $kind, ShopProductView $product): ?string
+    {
+        return self::COLLECTION === $kind ? $product->collection?->key : $product->category->key;
+    }
+
+    /**
+     * @param list<ShopCollectionView|ShopCategoryView> $options
+     * @param list<ShopProductView>                     $products
+     */
+    private static function filtersNothing(string $kind, array $options, array $products): bool
+    {
+        return [] === $options || (1 === \count($options) && array_all($products, static fn (ShopProductView $product): bool => self::key($kind, $product) === $options[0]->key));
+    }
+
+    /**
+     * @param list<ShopCollectionView|ShopCategoryView> $options
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function items(Request $request, string $kind, array $options, mixed $chosen, bool $preview): array
+    {
         $locale = ShopUrls::locale($request);
         $route = ShopUrls::route($request);
         $parameters = ShopUrls::parameters($request);
@@ -48,8 +74,7 @@ final readonly class CatalogueFilters
             $link = $option instanceof ShopCollectionView ? $this->props->collection($option, $locale, $preview) : $this->props->category($option, $locale, $preview);
             $items[] = [...$link, 'url' => $this->urls->to($route, $locale, $preview, [...$parameters, $kind => $option->key]), 'current' => $option->key === $chosen];
         }
-        $shown = null === $chosen ? $products : array_values(array_filter($products, static fn (ShopProductView $product): bool => $key($product) === $chosen));
 
-        return [$shown, ['filters' => ['kind' => $kind, 'items' => $items]]];
+        return $items;
     }
 }

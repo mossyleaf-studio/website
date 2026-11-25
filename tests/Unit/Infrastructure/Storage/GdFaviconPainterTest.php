@@ -87,6 +87,16 @@ final class GdFaviconPainterTest extends TestCase
         self::assertNull($this->painter->paint('../../etc/passwd'));
     }
 
+    public function testAWebpHeaderWithoutItsPictureGivesNoPicture(): void
+    {
+        $file = $this->storeWideLogo();
+        $path = (string) $this->storage->path($file);
+        file_put_contents($path, substr((string) file_get_contents($path), 0, 30));
+        self::assertSame(\IMAGETYPE_WEBP, getimagesize($path)[2] ?? null);
+
+        self::assertNull($this->painter->paint($file));
+    }
+
     private function storeWideLogo(): string
     {
         $logo = imagecreatetruecolor(300, 100);

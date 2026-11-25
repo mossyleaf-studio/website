@@ -32,8 +32,24 @@ final readonly class CartPricer
             throw new CartTooLarge(self::MAX_LINES);
         }
         $zone = null === $country ? null : $this->zones->get(Zone::of(Country::of($country)));
-        $offers = $this->offers($preview);
+        [$kept, $issues] = self::keepAvailable($wanted, $this->offers($preview), $locale);
 
+        $goods = array_sum(array_map(static fn (QuoteLine $line): int => $line->lineTotal, $kept));
+        $units = array_sum(array_map(static fn (QuoteLine $line): int => $line->quantity, $kept));
+        $shipping = null === $zone ? null : ShippingQuote::of($zone, $goods, $units);
+        $deliverable = null !== $zone && $zone->isEnabled();
+
+        return new Quote($kept, $issues, $goods, $shipping, $deliverable, $goods + ($deliverable && null !== $shipping ? $shipping->price : 0), $units);
+    }
+
+    /**
+     * @param array<string, int>                                     $wanted
+     * @param array<string, array{ShopProductView, ShopVariantView}> $offers
+     *
+     * @return array{list<QuoteLine>, list<QuoteIssue>}
+     */
+    private static function keepAvailable(array $wanted, array $offers, Locale $locale): array
+    {
         $kept = [];
         $issues = [];
         foreach ($wanted as $sku => $quantity) {
@@ -52,12 +68,7 @@ final readonly class CartPricer
             $kept[] = new QuoteLine($sku, $product->displayName, $title, $variant->name, $product->price, $allowed, $product->price * $allowed, $product->slug, $product->photos[0] ?? null, $variant->available);
         }
 
-        $goods = array_sum(array_map(static fn (QuoteLine $line): int => $line->lineTotal, $kept));
-        $units = array_sum(array_map(static fn (QuoteLine $line): int => $line->quantity, $kept));
-        $shipping = null === $zone ? null : ShippingQuote::of($zone, $goods, $units);
-        $deliverable = null !== $zone && $zone->isEnabled();
-
-        return new Quote($kept, $issues, $goods, $shipping, $deliverable, $goods + ($deliverable && null !== $shipping ? $shipping->price : 0), $units);
+        return [$kept, $issues];
     }
 
     /**

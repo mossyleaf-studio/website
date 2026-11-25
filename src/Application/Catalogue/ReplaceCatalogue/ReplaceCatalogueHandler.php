@@ -95,51 +95,23 @@ final readonly class ReplaceCatalogueHandler
     private function replace(array $pushed): CatalogueReport
     {
         $this->products->lock();
-
-        $now = $this->clock->now();
-        $known = $slugs = [];
-        $position = $retired = 0;
-
-        foreach ($this->products->all() as $product) {
-            $id = (string) $product->sourceId();
-            $known[$id] = $product;
-            $slugs[$product->slug()] = true;
-            $position = max($position, $product->position() + 1);
-
-            if (isset($pushed[$id])) {
-                $product->keepVariants(array_map(static fn (PushedVariant $variant): string => $variant->sku, $pushed[$id]->variants));
-            } elseif (!$product->isRetired()) {
-                $product->retire($now);
-                ++$retired;
-            }
-        }
+        [$known, $retired] = $this->keepPushedRetireTheRest($pushed);
         $this->transaction->commit();
 
-        $sold = [];
-        foreach ($this->orders->unexportedLines() as $line) {
-            $sold[$line->sku()][] = $line;
+        $slugs = [];
+        $position = 0;
+        foreach ($known as $product) {
+            $slugs[$product->slug()] = true;
+            $position = max($position, $product->position() + 1);
         }
-        $categories = [];
-        foreach ($this->categories->all() as $category) {
-            $categories[$category->name()] = $category;
-        }
-        $collections = [];
-        $nextCollection = 0;
-        foreach ($this->collections->all() as $collection) {
-            $collections[(string) $collection->sourceId()] = $collection;
-            $nextCollection = max($nextCollection, $collection->position() + 1);
-        }
+        $sold = $this->unexportedLinesBySku();
+        $categories = $this->categoriesByName();
+        [$collections, $nextCollection] = $this->collectionsBySourceId();
         $created = [];
 
         foreach ($pushed as $id => $item) {
             try {
-                $category = $categories[$item->category] ?? null;
-                if (null === $category) {
-                    $category = Category::named($item->category, \count($categories));
-                    $this->categories->add($category);
-                    $categories[$item->category] = $category;
-                }
-
+                $category = $this->category($item->category, $categories);
                 $product = $known[$id] ?? null;
                 if (null === $product) {
                     $product = Product::pushed($item->id, $item->reference, $item->name, $item->displayName, $category, $item->price, $this->freeSlug($item->displayName, $slugs), $position++);
@@ -149,22 +121,7 @@ final readonly class ReplaceCatalogueHandler
                     $product->synchronise($item->reference, $item->name, $item->displayName, $category, $item->price);
                 }
                 $product->prefillDescription($item->descriptions);
-
-                if ($item->collection instanceof PushedCollection) {
-                    $collectionId = (string) $item->collection->id;
-                    $collection = $collections[$collectionId] ?? null;
-                    if (null === $collection) {
-                        $collection = Collection::pushed($item->collection->id, $item->collection->name, $nextCollection++);
-                        $this->collections->add($collection);
-                        $collections[$collectionId] = $collection;
-                    } else {
-                        $collection->rename($item->collection->name);
-                    }
-                    $product->belongTo($collection);
-                } elseif (null === $item->collection) {
-                    $product->belongTo(null);
-                }
-
+                $this->fileUnder($product, $item->collection, $collections, $nextCollection);
                 foreach ($item->variants as $index => $variant) {
                     $product->stock($variant->sku, $variant->name, self::unsold($variant->stock, $sold[trim($variant->sku)] ?? []), $index);
                 }
@@ -172,9 +129,118 @@ final readonly class ReplaceCatalogueHandler
                 throw new ProductRefused($item->reference, $reason);
             }
         }
+        $this->removeOrphans($collections, [...array_values($known), ...$created]);
 
+        $updated = \count(array_intersect_key($pushed, $known));
+
+        return new CatalogueReport(\count($pushed) - $updated, $updated, $retired);
+    }
+
+    /**
+     * @param array<string, PushedProduct> $pushed
+     *
+     * @return array{array<string, Product>, int}
+     */
+    private function keepPushedRetireTheRest(array $pushed): array
+    {
+        $now = $this->clock->now();
+        $known = [];
+        $retired = 0;
+        foreach ($this->products->all() as $product) {
+            $id = (string) $product->sourceId();
+            $known[$id] = $product;
+            if (isset($pushed[$id])) {
+                $product->keepVariants(array_map(static fn (PushedVariant $variant): string => $variant->sku, $pushed[$id]->variants));
+            } elseif (!$product->isRetired()) {
+                $product->retire($now);
+                ++$retired;
+            }
+        }
+
+        return [$known, $retired];
+    }
+
+    /** @return array<string, list<OrderLine>> */
+    private function unexportedLinesBySku(): array
+    {
+        $sold = [];
+        foreach ($this->orders->unexportedLines() as $line) {
+            $sold[$line->sku()][] = $line;
+        }
+
+        return $sold;
+    }
+
+    /** @return array<string, Category> */
+    private function categoriesByName(): array
+    {
+        $categories = [];
+        foreach ($this->categories->all() as $category) {
+            $categories[$category->name()] = $category;
+        }
+
+        return $categories;
+    }
+
+    /** @return array{array<string, Collection>, int} */
+    private function collectionsBySourceId(): array
+    {
+        $collections = [];
+        $next = 0;
+        foreach ($this->collections->all() as $collection) {
+            $collections[(string) $collection->sourceId()] = $collection;
+            $next = max($next, $collection->position() + 1);
+        }
+
+        return [$collections, $next];
+    }
+
+    /**
+     * @param array<string, Category> $categories
+     */
+    private function category(string $name, array &$categories): Category
+    {
+        $category = $categories[$name] ?? null;
+        if (null === $category) {
+            $category = Category::named($name, \count($categories));
+            $this->categories->add($category);
+            $categories[$name] = $category;
+        }
+
+        return $category;
+    }
+
+    /**
+     * @param array<string, Collection> $collections
+     */
+    private function fileUnder(Product $product, PushedCollection|false|null $pushed, array &$collections, int &$next): void
+    {
+        if (false === $pushed) {
+            return;
+        }
+        if (null === $pushed) {
+            $product->belongTo(null);
+
+            return;
+        }
+        $id = (string) $pushed->id;
+        if (isset($collections[$id])) {
+            $collections[$id]->rename($pushed->name);
+        } else {
+            $collections[$id] = Collection::pushed($pushed->id, $pushed->name, $next++);
+            $this->collections->add($collections[$id]);
+        }
+        $product->belongTo($collections[$id]);
+    }
+
+    /**
+     * @param array<string, Collection> $collections
+     * @param list<Product>             $products
+     */
+    private function removeOrphans(array $collections, array $products): void
+    {
         $pointedAt = [];
-        foreach ([...array_values($known), ...$created] as $product) {
+        foreach ($products as $product) {
             $collection = $product->collection();
             if (null !== $collection) {
                 $pointedAt[(string) $collection->sourceId()] = true;
@@ -183,10 +249,6 @@ final readonly class ReplaceCatalogueHandler
         foreach (array_diff_key($collections, $pointedAt) as $orphan) {
             $this->collections->remove($orphan);
         }
-
-        $updated = \count(array_intersect_key($pushed, $known));
-
-        return new CatalogueReport(\count($pushed) - $updated, $updated, $retired);
     }
 
     /** @param list<OrderLine> $lines */
