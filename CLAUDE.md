@@ -29,6 +29,8 @@ make ci             # full suite from a fresh checkout, as GitHub Actions runs i
 make deploy         # run the image CI published to Docker Hub for HEAD on DEPLOY_HOST (.deploy.env)
 ```
 
+Shared make targets (`common.mk`), CI and the deptrac/PHPUnit configs are synced from `~/Sites/mossyleaf-studio/toolchain`: change them there and run its `./sync`, never edit the copies here.
+
 ## Tests
 
 One rule, one test, at the lowest layer that can see it (unit, then functional, then browser), and only for a bug that would matter: money, stock, payment, privacy, security, the shop door, SEO, data, or a behaviour only a browser shows.
