@@ -33,6 +33,7 @@ Shared make targets (`common.mk`), CI and the deptrac/PHPUnit configs are synced
 
 ## Tests
 
+- Every `src` method keeps a CRAP score ≤ 10, checked by `make crap` (PHPUnit with pcov coverage, then `bin/crap` on the Crap4J report; part of `make qa` and the CI checks job): a method above complexity 10 is split, a lower one gets tests. Wall-clock budgets carry `#[Group('timing')]` and run outside coverage.
 One rule, one test, at the lowest layer that can see it (unit, then functional, then browser), and only for a bug that would matter: money, stock, payment, privacy, security, the shop door, SEO, data, or a behaviour only a browser shows.
 
 - A new `/api/admin`, `/beta` or `/admin` route needs no sign-in test: `AuthenticationTest` walks the router. A new public shop page joins `ShopDoorTest::PAGES` instead of testing the closed door itself.
